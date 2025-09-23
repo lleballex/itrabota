@@ -1,0 +1,51 @@
+@layer components {
+  .text-h1 {
+    @apply font-primary text-[36px] font-bold leading-[1.5];
+  }
+
+  .text-h2 {
+    @apply font-primary text-[30px] font-semibold leading-[1.5];
+  }
+
+  .text-h3 {
+    @apply font-primary text-[24px] font-semibold leading-[1.5];
+  }
+
+  .text-h4 {
+    @apply font-primary text-[20px] font-medium leading-[1.5];
+  }
+
+  .text-h5 {
+    @apply font-primary text-[18px] font-medium leading-[1.5];
+  }
+
+  .text-h6 {
+    @apply font-primary text-[16px] font-medium leading-[1.5];
+  }
+
+  .text-xs {
+    @apply font-primary text-[12px] font-normal leading-[1.5];
+  }
+
+  .text-sm {
+    @apply font-primary text-[14px] font-normal leading-[1.5];
+  }
+
+  .text-base {
+    @apply font-primary text-[16px] font-normal leading-[1.5];
+  }
+
+  .text-lg {
+    @apply font-primary text-[18px] font-normal leading-[1.5];
+  }
+
+  .glass {
+    @apply bg-[rgba(230,230,230,0.1)] border-1 border-border backdrop-blur-[6px] transition-all;
+
+    box-shadow: inset 0 0 10px 0 rgba(255, 255, 255, 0.05);
+
+    &:hover {
+      box-shadow: inset 0 0 25px 0 rgba(255, 255, 255, 0.2);
+    }
+  }
+}

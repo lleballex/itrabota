@@ -1,0 +1,37 @@
+@theme {
+  --*: initial;
+
+  /* overrides */
+
+  --font-weight-thin: 100;
+  --font-weight-extralight: 200;
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 900;
+
+  --color-primary: #e66415;
+  --color-secondary: rgb(25, 25, 25); /* TODO: to hex */
+  --color-fg: #eeeeee;
+  --color-bg: #000000;
+  --color-border: rgb(38, 38, 38); /* TODO: to hex */
+  --color-danger: #d8323f;
+
+  --spacing: 8px;
+
+  --radius: 30px; /* TODO: maybe add more radius variants */
+
+  --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  --default-transition-duration: 0.3s;
+
+  /* custom */
+
+  --font-primary: "Nunito", sans-serif;
+
+  --height-control: 50px;
+
+  --transition-base: 300ms;
+}

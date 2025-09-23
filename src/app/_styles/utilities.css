@@ -1,0 +1,13 @@
+@layer {
+  .h-control {
+    @apply h-[var(--height-control)];
+  }
+
+  .transition-base {
+    @apply transition-all duration-[var(--transition-base)];
+  }
+
+  .border-base {
+    @apply border-1 border-border;
+  }
+}
