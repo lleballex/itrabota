@@ -1,0 +1,69 @@
+.target {
+  anchor-name: --target;
+}
+
+.target:has(+ .popover:popover-open) .targetIndicator {
+  rotate: 180deg;
+}
+
+.popover:popover-open {
+  display: flex;
+  scale: 1;
+  opacity: 1;
+}
+
+.popover {
+  flex-direction: column;
+  position: absolute;
+  position-anchor: --target;
+  top: calc(anchor(bottom) + var(--spacing));
+  left: anchor(50%);
+  translate: -50% 0;
+  scale: 0;
+  opacity: 0;
+  color: inherit;
+  transform-origin: top;
+  transition-behavior: allow-discrete;
+}
+
+@starting-style {
+  .popover:popover-open {
+    opacity: 0;
+    scale: 0;
+  }
+}
+
+.item:hover,
+.popover:not(:has(.item:hover)) .item.active {
+  anchor-name: --active-item;
+}
+
+.highlight {
+  position: absolute;
+  position-anchor: --active-item;
+  top: anchor(top);
+  bottom: anchor(bottom);
+  left: anchor(left);
+  right: anchor(right);
+  z-index: -1;
+}
+
+.item:hover ~ .highlight,
+.item.active ~ .highlight {
+  opacity: 1;
+  scale: 1;
+}
+
+.highlight {
+  opacity: 0;
+  scale: 0;
+  transition-behavior: allow-discrete;
+}
+
+@starting-style {
+  .item:hover ~ .highlight,
+  .item.active ~ .highlight {
+    opacity: 0;
+    scale: 0;
+  }
+}
