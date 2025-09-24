@@ -43,7 +43,7 @@ export default function MainLayoutSidebar({ className }: Props) {
       className={classNames(
         className,
         styles.container,
-        "flex flex-col gap-1 p-2 sticky top-2 border-base rounded"
+        "flex flex-col gap-1 p-2 border-base rounded"
       )}
     >
       {links.map((link) => (
