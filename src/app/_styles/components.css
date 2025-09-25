@@ -42,10 +42,14 @@
   .glass {
     @apply bg-[rgba(230,230,230,0.05)] border-1 border-border backdrop-blur-[5px] transition-all;
 
-    box-shadow: inset 0 0 10px 0 rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 0 10px 0 rgba(255, 255, 255, 0.05); /* TODO: move to apply */
 
     &:hover {
       box-shadow: inset 0 0 25px 0 rgba(255, 255, 255, 0.2);
     }
+  }
+
+  .field {
+    @apply flex items-center gap-2 h-control px-3 rounded-full bg-secondary border border-secondary transition-all;
   }
 }

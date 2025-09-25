@@ -1,3 +1,5 @@
+"use client"
+
 import { ReactNode, useMemo } from "react"
 import classNames from "classnames"
 import Link from "next/link"
@@ -37,11 +39,11 @@ export default function Button({
   const style = useMemo(() => {
     return {
       primary:
-        "h-[var(--height-button)] px-3 rounded-full text-fg font-bold bg-primary transition-all hover:opacity-70",
+        "flex items-center gap-1 h-[var(--height-button)] px-3 rounded-full text-fg font-bold bg-primary transition-all hover:opacity-70",
       secondary:
-        "h-[var(--height-button)] px-3 rounded-full text-primary font-bold bg-secondary transition-all hover:opacity-70",
+        "flex items-center gap-1 h-[var(--height-button)] px-3 rounded-full text-primary font-bold bg-secondary transition-all hover:opacity-70",
       glass:
-        "glass h-control px-2.5 rounded-full text-fg font-bold transition-all hover:scale-115",
+        "glass flex items-center gap-1 h-control px-2.5 rounded-full text-fg font-bold transition-all hover:scale-115",
       text: "text-primary font-bold transition-all hover:opacity-70",
       base: "",
     }[type]
@@ -50,7 +52,7 @@ export default function Button({
   if (link) {
     return (
       <Link
-        className={classNames(className, style, "flex items-center gap-1")}
+        className={classNames(className, style)}
         href={link.url}
         target={link.target}
       >
@@ -61,11 +63,7 @@ export default function Button({
 
   return (
     <button
-      className={classNames(
-        className,
-        style,
-        "flex items-center gap-1 cursor-pointer"
-      )}
+      className={classNames(className, style, "cursor-pointer")}
       type={htmlType ?? "button"}
       popoverTarget={popoverTarget}
       onClick={onClick}

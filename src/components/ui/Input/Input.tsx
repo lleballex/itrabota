@@ -1,42 +1,62 @@
+"use client"
+
 import classNames from "classnames"
-import { useId } from "react"
+import { ChangeEventHandler, useId } from "react"
 
 import { FormError } from "@/types/form-error"
+import { useFieldValue } from "@/lib/use-field-value"
+import FieldContainer from "@/components/ui/FieldContainer"
+import FieldLabel from "@/components/ui/FieldLabel"
+
+// TODO: add correct outline
+// TOOD: add active state style
+// TODO: focus on container click
 
 interface Props {
   className?: string
   label?: string
+  type?: "text" | "password"
+  value?: string | null
   error?: FormError
+  onChange?: (val: string | null) => void
 }
 
-export default function Input({ className, label, error }: Props) {
+export default function Input({
+  className,
+  label,
+  type,
+  value: baseValue,
+  error,
+  onChange: baseOnChange,
+}: Props) {
   const id = useId()
 
-  // TODO: focus on container click
+  const { onChange: onChange_ } = useFieldValue({
+    baseValue,
+    baseOnChange,
+    transformBaseValue: (val) => val || null,
+  })
+
+  const onChange: ChangeEventHandler<HTMLInputElement> = (e) => {
+    const val = e.target.value || null
+    onChange_(val)
+  }
 
   return (
-    <section className={classNames(className, "flex flex-col gap-0.5")}>
+    <FieldContainer className={className} error={error}>
       <div
-        className={classNames(
-          "flex gap-2 h-control px-3 bg-secondary rounded-full",
-          {
-            "border-1 border-danger":
-              error /* TODO: move border-width to config */,
-          }
-        )}
+        className={classNames("field", {
+          "border-danger": error,
+        })}
       >
-        {label && (
-          <label
-            className="self-center text-sm text-secondary-light"
-            htmlFor={id}
-          >
-            {label}
-          </label>
-        )}
-        <input className="grow outline-none" id={id} />
-        {/* /* TODO: add outline */}
+        {label && <FieldLabel fieldId={id}>{label}</FieldLabel>}
+        <input
+          className="grow h-full outline-none"
+          id={id}
+          type={type}
+          onChange={onChange}
+        />
       </div>
-      {error && <p className="pl-3 text-sm text-danger">{error}</p>}
-    </section>
+    </FieldContainer>
   )
 }
