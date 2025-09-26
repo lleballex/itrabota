@@ -1,0 +1,28 @@
+.trigger {
+  anchor-name: --popover-trigger;
+}
+
+.content {
+  position: absolute;
+  position-anchor: --popover-trigger;
+  top: calc(anchor(bottom) + var(--spacing));
+  left: anchor(50%);
+  translate: -50% 0;
+  scale: 0;
+  opacity: 0;
+  color: inherit;
+  transform-origin: top;
+  transition-behavior: allow-discrete;
+}
+
+.content:popover-open {
+  scale: 1;
+  opacity: 1;
+}
+
+@starting-style {
+  .content:popover-open {
+    opacity: 0;
+    scale: 0;
+  }
+}

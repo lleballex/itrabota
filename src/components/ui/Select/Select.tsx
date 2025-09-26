@@ -1,7 +1,7 @@
 "use client"
 
 import classNames from "classnames"
-import { ReactNode, useId, useMemo, useRef } from "react"
+import { ReactNode, useMemo, useRef } from "react"
 
 import Button from "@/components/ui/Button"
 import Icon from "@/components/ui/Icon"
@@ -9,6 +9,10 @@ import { useFieldValue } from "@/lib/use-field-value"
 import { FormError } from "@/types/form-error"
 import FieldContainer from "@/components/ui/FieldContainer"
 import FieldLabel from "@/components/ui/FieldLabel"
+import Popover, {
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/Popover"
 
 import styles from "./Select.module.css"
 
@@ -35,8 +39,7 @@ export default function Select<V>({
   items,
   onChange: baseOnChange,
 }: Props<V>) {
-  const id = useId()
-  const popoverRef = useRef<HTMLDivElement>(null)
+  const popoverContentRef = useRef<HTMLDivElement>(null)
 
   const { value, onChange } = useFieldValue({
     baseValue,
@@ -55,58 +58,61 @@ export default function Select<V>({
     } else {
       onChange(val)
     }
-    popoverRef.current?.hidePopover()
+    popoverContentRef.current?.hidePopover()
   }
 
   return (
     <FieldContainer className={className} error={error}>
-      <Button
-        className={classNames(
-          styles.target,
-          "field justify-between hover:opacity-70",
-          {
-            "border-danger": error,
-          }
-        )}
-        type="base"
-        popoverTarget={id}
-      >
-        {label && <FieldLabel>{label}</FieldLabel>}
-        {valueContent && <span className="grow text-left">{valueContent}</span>}
-        <Icon
-          className={classNames(styles.targetIndicator, "transition-all")}
-          icon="chevronDown"
-        />
-      </Button>
-
-      <div
-        id={id}
-        ref={popoverRef}
-        popover="auto"
-        className={classNames(
-          styles.popover,
-          "glass p-1 rounded transition-all"
-        )}
-      >
-        {items.map((item) => (
+      <Popover>
+        <PopoverTrigger>
           <Button
-            className={classNames(styles.item, "py-1 px-2", {
-              [styles.active]: item.value === value,
-            })}
-            key={String(item.value)}
+            className={classNames(
+              styles.popoverTrigger,
+              "field justify-between hover:opacity-70",
+              {
+                "border-danger": error,
+              }
+            )}
             type="base"
-            onClick={() => toggleValue(item.value)}
           >
-            {item.content}
+            {label && <FieldLabel>{label}</FieldLabel>}
+            {valueContent && (
+              <span className="grow text-left">{valueContent}</span>
+            )}
+            <Icon
+              className={classNames(
+                styles.popoverTriggerIndicator,
+                "transition-all"
+              )}
+              icon="chevronDown"
+            />
           </Button>
-        ))}
-        <span
-          className={classNames(
-            styles.highlight,
-            "bg-[rgba(130,130,130,0.5)] rounded transition-all" // TODO: move color to config
-          )}
-        />
-      </div>
+        </PopoverTrigger>
+
+        <PopoverContent
+          className={classNames(styles.popoverContent, "flex flex-col")}
+          ref={popoverContentRef}
+        >
+          {items.map((item) => (
+            <Button
+              className={classNames(styles.item, "py-1 px-2", {
+                [styles.active]: item.value === value,
+              })}
+              key={String(item.value)}
+              type="base"
+              onClick={() => toggleValue(item.value)}
+            >
+              {item.content}
+            </Button>
+          ))}
+          <span
+            className={classNames(
+              styles.highlight,
+              "bg-[rgba(130,130,130,0.5)] rounded transition-all" // TODO: move color to config
+            )}
+          />
+        </PopoverContent>
+      </Popover>
     </FieldContainer>
   )
 }
