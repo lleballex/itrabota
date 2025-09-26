@@ -1,6 +1,7 @@
 "use client"
 
 import {
+  CSSProperties,
   forwardRef,
   ForwardRefRenderFunction,
   ReactNode,
@@ -29,6 +30,7 @@ const PopoverContent: ForwardRefRenderFunction<HTMLDivElement, Props> = (
         styles.content,
         "glass p-1 rounded transition-all"
       )}
+      style={{ positionAnchor: id } as CSSProperties}
       ref={ref}
       id={id}
       popover="auto"

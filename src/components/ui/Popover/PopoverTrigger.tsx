@@ -2,14 +2,24 @@
 
 import classNames from "classnames"
 
-import { cloneElement, ReactElement, useContext, useMemo } from "react"
+import {
+  cloneElement,
+  CSSProperties,
+  ReactElement,
+  useContext,
+  useMemo,
+} from "react"
 
 import { popoverContext } from "./context"
 import styles from "./Popover.module.css"
 
 interface Props {
   className?: string
-  children: ReactElement<{ className?: string; popoverTarget?: string }>
+  children: ReactElement<{
+    className?: string
+    style?: CSSProperties
+    popoverTarget?: string
+  }>
 }
 
 export default function PopoverTrigger({
@@ -25,6 +35,7 @@ export default function PopoverTrigger({
         children_.props.className,
         styles.trigger
       ),
+      style: { anchorName: id } as CSSProperties,
       popoverTarget: id,
     })
   }, [className, children_, id])
