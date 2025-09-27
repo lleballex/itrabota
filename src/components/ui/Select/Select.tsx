@@ -9,10 +9,8 @@ import { useFieldValue } from "@/lib/use-field-value"
 import { FormError } from "@/types/form-error"
 import FieldContainer from "@/components/ui/FieldContainer"
 import FieldLabel from "@/components/ui/FieldLabel"
-import Popover, {
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/Popover"
+import Popover from "@/components/ui/Popover"
+import HighlightList from "@/components/ui/HighlightList"
 
 import styles from "./Select.module.css"
 
@@ -63,16 +61,12 @@ export default function Select<V>({
 
   return (
     <FieldContainer className={className} error={error}>
-      <Popover>
-        <PopoverTrigger>
+      <Popover.Root>
+        <Popover.Trigger className={styles.trigger}>
           <Button
-            className={classNames(
-              styles.popoverTrigger,
-              "field justify-between hover:opacity-70",
-              {
-                "border-danger": error,
-              }
-            )}
+            className={classNames("field justify-between hover:opacity-70", {
+              "border-danger": error,
+            })}
             type="base"
           >
             {label && <FieldLabel>{label}</FieldLabel>}
@@ -80,39 +74,31 @@ export default function Select<V>({
               <span className="grow text-left">{valueContent}</span>
             )}
             <Icon
-              className={classNames(
-                styles.popoverTriggerIndicator,
-                "transition-all"
-              )}
+              className={classNames(styles.triggerIndicator, "transition-all")}
               icon="chevronDown"
             />
           </Button>
-        </PopoverTrigger>
+        </Popover.Trigger>
 
-        <PopoverContent
-          className={classNames(styles.popoverContent, "flex flex-col")}
-          ref={popoverContentRef}
-        >
-          {items.map((item) => (
-            <Button
-              className={classNames(styles.item, "py-1 px-2", {
-                [styles.active]: item.value === value,
-              })}
-              key={String(item.value)}
-              type="base"
-              onClick={() => toggleValue(item.value)}
-            >
-              {item.content}
-            </Button>
-          ))}
-          <span
-            className={classNames(
-              styles.highlight,
-              "bg-[rgba(130,130,130,0.5)] rounded transition-all" // TODO: move color to config
-            )}
-          />
-        </PopoverContent>
-      </Popover>
+        <Popover.Content className={styles.content} ref={popoverContentRef}>
+          <HighlightList.Root className="flex flex-col">
+            {items.map((item) => (
+              <HighlightList.Item
+                key={String(item.value)}
+                active={value === item.value}
+              >
+                <Button
+                  className="py-1 px-2"
+                  type="base"
+                  onClick={() => toggleValue(item.value)}
+                >
+                  {item.content}
+                </Button>
+              </HighlightList.Item>
+            ))}
+          </HighlightList.Root>
+        </Popover.Content>
+      </Popover.Root>
     </FieldContainer>
   )
 }

@@ -1,38 +1,3 @@
-.popoverTrigger:has(+ .popoverContent:popover-open) .popoverTriggerIndicator {
+.trigger:has(+ .content:popover-open) .triggerIndicator {
   rotate: 180deg;
-}
-
-.item:hover,
-.popoverContent:not(:has(.item:hover)) .item.active {
-  anchor-name: --active-item;
-}
-
-.highlight {
-  position: absolute;
-  position-anchor: --active-item;
-  top: anchor(top);
-  bottom: anchor(bottom);
-  left: anchor(left);
-  right: anchor(right);
-  z-index: -1;
-}
-
-.item:hover ~ .highlight,
-.item.active ~ .highlight {
-  opacity: 1;
-  scale: 1;
-}
-
-.highlight {
-  opacity: 0;
-  scale: 0;
-  transition-behavior: allow-discrete;
-}
-
-@starting-style {
-  .item:hover ~ .highlight,
-  .item.active ~ .highlight {
-    opacity: 0;
-    scale: 0;
-  }
 }
