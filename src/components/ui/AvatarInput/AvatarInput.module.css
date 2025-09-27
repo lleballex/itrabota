@@ -1,0 +1,12 @@
+.anchor {
+  anchor-name: var(--avatar-input-id);
+}
+
+.absolute {
+  position: absolute;
+  position-anchor: var(--avatar-input-id);
+  inset: unset;
+  bottom: anchor(bottom);
+  left: anchor(50%);
+  translate: -50% 50%;
+}
