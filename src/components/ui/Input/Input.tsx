@@ -31,7 +31,7 @@ export default function Input({
 }: Props) {
   const id = useId()
 
-  const { onChange: onChange_ } = useFieldValue({
+  const { value, onChange: onChange_ } = useFieldValue({
     baseValue,
     baseOnChange,
     transformBaseValue: (val) => val || null,
@@ -43,7 +43,7 @@ export default function Input({
   }
 
   return (
-    <FieldContainer className={className} error={error}>
+    <FieldContainer className={className} errorClassName="pl-3" error={error}>
       <div
         className={classNames("field", {
           "border-danger": error,
@@ -54,6 +54,7 @@ export default function Input({
           className="grow h-full outline-none"
           id={id}
           type={type}
+          value={value ?? ""}
           onChange={onChange}
         />
       </div>

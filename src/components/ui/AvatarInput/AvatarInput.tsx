@@ -8,17 +8,21 @@ import Button from "@/components/ui/Button"
 import Icon from "@/components/ui/Icon"
 import { useFieldValue } from "@/lib/use-field-value"
 import avatarImg from "@/assets/images/avatar.png"
+import { FormError } from "@/types/form-error"
+import FieldContainer from "@/components/ui/FieldContainer"
 
 import styles from "./AvatarInput.module.css"
 
 interface Props {
   className?: string
+  error?: FormError
   value?: string | null
   onChange?: (val: string | null) => void
 }
 
 export default function AvatarInput({
   className,
+  error,
   value: baseValue,
   onChange: baseOnChange,
 }: Props) {
@@ -52,12 +56,19 @@ export default function AvatarInput({
   }
 
   return (
-    <section
-      className={classNames(className, "contents")}
+    <FieldContainer
+      className={classNames(className, "flex flex-col items-center")}
+      error={error}
       style={{ "--avatar-input-id": `--${id}` } as CSSProperties}
     >
       <Image
-        className={classNames(styles.anchor, "w-25 h-25")}
+        className={classNames(
+          styles.anchor,
+          "w-25 h-25 rounded-full border border-transparent transition-all",
+          {
+            "!border-danger": error,
+          }
+        )}
         src={value ?? avatarImg}
         alt="Логотип"
         width={300}
@@ -65,11 +76,8 @@ export default function AvatarInput({
       />
 
       <Button
-        className={classNames(
-          styles.absolute,
-          "p-1.5 rounded-full bg-secondary transition-all hover:scale-115"
-        )}
-        type="base"
+        className="-mt-[calc(var(--height-control)/2)]"
+        type="glass"
         onClick={onClick}
       >
         <Icon icon="pen" />
@@ -82,6 +90,6 @@ export default function AvatarInput({
         accept="image/png, image/jpg, image/jpeg"
         onInput={onFileChange}
       />
-    </section>
+    </FieldContainer>
   )
 }

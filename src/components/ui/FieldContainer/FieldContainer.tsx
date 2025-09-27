@@ -9,13 +9,17 @@ import MountTransition from "@/components/ui/MountTransition"
 
 interface Props {
   className?: string
+  errorClassName?: string
   error?: FormError
+  style?: CSSProperties
   children?: ReactNode
 }
 
 export default function FieldContainer({
   className,
+  errorClassName,
   error: baseError,
+  style,
   children,
 }: Props) {
   const error = useFormError(baseError)
@@ -23,12 +27,14 @@ export default function FieldContainer({
   return (
     <section
       className={classNames(className, "flex flex-col gap-0.5")}
-      style={{ "--mt-gap-block": "0.5" } as CSSProperties}
+      style={{ ...style, "--mt-gap-block": "0.5" } as CSSProperties}
     >
       {children}
       <MountTransition>
         {error && (
-          <span className="pl-3 text-sm text-danger">{error.message}</span>
+          <span className={classNames(errorClassName, "text-sm text-danger")}>
+            {error.message}
+          </span>
         )}
       </MountTransition>
     </section>

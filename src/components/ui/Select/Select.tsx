@@ -60,7 +60,7 @@ export default function Select<V>({
   }
 
   return (
-    <FieldContainer className={className} error={error}>
+    <FieldContainer className={className} errorClassName="pl-3" error={error}>
       <Popover.Root>
         <Popover.Trigger className={styles.trigger}>
           <Button
