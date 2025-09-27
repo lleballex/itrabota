@@ -1,15 +1,9 @@
 "use client"
 
-import {
-  CSSProperties,
-  forwardRef,
-  ForwardRefRenderFunction,
-  ReactNode,
-  useContext,
-} from "react"
+import { forwardRef, ForwardRefRenderFunction, ReactNode } from "react"
 import classNames from "classnames"
 
-import { popoverContext } from "./context"
+import { usePopover } from "./context"
 import styles from "./Popover.module.css"
 
 interface Props {
@@ -21,7 +15,7 @@ const PopoverContent: ForwardRefRenderFunction<HTMLDivElement, Props> = (
   { className, children },
   ref
 ) => {
-  const { id } = useContext(popoverContext)
+  const { id } = usePopover()
 
   return (
     <div
@@ -30,7 +24,6 @@ const PopoverContent: ForwardRefRenderFunction<HTMLDivElement, Props> = (
         styles.content,
         "glass p-1 rounded transition-all"
       )}
-      style={{ positionAnchor: id } as CSSProperties}
       ref={ref}
       id={id}
       popover="auto"

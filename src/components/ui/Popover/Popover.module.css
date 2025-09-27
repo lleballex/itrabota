@@ -1,5 +1,10 @@
+.trigger {
+  anchor-name: var(--popover-id);
+}
+
 .content {
   position: absolute;
+  position-anchor: var(--popover-id);
   top: calc(anchor(bottom) + var(--spacing));
   left: anchor(50%);
   translate: -50% 0;

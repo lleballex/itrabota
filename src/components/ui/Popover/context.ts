@@ -1,9 +1,11 @@
-import { createContext } from "react"
+import { createContext, useContext } from "react"
 
 interface PopoverContext {
   id: string
 }
 
-export const popoverContext = createContext<PopoverContext>(
+export const PopoverContext = createContext<PopoverContext>(
   {} as PopoverContext
 )
+
+export const usePopover = () => useContext(PopoverContext)
