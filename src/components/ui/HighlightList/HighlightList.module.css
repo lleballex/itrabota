@@ -1,0 +1,31 @@
+.item:hover,
+.container:not(:has(.item:hover)) .item.active {
+  anchor-name: var(--highlight-list-id);
+}
+
+.item:hover ~ .highlight,
+.item.active ~ .highlight {
+  opacity: 1;
+  scale: 1;
+}
+
+.highlight {
+  position: absolute;
+  position-anchor: var(--highlight-list-id);
+  top: anchor(top);
+  bottom: anchor(bottom);
+  left: anchor(left);
+  right: anchor(right);
+  z-index: -1;
+  opacity: 0;
+  scale: 0;
+  transition-behavior: allow-discrete;
+}
+
+@starting-style {
+  .item:hover ~ .highlight,
+  .item.active ~ .highlight {
+    opacity: 0;
+    scale: 0;
+  }
+}
