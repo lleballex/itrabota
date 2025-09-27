@@ -9,6 +9,7 @@ const mockedData: User = {
   updatedAt: "af",
   email: "lleballex@gmail.com",
   role: UserRole.Recruiter,
+  passwordChangedAt: "2022-01-01T10:00Z",
   profile: {
     id: "aa",
     createdAt: "sf",
@@ -16,6 +17,14 @@ const mockedData: User = {
     firstName: "Алексей",
     lastName: "Лебедев",
     patronymic: "Юрьевич",
+    company: {
+      id: "ad",
+      createdAt: "sf",
+      updatedAt: "af",
+      name: "Технопарк",
+      logo: null,
+      url: null,
+    },
   },
 }
 

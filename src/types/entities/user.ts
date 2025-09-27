@@ -17,5 +17,6 @@ export const UserRoles: Record<keyof typeof UserRole, string> = {
 export interface User extends BaseEntity {
   email: string
   role: UserRole
+  passwordChangedAt: string
   profile?: Candidate | Recruiter
 }
