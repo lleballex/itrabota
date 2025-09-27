@@ -29,6 +29,8 @@
   --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   --default-transition-duration: 0.3s;
 
+  --animate-spin: spin 1s linear infinite;
+
   /* custom */
 
   --font-primary: "Nunito", sans-serif;

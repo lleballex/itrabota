@@ -1,4 +1,6 @@
 import { BaseEntity } from "./base-entity"
+import { Candidate } from "./candidate"
+import { Recruiter } from "./recruiter"
 
 export const UserRole = {
   Recruiter: "recruiter",
@@ -15,4 +17,5 @@ export const UserRoles: Record<keyof typeof UserRole, string> = {
 export interface User extends BaseEntity {
   email: string
   role: UserRole
+  profile?: Candidate | Recruiter
 }

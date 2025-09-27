@@ -1,5 +1,11 @@
 import classNames from "classnames"
-import { ChevronDownIcon, FilesIcon, HouseIcon, UsersIcon } from "lucide-react"
+import {
+  ChevronDownIcon,
+  FilesIcon,
+  HouseIcon,
+  LoaderCircleIcon,
+  UsersIcon,
+} from "lucide-react"
 
 const ICONS = {
   chevronDown: {
@@ -10,6 +16,9 @@ const ICONS = {
   },
   house: {
     Component: HouseIcon,
+  },
+  loader: {
+    Component: LoaderCircleIcon,
   },
   users: {
     Component: UsersIcon,
