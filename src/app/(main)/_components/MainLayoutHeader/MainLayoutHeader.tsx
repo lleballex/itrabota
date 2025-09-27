@@ -1,14 +1,21 @@
+"use client"
+
 import Link from "next/link"
 import classNames from "classnames"
 
 import Button from "@/components/ui/Button"
 import { Routes } from "@/config/routes"
+import { useMe } from "@/api/me/me"
+
+import MainLayoutHeaderUser from "./MainLayoutHeaderUser"
 
 interface Props {
   className?: string
 }
 
 export default function MainLayoutHeader({ className }: Props) {
+  const me = useMe()
+
   return (
     <header
       className={classNames(className, "flex items-center justify-between")}
@@ -20,9 +27,14 @@ export default function MainLayoutHeader({ className }: Props) {
           <span className="text-primary">.рф</span>
         </h1>
       </Link>
-      <Button type="glass" link={{ url: Routes.login }}>
-        Войти
-      </Button>
+
+      {me.status === "success" ? (
+        <MainLayoutHeaderUser user={me.data} />
+      ) : (
+        <Button type="glass" link={{ url: Routes.login }}>
+          Войти
+        </Button>
+      )}
     </header>
   )
 }
