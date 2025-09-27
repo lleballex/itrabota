@@ -6,8 +6,7 @@ import { usePathname } from "next/navigation"
 
 import { Routes } from "@/config/routes"
 import Icon from "@/components/ui/Icon"
-
-import styles from "./MainLayoutSidebar.module.css"
+import HighlightList from "@/components/ui/HighlightList"
 
 const RECRUITER_LINKS = [
   {
@@ -39,35 +38,23 @@ export default function MainLayoutSidebar({ className }: Props) {
   console.log(pathname)
 
   return (
-    <nav
-      className={classNames(
-        className,
-        styles.container,
-        "flex flex-col gap-1 p-2 border border-border rounded"
-      )}
-    >
-      {links.map((link) => (
-        <Link
-          className={classNames(
-            styles.item,
-            "flex items-center gap-1.5 p-1 px-1.5",
-            {
-              [styles.active]: pathname === link.url,
-            }
-          )}
-          key={link.url}
-          href={link.url}
-        >
-          {link.icon}
-          {link.title}
-        </Link>
-      ))}
-      <span
-        className={classNames(
-          styles.highlight,
-          "bg-primary rounded-[calc(var(--radius)-var(--spacing)*2)] transition-all"
-        )}
-      />
+    <nav className={classNames(className, "p-2 border border-border rounded")}>
+      <HighlightList.Root
+        className="flex flex-col gap-1.5"
+        highlightClassName="bg-primary rounded-[calc(var(--radius)-var(--spacing)*2)]"
+      >
+        {links.map((link) => (
+          <HighlightList.Item key={link.url} active={pathname === link.url}>
+            <Link
+              className={classNames("flex items-center gap-1.5 p-1 px-1.5", {})}
+              href={link.url}
+            >
+              {link.icon}
+              {link.title}
+            </Link>
+          </HighlightList.Item>
+        ))}
+      </HighlightList.Root>
     </nav>
   )
 }
