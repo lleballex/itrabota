@@ -1,5 +1,6 @@
 import { useMemo } from "react"
 import Link from "next/link"
+import Image from "next/image"
 
 import Button from "@/components/ui/Button"
 import HighlightList from "@/components/ui/HighlightList"
@@ -7,6 +8,8 @@ import Icon from "@/components/ui/Icon"
 import Popover from "@/components/ui/Popover"
 import { User, UserRole } from "@/types/entities/user"
 import { Routes } from "@/config/routes"
+import { getUserName } from "@/lib/get-user-name"
+import avatarImg from "@/assets/images/avatar.png"
 
 interface Props {
   user: User
@@ -30,8 +33,14 @@ export default function MainLayoutHeaderUser({ user }: Props) {
     <Popover.Root position="right">
       <Popover.Trigger>
         <Button className="gap-2 !p-1 !pr-2 font-medium" type="glass">
-          <span className="w-[calc(var(--height-control)-var(--spacing)*2)] h-[calc(var(--height-control)-var(--spacing)*2)] rounded-full bg-primary opacity-70" />
-          <span>Лебедев А.Ю.</span>
+          <Image
+            className="w-[calc(var(--height-control)-var(--spacing)*2)] h-[calc(var(--height-control)-var(--spacing)*2)] rounded-full"
+            src={avatarImg}
+            alt="alt"
+            width={50}
+            height={50}
+          />
+          <p>{getUserName(user, { format: "surnameFP" })}</p>
           <Icon icon="chevronDown" />
         </Button>
       </Popover.Trigger>

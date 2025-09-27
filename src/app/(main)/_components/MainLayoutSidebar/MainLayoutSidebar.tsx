@@ -35,8 +35,6 @@ export default function MainLayoutSidebar({ className }: Props) {
 
   const links = RECRUITER_LINKS
 
-  console.log(pathname)
-
   return (
     <nav className={classNames(className, "p-2 border border-border rounded")}>
       <HighlightList.Root

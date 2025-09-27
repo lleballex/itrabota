@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { cloneElement, ReactElement, useMemo } from "react"
+import { FC, useMemo } from "react"
 
 import { useMe } from "@/api/me/me"
 import { Routes } from "@/config/routes"
@@ -10,22 +10,34 @@ import Icon from "@/components/ui/Icon"
 
 interface Props {
   roles?: UserRole[]
-  children?: ReactElement<{ me: User }>
+  allowNoProfile?: boolean
+  Component: FC<{ me: User }>
 }
 
-export default function AuthProvider({ roles, children: children_ }: Props) {
+export default function AuthProvider({
+  roles,
+  allowNoProfile,
+  Component,
+}: Props) {
   const router = useRouter()
 
   const me = useMe()
 
   const children = useMemo(() => {
-    if (!children_) return null
-
     if (me.status === "success") {
       if (!roles || roles.includes(me.data.role)) {
-        return cloneElement(children_, {
-          me: me.data,
-        })
+        if (!me.data.profile && !allowNoProfile) {
+          // TODO: toast
+          router.push(
+            {
+              [UserRole.Recruiter]: Routes.recruiter.profile,
+              [UserRole.Candidate]: Routes.candidate.profile,
+            }[me.data.role]
+          )
+          return null
+        }
+
+        return <Component me={me.data} />
       } else {
         // TODO: toast
         router.push(Routes.login)
@@ -38,7 +50,7 @@ export default function AuthProvider({ roles, children: children_ }: Props) {
     } else {
       return <Loader />
     }
-  }, [children_, me, roles, router])
+  }, [Component, me, roles, router, allowNoProfile])
 
   return children
 }
