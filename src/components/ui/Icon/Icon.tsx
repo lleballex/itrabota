@@ -5,6 +5,8 @@ import {
   HouseIcon,
   LoaderCircleIcon,
   PenIcon,
+  PlusIcon,
+  SearchIcon,
   UsersIcon,
 } from "lucide-react"
 
@@ -23,6 +25,12 @@ const ICONS = {
   },
   pen: {
     Component: PenIcon,
+  },
+  plus: {
+    Component: PlusIcon,
+  },
+  search: {
+    Component: SearchIcon,
   },
   users: {
     Component: UsersIcon,

@@ -27,7 +27,7 @@ export const createUseQuery = <D, FA extends unknown[]>(
     }, [args])
 
     const { status, data, error } = useQuery<D>({
-      queryKey: [key],
+      queryKey: [key, fetcherArgs],
       queryFn: () => fetcher(...fetcherArgs),
       enabled: options?.isEnabled,
     })

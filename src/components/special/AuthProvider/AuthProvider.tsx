@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation"
 import { FC, useMemo } from "react"
 
-import { useMe } from "@/api/me/me"
+import { useMe } from "@/api/auth/get-me"
 import { Routes } from "@/config/routes"
 import { User, UserRole } from "@/types/entities/user"
 import Icon from "@/components/ui/Icon"

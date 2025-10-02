@@ -8,6 +8,7 @@ export const Routes = {
     profile: "/recruiter/profile",
     dashboard: "/recruiter",
     vacancies: "/recruiter/vacancies",
+    vacancy: (id: string) => `/recruiter/vacancies/${id}`,
     candidates: "/recruiter/candidates",
   },
 

@@ -1,0 +1,83 @@
+"use client"
+
+import { useState } from "react"
+
+import { useVacancies } from "@/api/vacancies/get-vacancies"
+import VacancyCard from "@/components/base/vacancies/VacancyCard"
+import AuthProvider from "@/components/special/AuthProvider"
+import Button from "@/components/ui/Button"
+import Icon from "@/components/ui/Icon"
+import Input from "@/components/ui/Input"
+import Select from "@/components/ui/Select"
+import { UserRole } from "@/types/entities/user"
+import { VacancyStatus, VacancyStatuses } from "@/types/entities/vacancy"
+import RemoteData from "@/components/ui/RemoteData"
+import { Routes } from "@/config/routes"
+
+const Content = () => {
+  const [searchQuery, setSearchQuery] = useState<string | null>(null)
+  const [searchStatus, setSearchStatus] = useState<VacancyStatus | null>(null)
+
+  const vacancies = useVacancies({
+    query: searchQuery ?? undefined,
+    status: searchStatus ?? undefined,
+  })
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-3">
+        <h1 className="text-h1">Вакансии</h1>
+        <div className="flex gap-2">
+          <Input
+            className="min-w-1/2"
+            prefix={<Icon icon="search" />}
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Поиск"
+          />
+          <Select<VacancyStatus | null>
+            className="min-w-1/5"
+            value={searchStatus}
+            onChange={setSearchStatus}
+            items={[
+              {
+                value: null,
+                content: "Все статусы",
+              },
+              ...(
+                Object.entries(VacancyStatuses) as [VacancyStatus, string][]
+              ).map(([status, title]) => ({
+                value: status,
+                content: title,
+              })),
+            ]}
+          />
+        </div>
+      </div>
+
+      <div className="flex flex-col">
+        <RemoteData
+          data={vacancies}
+          onSuccess={(vacancies) =>
+            vacancies.map((vacancy) => (
+              <VacancyCard
+                key={vacancy.id}
+                vacancy={vacancy}
+                url={Routes.recruiter.vacancy(vacancy.id)}
+              />
+            ))
+          }
+        />
+      </div>
+
+      <Button className="self-center mt-auto sticky bottom-3" type="glass">
+        <Icon icon="plus" />
+        Создать вакансию
+      </Button>
+    </div>
+  )
+}
+
+export default function RecruiterVacanciesPage() {
+  return <AuthProvider Component={Content} roles={[UserRole.Recruiter]} />
+}

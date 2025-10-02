@@ -1,7 +1,7 @@
 "use client"
 
 import classNames from "classnames"
-import { ChangeEventHandler, useId } from "react"
+import { ChangeEventHandler, ReactNode, useId } from "react"
 
 import { FormError } from "@/types/form-error"
 import { useFieldValue } from "@/lib/use-field-value"
@@ -16,8 +16,11 @@ interface Props {
   className?: string
   label?: string
   type?: "text" | "password"
+  placeholder?: string
   value?: string | null
   error?: FormError
+  prefix?: ReactNode
+  suffix?: ReactNode
   onChange?: (val: string | null) => void
 }
 
@@ -25,8 +28,11 @@ export default function Input({
   className,
   label,
   type,
+  placeholder,
   value: baseValue,
   error,
+  prefix,
+  suffix,
   onChange: baseOnChange,
 }: Props) {
   const id = useId()
@@ -49,14 +55,17 @@ export default function Input({
           "border-danger": error,
         })}
       >
+        {prefix}
         {label && <FieldLabel fieldId={id}>{label}</FieldLabel>}
         <input
           className="grow h-full outline-none"
           id={id}
           type={type}
+          placeholder={placeholder}
           value={value ?? ""}
           onChange={onChange}
         />
+        {suffix}
       </div>
     </FieldContainer>
   )

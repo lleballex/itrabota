@@ -3,7 +3,7 @@
 import { FormProvider, useForm } from "react-hook-form"
 
 import AuthProvider from "@/components/special/AuthProvider"
-import { User } from "@/types/entities/user"
+import { User, UserRole } from "@/types/entities/user"
 import Button from "@/components/ui/Button"
 import Separator from "@/components/ui/Separator"
 
@@ -51,5 +51,11 @@ const Content = ({ me }: Props) => {
 }
 
 export default function RecruiterProfilePage() {
-  return <AuthProvider Component={Content} allowNoProfile />
+  return (
+    <AuthProvider
+      Component={Content}
+      roles={[UserRole.Recruiter]}
+      allowNoProfile
+    />
+  )
 }
