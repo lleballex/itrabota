@@ -8,7 +8,7 @@ import {
   VacancySchedules,
   VacancyWorkExperiences,
 } from "@/types/entities/vacancy"
-import VacancyStatus from "@/components/base/vacancies/VacancyStatus"
+import VacancyStatus from "@/components/base/vacancy/VacancyStatus"
 import Avatar from "@/components/ui/Avatar"
 import Separator from "@/components/ui/Separator"
 import { getVacancySalary } from "@/lib/get-vacancy-salary"

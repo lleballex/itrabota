@@ -3,20 +3,17 @@
 import { useState } from "react"
 
 import { useVacancies } from "@/api/vacancies/get-vacancies"
-import VacancyCard from "@/components/base/vacancies/VacancyCard"
+import VacancyCard from "@/components/base/vacancy/VacancyCard"
 import AuthProvider from "@/components/special/AuthProvider"
 import Button from "@/components/ui/Button"
 import Icon from "@/components/ui/Icon"
 import Input from "@/components/ui/Input"
 import Select from "@/components/ui/Select"
 import { UserRole } from "@/types/entities/user"
-import {
-  VacancyStatus as IVacancyStatus,
-  VacancyStatuses,
-} from "@/types/entities/vacancy"
+import { VacancyStatus as IVacancyStatus } from "@/types/entities/vacancy"
 import RemoteData from "@/components/ui/RemoteData"
 import { Routes } from "@/config/routes"
-import VacancyStatus from "@/components/base/vacancies/VacancyStatus"
+import VacancyStatus from "@/components/base/vacancy/VacancyStatus"
 
 const Content = () => {
   const [searchQuery, setSearchQuery] = useState<string | null>(null)
