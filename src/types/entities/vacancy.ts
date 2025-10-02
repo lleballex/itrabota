@@ -46,13 +46,10 @@ export const VacancyEmploymentType = {
 export type VacancyEmploymentType =
   (typeof VacancyEmploymentType)[keyof typeof VacancyEmploymentType]
 
-export const VacancyEmploymentTypes: Record<
-  keyof typeof VacancyEmploymentType,
-  string
-> = {
-  FullTime: "Фулл-тайм",
-  PartTime: "Парт-тайм",
-  Internship: "Стажировка",
+export const VacancyEmploymentTypes: Record<VacancyEmploymentType, string> = {
+  [VacancyEmploymentType.FullTime]: "Фулл-тайм",
+  [VacancyEmploymentType.PartTime]: "Парт-тайм",
+  [VacancyEmploymentType.Internship]: "Стажировка",
 }
 
 export const VacancyFormat = {

@@ -1,5 +1,7 @@
 import classNames from "classnames"
 import {
+  ArchiveIcon,
+  ArchiveRestoreIcon,
   ChevronDownIcon,
   FilesIcon,
   HouseIcon,
@@ -11,6 +13,12 @@ import {
 } from "lucide-react"
 
 const ICONS = {
+  archive: {
+    Component: ArchiveIcon,
+  },
+  archiveRestore: {
+    Component: ArchiveRestoreIcon,
+  },
   chevronDown: {
     Component: ChevronDownIcon,
   },
