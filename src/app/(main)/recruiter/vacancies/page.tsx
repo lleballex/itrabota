@@ -10,13 +10,17 @@ import Icon from "@/components/ui/Icon"
 import Input from "@/components/ui/Input"
 import Select from "@/components/ui/Select"
 import { UserRole } from "@/types/entities/user"
-import { VacancyStatus, VacancyStatuses } from "@/types/entities/vacancy"
+import {
+  VacancyStatus as IVacancyStatus,
+  VacancyStatuses,
+} from "@/types/entities/vacancy"
 import RemoteData from "@/components/ui/RemoteData"
 import { Routes } from "@/config/routes"
+import VacancyStatus from "@/components/base/vacancies/VacancyStatus"
 
 const Content = () => {
   const [searchQuery, setSearchQuery] = useState<string | null>(null)
-  const [searchStatus, setSearchStatus] = useState<VacancyStatus | null>(null)
+  const [searchStatus, setSearchStatus] = useState<IVacancyStatus | null>(null)
 
   const vacancies = useVacancies({
     query: searchQuery ?? undefined,
@@ -35,7 +39,7 @@ const Content = () => {
             onChange={setSearchQuery}
             placeholder="Поиск"
           />
-          <Select<VacancyStatus | null>
+          <Select<IVacancyStatus | null>
             className="min-w-1/5"
             value={searchStatus}
             onChange={setSearchStatus}
@@ -44,12 +48,12 @@ const Content = () => {
                 value: null,
                 content: "Все статусы",
               },
-              ...(
-                Object.entries(VacancyStatuses) as [VacancyStatus, string][]
-              ).map(([status, title]) => ({
-                value: status,
-                content: title,
-              })),
+              ...(Object.values(IVacancyStatus) as IVacancyStatus[]).map(
+                (status) => ({
+                  value: status,
+                  content: <VacancyStatus status={status} />,
+                })
+              ),
             ]}
           />
         </div>
