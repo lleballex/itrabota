@@ -3,12 +3,16 @@
 import { ReactNode } from "react"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import dayjs from "dayjs"
+import "dayjs/locale/ru"
 
 import "./_styles/index.css"
 
 interface Props {
   children?: ReactNode
 }
+
+dayjs.locale("ru")
 
 const queryClient = new QueryClient()
 
