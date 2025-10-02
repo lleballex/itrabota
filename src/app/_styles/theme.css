@@ -16,7 +16,7 @@
   --color-primary: #e66415;
   --color-secondary: rgb(25, 25, 25); /* TODO: to hex */
   --color-secondary-light: #6b6b6b;
-  --color-fg: #dddddd;
+  --color-fg: #bbbbbb;
   --color-fg-heading: #ffffff;
   --color-bg: #000000;
   --color-border: rgb(38, 38, 38); /* TODO: to hex */
@@ -38,5 +38,6 @@
   --height-control: 50px;
   --height-button: 46px;
 
-  --transition-base: 300ms;
+  --spacing-screen: calc(var(--spacing) * 2);
+  --spacing-content: calc(var(--spacing) * 6);
 }

@@ -18,7 +18,7 @@ export default function RootLayout({ children }: Props) {
       <head>
         <title>айтиработа.рф</title>
       </head>
-      <body className="flex flex-col min-h-[100dvh] p-3 text-fg text-base bg-bg">
+      <body className="flex flex-col min-h-[100dvh] text-fg text-base bg-bg">
         <QueryClientProvider client={queryClient}>
           {children}
           <ReactQueryDevtools />

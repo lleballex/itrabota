@@ -5,7 +5,7 @@ import classNames from "classnames"
 
 import Button from "@/components/ui/Button"
 import { Routes } from "@/config/routes"
-import { useMe } from "@/api/me/me"
+import { useMe } from "@/api/auth/get-me"
 
 import MainLayoutHeaderUser from "./MainLayoutHeaderUser"
 
@@ -21,7 +21,6 @@ export default function MainLayoutHeader({ className }: Props) {
       className={classNames(className, "flex items-center justify-between")}
     >
       <Link href={Routes.home}>
-        {/* TODO: add backdrop blur */}
         <h1 className="text-h2 font-extrabold">
           айтиработа
           <span className="text-primary">.рф</span>

@@ -44,7 +44,7 @@ export default function MainLayoutSidebar({ className }: Props) {
         {links.map((link) => (
           <HighlightList.Item key={link.url} active={pathname === link.url}>
             <Link
-              className={classNames("flex items-center gap-1.5 p-1 px-1.5", {})}
+              className="flex items-center gap-1.5 p-1 px-1.5"
               href={link.url}
             >
               {link.icon}
