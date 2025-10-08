@@ -1,6 +1,6 @@
 import "@tanstack/react-query"
 
-type QueryKey = "me" | "vacancies"
+type QueryKey = "me" | "vacancies" | "specializations" | "cities"
 
 declare module "@tanstack/react-query" {
   interface Register {
