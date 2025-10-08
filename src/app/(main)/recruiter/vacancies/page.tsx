@@ -71,7 +71,11 @@ const Content = () => {
         />
       </div>
 
-      <Button className="self-center mt-auto sticky bottom-3" type="glass">
+      <Button
+        className="self-center mt-auto sticky bottom-3"
+        type="glass"
+        link={{ url: Routes.recruiter.newVacancy }}
+      >
         <Icon icon="plus" />
         Создать вакансию
       </Button>
