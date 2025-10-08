@@ -2,13 +2,18 @@ import classNames from "classnames"
 import {
   ArchiveIcon,
   ArchiveRestoreIcon,
+  CheckIcon,
   ChevronDownIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronUpIcon,
   FilesIcon,
   HouseIcon,
   LoaderCircleIcon,
   PenIcon,
   PlusIcon,
   SearchIcon,
+  TrashIcon,
   UsersIcon,
 } from "lucide-react"
 
@@ -19,8 +24,20 @@ const ICONS = {
   archiveRestore: {
     Component: ArchiveRestoreIcon,
   },
+  check: {
+    Component: CheckIcon,
+  },
   chevronDown: {
     Component: ChevronDownIcon,
+  },
+  chevronLeft: {
+    Component: ChevronLeftIcon,
+  },
+  chevronRight: {
+    Component: ChevronRightIcon,
+  },
+  chevronUp: {
+    Component: ChevronUpIcon,
   },
   files: {
     Component: FilesIcon,
@@ -40,6 +57,9 @@ const ICONS = {
   search: {
     Component: SearchIcon,
   },
+  trash: {
+    Component: TrashIcon,
+  },
   users: {
     Component: UsersIcon,
   },
@@ -57,7 +77,7 @@ export default function Icon({ className, icon: iconName }: Props) {
     <icon.Component
       className={classNames(
         className,
-        "w-[1em] h-[1em] text-[18px] stroke-current"
+        "w-[1em] h-[1em] text-[20px] stroke-current"
       )}
     />
   )

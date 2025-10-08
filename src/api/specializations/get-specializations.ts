@@ -10,13 +10,13 @@ const mockedData: Specialization[] = [
     name: "Frontend",
   },
   {
-    id: "1",
+    id: "2",
     createdAt: "1",
     updatedAt: "1",
     name: "Backend",
   },
   {
-    id: "1",
+    id: "3",
     createdAt: "1",
     updatedAt: "1",
     name: "Devops",

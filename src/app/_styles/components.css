@@ -50,6 +50,6 @@
   }
 
   .field {
-    @apply flex items-center gap-2 h-control px-3 rounded-full bg-secondary border border-secondary transition-all;
+    @apply flex items-center gap-2 h-control px-3 rounded bg-secondary border border-secondary transition-all;
   }
 }

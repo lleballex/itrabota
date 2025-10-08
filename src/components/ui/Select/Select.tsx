@@ -74,7 +74,10 @@ export default function Select<V>({
               <span className="grow text-left">{valueContent}</span>
             )}
             <Icon
-              className={classNames(styles.triggerIndicator, "transition-all")}
+              className={classNames(
+                styles.triggerIndicator,
+                "ml-auto transition-all"
+              )}
               icon="chevronDown"
             />
           </Button>
