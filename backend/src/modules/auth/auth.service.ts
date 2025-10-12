@@ -11,6 +11,7 @@ import { User } from "@/modules/users/entities/user.entity"
 
 import { RegisterDto } from "./dto/register.dto"
 import { ICurrentUser } from "./interfaces/current-user.interface"
+import { IJwtPayload } from "./interfaces/jwt-payload.interface"
 
 @Injectable()
 export class AuthService {
@@ -20,7 +21,11 @@ export class AuthService {
   ) {}
 
   private generateJwt(user: ICurrentUser): Promise<string> {
-    return this.jwtService.signAsync(user)
+    const payload: IJwtPayload = {
+      sub: user.id,
+    }
+
+    return this.jwtService.signAsync(payload)
   }
 
   async validateUser(data: {
