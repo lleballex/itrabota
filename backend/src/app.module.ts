@@ -3,6 +3,8 @@ import { ConfigModule, ConfigService } from "@nestjs/config"
 import { TypeOrmModule } from "@nestjs/typeorm"
 
 import { AppConfig } from "@/config/config.interface"
+import { AuthModule } from "@/modules/auth/auth.module"
+import { UsersModule } from "@/modules/users/users.module"
 
 @Module({
   imports: [
@@ -21,6 +23,9 @@ import { AppConfig } from "@/config/config.interface"
         synchronize: true, // TODO: remove and setup migrations
       }),
     }),
+
+    AuthModule,
+    UsersModule,
   ],
 })
 export class AppModule {}

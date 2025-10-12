@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from "@nestjs/common"
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common"
 import * as argon2 from "argon2"
 
 import { UsersService } from "@/modules/users/users.service"
@@ -19,5 +23,31 @@ export class AuthService {
       ...dto,
       password: await argon2.hash(dto.password),
     })
+  }
+
+  async validateUser(data: {
+    email: string
+    password: string
+  }): Promise<User | null> {
+    let user: User
+
+    try {
+      user = await this.usersService.findOneForAuth(data.email)
+    } catch (e) {
+      if (e instanceof NotFoundException) {
+        return null
+      }
+      throw e
+    }
+
+    if (!user.password) {
+      throw new Error("User has no password")
+    }
+
+    if (!(await argon2.verify(user.password, data.password))) {
+      return null
+    }
+
+    return user
   }
 }
