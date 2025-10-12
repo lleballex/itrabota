@@ -35,7 +35,7 @@ export class AuthController {
 
   @Post("login")
   @UseGuards(LocalAuthGuard)
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NO_CONTENT)
   async login(
     @Body() _body: LoginDto,
     @CurrentUser() user: ICurrentUser,
