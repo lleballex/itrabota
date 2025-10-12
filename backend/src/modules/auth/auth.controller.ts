@@ -54,6 +54,12 @@ export class AuthController {
     this.setAccessToken(token, res)
   }
 
+  @Post("logout")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  logout(@Res({ passthrough: true }) res: Response) {
+    res.clearCookie("accessToken")
+  }
+
   @Get("me")
   @Auth()
   getMe(@CurrentUser() user: ICurrentUser) {

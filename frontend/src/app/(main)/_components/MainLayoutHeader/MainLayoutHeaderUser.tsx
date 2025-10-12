@@ -10,12 +10,15 @@ import { User, UserRole } from "@/types/entities/user"
 import { Routes } from "@/config/routes"
 import { getUserName } from "@/lib/get-user-name"
 import avatarImg from "@/assets/images/avatar.png"
+import { useLogout } from "@/api/auth/logout"
 
 interface Props {
   user: User
 }
 
 export default function MainLayoutHeaderUser({ user }: Props) {
+  const { mutate: logout } = useLogout()
+
   const profileLink = useMemo(() => {
     const mapper = {
       [UserRole.Recruiter]: Routes.recruiter.profile,
@@ -29,6 +32,10 @@ export default function MainLayoutHeaderUser({ user }: Props) {
     return null
   }, [user])
 
+  const profileName = useMemo(() => {
+    return getUserName(user, { format: "surnameFP" })
+  }, [user])
+
   return (
     <Popover.Root position="right">
       <Popover.Trigger>
@@ -40,7 +47,7 @@ export default function MainLayoutHeaderUser({ user }: Props) {
             width={50}
             height={50}
           />
-          <p>{getUserName(user, { format: "surnameFP" })}</p>
+          {profileName && <p>{profileName}</p>}
           <Icon icon="chevronDown" />
         </Button>
       </Popover.Trigger>
@@ -54,7 +61,13 @@ export default function MainLayoutHeaderUser({ user }: Props) {
             </HighlightList.Item>
           )}
           <HighlightList.Item>
-            <p className="py-1 px-2 text-danger">Выйти</p>
+            <Button
+              className="py-1 px-2 text-danger text-right"
+              type="base"
+              onClick={logout}
+            >
+              Выйти
+            </Button>
           </HighlightList.Item>
         </HighlightList.Root>
       </Popover.Content>

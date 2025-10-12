@@ -8,7 +8,7 @@ interface InlineOptions {
   onSettles?: () => void
 }
 
-export const createUseMutation = <D, MA>(
+export const createUseMutation = <D, MA = void>(
   mutation: (args: MA, ctx: MutationFunctionContext) => Promise<D>
 ) => {
   return () => {
