@@ -31,7 +31,7 @@ const Content = ({ me }: Props) => {
     <FormProvider {...form}>
       <form className="flex gap-5 relative h-full" onSubmit={onSubmit}>
         <RecruiterProfileAvatar />
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-5">
           <RecruiterProfileMain />
           <Separator type="horizontal" />
           <RecruiterProfileCompany />

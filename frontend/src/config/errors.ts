@@ -6,4 +6,5 @@ export const Errors = {
   URL_NOT_FILLED: "Введите корректный URL",
   FILE_NOT_FILLED: "Выберите файл",
   PASSWORDS_NOT_MATCH: "Пароли не совпадают",
+  INCORRECT_EMAIL_OR_PASSWORD: "Почта или пароль неверны",
 }

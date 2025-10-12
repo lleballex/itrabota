@@ -1,20 +1,37 @@
 "use client"
 
 import { Controller, useForm } from "react-hook-form"
+import { useRouter } from "next/navigation"
 
 import Input from "@/components/ui/Input"
 import Button from "@/components/ui/Button"
 import { Routes } from "@/config/routes"
+import { useLogin } from "@/api/auth/login"
 
 import { formResolver } from "./form"
 
 export default function LoginPage() {
+  const router = useRouter()
+
   const form = useForm({
     resolver: formResolver,
   })
 
+  const { mutate, status } = useLogin()
+
   const onSubmit = form.handleSubmit((data) => {
-    console.log(data)
+    mutate(data, {
+      onSuccess: () => {
+        router.push(Routes.home)
+      },
+      onError: (error) => {
+        if (error.statusCode === 401) {
+          form.setError("password", { message: "INCORRECT_EMAIL_OR_PASSWORD" })
+          return true
+        }
+        return false
+      },
+    })
   })
 
   return (
@@ -43,7 +60,11 @@ export default function LoginPage() {
       />
 
       <div className="flex items-center justify-between">
-        <Button type="secondary" htmlType="submit">
+        <Button
+          type="secondary"
+          htmlType="submit"
+          pending={status === "pending"}
+        >
           Войти
         </Button>
         <Button link={{ url: Routes.register }} type="text">
