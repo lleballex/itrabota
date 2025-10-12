@@ -1,4 +1,13 @@
-import { Body, Controller, Post, UseGuards } from "@nestjs/common"
+import {
+  Body,
+  Controller,
+  Post,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+  Res,
+} from "@nestjs/common"
+import { Response } from "express"
 
 import { LoginDto } from "./dto/login.dto"
 import { CurrentUser } from "./decorators/current-user.decorator"
@@ -11,14 +20,30 @@ import { RegisterDto } from "./dto/register.dto"
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  private setAccessToken(token: string, res: Response) {
+    res.cookie("accessToken", token, {
+      httpOnly: true, // TODO: secure cookie, change options
+    })
+  }
+
   @Post("login")
   @UseGuards(LocalAuthGuard)
-  login(@Body() _body: LoginDto, @CurrentUser() user: ICurrentUser) {
-    return user // TODO: generate token and do not return user
+  @HttpCode(HttpStatus.OK)
+  async login(
+    @Body() _body: LoginDto,
+    @CurrentUser() user: ICurrentUser,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const token = await this.authService.login(user)
+    this.setAccessToken(token, res)
   }
 
   @Post("register")
-  register(@Body() body: RegisterDto) {
-    return this.authService.register(body) // TODO: generate token and do not return user
+  async register(
+    @Body() body: RegisterDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const token = await this.authService.register(body)
+    this.setAccessToken(token, res)
   }
 }

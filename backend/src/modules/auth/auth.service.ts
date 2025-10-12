@@ -4,25 +4,23 @@ import {
   NotFoundException,
 } from "@nestjs/common"
 import * as argon2 from "argon2"
+import { JwtService } from "@nestjs/jwt"
 
 import { UsersService } from "@/modules/users/users.service"
 import { User } from "@/modules/users/entities/user.entity"
 
 import { RegisterDto } from "./dto/register.dto"
+import { ICurrentUser } from "./interfaces/current-user.interface"
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService,
+  ) {}
 
-  async register(dto: RegisterDto): Promise<User> {
-    if (!(await this.usersService.isEmailAvailable(dto.email))) {
-      throw new BadRequestException("Email is already in use") // TODO: unufied exception with key
-    }
-
-    return this.usersService.create({
-      ...dto,
-      password: await argon2.hash(dto.password),
-    })
+  private generateJwt(user: ICurrentUser): Promise<string> {
+    return this.jwtService.signAsync(user)
   }
 
   async validateUser(data: {
@@ -49,5 +47,22 @@ export class AuthService {
     }
 
     return user
+  }
+
+  login(user: ICurrentUser): Promise<string> {
+    return this.generateJwt(user)
+  }
+
+  async register(dto: RegisterDto): Promise<string> {
+    if (!(await this.usersService.isEmailAvailable(dto.email))) {
+      throw new BadRequestException("Email is already in use") // TODO: unufied exception with key
+    }
+
+    const user = await this.usersService.create({
+      ...dto,
+      password: await argon2.hash(dto.password),
+    })
+
+    return this.generateJwt({ id: user.id })
   }
 }
