@@ -5,6 +5,7 @@ import { TypeOrmModule } from "@nestjs/typeorm"
 import { AppConfig } from "@/config/config.interface"
 import { AuthModule } from "@/modules/auth/auth.module"
 import { AttachmentsModule } from "@/modules/attachments/attachments.module"
+import { MeModule } from "@/modules/me/me.module"
 import { UsersModule } from "@/modules/users/users.module"
 
 @Module({
@@ -27,6 +28,7 @@ import { UsersModule } from "@/modules/users/users.module"
 
     AuthModule,
     AttachmentsModule,
+    MeModule,
     UsersModule,
   ],
 })

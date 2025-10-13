@@ -11,7 +11,10 @@ export class UsersService {
   ) {}
 
   private createQueryBuider() {
-    const qb = this.usersRepo.createQueryBuilder("user")
+    const qb = this.usersRepo
+      .createQueryBuilder("user")
+      .leftJoinAndSelect("user.recruiter", "recruiter")
+      .leftJoinAndSelect("user.candidate", "candidate")
 
     return qb
   }

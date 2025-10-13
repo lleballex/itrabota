@@ -24,7 +24,7 @@ export class User extends BaseEntity {
   role!: UserRole
 
   @Column("timestamptz", { nullable: true })
-  passwordChangedAt!: Date
+  passwordChangedAt!: Date | null
 
   @OneToOne(() => Candidate, (candidate) => candidate.user, {
     nullable: true,
