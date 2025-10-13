@@ -9,6 +9,7 @@ import { Routes } from "@/config/routes"
 import { useLogin } from "@/api/auth/login"
 
 import { formResolver } from "./form"
+import { handleFormApiError } from "@/lib/handle-form-api-error"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -29,7 +30,7 @@ export default function LoginPage() {
           form.setError("password", { message: "INCORRECT_EMAIL_OR_PASSWORD" })
           return true
         }
-        return false
+        return handleFormApiError({ error, form })
       },
     })
   })

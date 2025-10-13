@@ -6,9 +6,7 @@ import { formSchemaFields } from "@/lib/form-schema-fields"
 
 const formSchema = z
   .object({
-    role: z.enum([UserRole.Candidate, UserRole.Rucruiter], {
-      error: "ENUM_NOT_FILLED",
-    }),
+    role: z.enum(UserRole),
     email: formSchemaFields.email,
     password: formSchemaFields.string,
     passwordRepeat: formSchemaFields.string,

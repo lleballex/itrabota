@@ -1,6 +1,7 @@
 import { MutationFunctionContext, useMutation } from "@tanstack/react-query"
 
 import { ApiError, transformErrorToApiError } from "@/api/lib/api-error"
+import { useToastsStore } from "@/stores/toasts"
 
 interface InlineOptions {
   onError?: (error: ApiError) => boolean
@@ -12,6 +13,8 @@ export const createUseMutation = <D, MA = void>(
   mutation: (args: MA, ctx: MutationFunctionContext) => Promise<D>
 ) => {
   return () => {
+    const { addToast } = useToastsStore()
+
     const { mutate: mutate_, status } = useMutation<D, Error, MA>({
       mutationFn: (args, ctx) => mutation(args, ctx),
     })
@@ -23,7 +26,10 @@ export const createUseMutation = <D, MA = void>(
           const apiError = transformErrorToApiError(error)
 
           if (!options?.onError?.(apiError)) {
-            alert(apiError.message) // TODO: toast instead of alert
+            addToast({
+              message: apiError.message,
+              type: "danger",
+            })
           }
         },
       })

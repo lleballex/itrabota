@@ -1,17 +1,22 @@
 "use client"
 
-import { Controller, useForm } from "react-hook-form"
+import { Controller, FieldPath, useForm } from "react-hook-form"
 import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 
 import Button from "@/components/ui/Button"
 import Input from "@/components/ui/Input"
 import Select from "@/components/ui/Select"
 import { Routes } from "@/config/routes"
-import { UserRole, UserRoles } from "@/types/entities/user"
+import { UserRole } from "@/types/entities/user"
+import { useRegister } from "@/api/auth/register"
 
 import { formResolver } from "./form"
+import { handleFormApiError } from "@/lib/handle-form-api-error"
 
 export default function RegisterPage() {
+  const router = useRouter()
+
   const form = useForm({
     resolver: formResolver,
   })
@@ -26,8 +31,15 @@ export default function RegisterPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formPassword, formPasswordRepeat])
 
+  const { mutate, status } = useRegister()
+
   const onSubmit = form.handleSubmit((data) => {
-    console.log(data)
+    mutate(data, {
+      onSuccess: () => {
+        router.push(Routes.home)
+      },
+      onError: (error) => handleFormApiError({ error, form }),
+    })
   })
 
   return (
@@ -41,15 +53,15 @@ export default function RegisterPage() {
           <Select
             {...field}
             error={fieldState.error}
-            label="Кто вы?"
+            label="Что вы хотите?"
             items={[
               {
                 value: UserRole.Candidate,
-                content: UserRoles.Candidate,
+                content: "Найти работу",
               },
               {
-                value: UserRole.Rucruiter,
-                content: UserRoles.Rucruiter,
+                value: UserRole.Recruiter,
+                content: "Найти сотрудников",
               },
             ]}
           />
@@ -91,7 +103,11 @@ export default function RegisterPage() {
       />
 
       <div className="flex items-center justify-between">
-        <Button type="secondary" htmlType="submit">
+        <Button
+          type="secondary"
+          htmlType="submit"
+          pending={status === "pending"}
+        >
           Продолжить
         </Button>
         <Button link={{ url: Routes.login }} type="text">
