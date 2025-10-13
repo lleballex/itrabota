@@ -15,6 +15,7 @@ import {
   SearchIcon,
   TrashIcon,
   UsersIcon,
+  XIcon,
 } from "lucide-react"
 
 const ICONS = {
@@ -38,6 +39,9 @@ const ICONS = {
   },
   chevronUp: {
     Component: ChevronUpIcon,
+  },
+  cross: {
+    Component: XIcon,
   },
   files: {
     Component: FilesIcon,

@@ -6,6 +6,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import dayjs from "dayjs"
 import "dayjs/locale/ru"
 
+import Toasts from "@/components/special/Toasts"
+
 import "./_styles/index.css"
 
 interface Props {
@@ -26,6 +28,7 @@ export default function RootLayout({ children }: Props) {
         <QueryClientProvider client={queryClient}>
           {children}
           <ReactQueryDevtools />
+          <Toasts />
         </QueryClientProvider>
       </body>
     </html>
