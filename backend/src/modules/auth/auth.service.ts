@@ -12,6 +12,7 @@ import { User } from "@/modules/users/entities/user.entity"
 import { RegisterDto } from "./dto/register.dto"
 import { ICurrentUser } from "./interfaces/current-user.interface"
 import { IJwtPayload } from "./interfaces/jwt-payload.interface"
+import { WithRequired } from "@/common/types/with-required.type"
 
 @Injectable()
 export class AuthService {
@@ -32,7 +33,7 @@ export class AuthService {
     email: string
     password: string
   }): Promise<User | null> {
-    let user: User
+    let user: WithRequired<User, "password">
 
     try {
       user = await this.usersService.findOneForAuth(data.email)
@@ -41,10 +42,6 @@ export class AuthService {
         return null
       }
       throw e
-    }
-
-    if (!user.password) {
-      throw new Error("User has no password")
     }
 
     if (!(await argon2.verify(user.password, data.password))) {

@@ -28,13 +28,13 @@ export class User extends BaseEntity {
 
   @OneToOne(() => Candidate, (candidate) => candidate.user, {
     nullable: true,
-    onDelete: "CASCADE",
+    onDelete: "SET NULL",
   })
   candidate?: Candidate | null
 
   @OneToOne(() => Recruiter, (recruiter) => recruiter.user, {
     nullable: true,
-    onDelete: "CASCADE",
+    onDelete: "SET NULL",
   })
   recruiter?: Recruiter | null
 }

@@ -2,7 +2,10 @@ import { Injectable, NotFoundException } from "@nestjs/common"
 import { DeepPartial, FindOptionsWhere, Repository } from "typeorm"
 import { InjectRepository } from "@nestjs/typeorm"
 
-import { User } from "./entities/user.entity"
+import { WithRequired } from "@/common/types/with-required.type"
+
+import { User, UserRole } from "./entities/user.entity"
+import { WithConcreted } from "@/common/types/with-concreted.type"
 
 @Injectable()
 export class UsersService {
@@ -14,6 +17,8 @@ export class UsersService {
     const qb = this.usersRepo
       .createQueryBuilder("user")
       .leftJoinAndSelect("user.recruiter", "recruiter")
+      .leftJoinAndSelect("recruiter.company", "company")
+      .leftJoinAndSelect("company.logo", "logo")
       .leftJoinAndSelect("user.candidate", "candidate")
 
     return qb
@@ -44,8 +49,30 @@ export class UsersService {
     return this.findOne({ id })
   }
 
-  findOneForAuth(email: string) {
-    return this.findOne({ email }, { selectPassword: true })
+  async findOneForAuth(email: string) {
+    const user = await this.findOne({ email }, { selectPassword: true })
+
+    return user as WithRequired<typeof user, "password">
+  }
+
+  async findRecruiterById(id: string) {
+    const user = await this.findOne({ id })
+
+    if (user.role !== UserRole.Recruiter) {
+      throw new Error("User must be a recruiter")
+    }
+
+    return user as WithConcreted<typeof user, "role", typeof UserRole.Recruiter>
+  }
+
+  async findFilledRecruiterById(id: string) {
+    const user = await this.findRecruiterById(id)
+
+    if (!user.recruiter) {
+      throw new Error("Recruiter must be filled")
+    }
+
+    return user as WithRequired<typeof user, "recruiter">
   }
 
   async create(data: DeepPartial<User>) {
