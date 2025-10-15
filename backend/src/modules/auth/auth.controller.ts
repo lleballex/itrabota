@@ -6,7 +6,6 @@ import {
   HttpCode,
   HttpStatus,
   Res,
-  Get,
 } from "@nestjs/common"
 import { Response } from "express"
 
@@ -18,7 +17,6 @@ import { ICurrentUser } from "./interfaces/current-user.interface"
 import { LocalAuthGuard } from "./guards/local-auth.guard"
 import { AuthService } from "./auth.service"
 import { RegisterDto } from "./dto/register.dto"
-import { Auth } from "./decorators/auth.decorator"
 
 @Controller("auth")
 export class AuthController {
@@ -54,15 +52,10 @@ export class AuthController {
     this.setAccessToken(token, res)
   }
 
+  // TODO: should I add auth?
   @Post("logout")
   @HttpCode(HttpStatus.NO_CONTENT)
   logout(@Res({ passthrough: true }) res: Response) {
     res.clearCookie("accessToken")
-  }
-
-  @Get("me")
-  @Auth()
-  getMe(@CurrentUser() user: ICurrentUser) {
-    return this.usersService.findOneById(user.id)
   }
 }
