@@ -82,14 +82,27 @@ export class UsersService {
     return this.findOneById(savedUser.id)
   }
 
-  async isEmailAvailable(email: string) {
+  async update(id: string, data: DeepPartial<User>) {
+    const user = this.usersRepo.create({ id, ...data })
+    const savedUser = await this.usersRepo.save(user)
+
+    return this.findOneById(savedUser.id)
+  }
+
+  async isEmailAvailable(email: string, options?: { userId?: string }) {
+    let user: User
+
     try {
-      await this.findOne({ email })
+      user = await this.findOne({ email })
     } catch (e) {
       if (e instanceof NotFoundException) {
         return true
       }
       throw e
+    }
+
+    if (user.id === options?.userId) {
+      return true
     }
 
     return false
