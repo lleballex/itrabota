@@ -1,7 +1,8 @@
 import { NestFactory } from "@nestjs/core"
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger"
-import * as cookieParser from "cookie-parser"
 import { ValidationPipe } from "@nestjs/common"
+import * as cookieParser from "cookie-parser"
+import * as express from "express"
 
 import { AppModule } from "./app.module"
 
@@ -16,6 +17,8 @@ async function bootstrap() {
   })
 
   app.use(cookieParser())
+
+  app.use(express.json({ limit: process.env.MAX_REQUEST_BODY_SIZE }))
 
   app.useGlobalPipes(
     new ValidationPipe({
