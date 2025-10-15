@@ -1,10 +1,10 @@
-import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common"
+import { Body, Controller, Get, Post } from "@nestjs/common"
 
 import { Auth } from "@/modules/auth/decorators/auth.decorator"
 import { CurrentUser } from "@/modules/auth/decorators/current-user.decorator"
 import { ICurrentUser } from "@/modules/auth/interfaces/current-user.interface"
 import { UsersService } from "@/modules/users/users.service"
-import { RecruitersGuard } from "@/modules/auth/guards/recruiters.guard"
+import { UserRole } from "@/modules/users/entities/user.entity"
 
 import { MeService } from "./me.service"
 import { CreateRecruiterDto } from "./dto/create-recruiter.dto"
@@ -23,8 +23,7 @@ export class MeController {
   }
 
   @Post("/recruiter")
-  @Auth() // TODO: add roles to auth, so there will be no need to apply useguards
-  @UseGuards(RecruitersGuard)
+  @Auth(UserRole.Recruiter)
   createRecruiter(
     @Body() body: CreateRecruiterDto,
     @CurrentUser() user: ICurrentUser,

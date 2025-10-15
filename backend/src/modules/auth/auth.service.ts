@@ -24,6 +24,7 @@ export class AuthService {
   private generateJwt(user: ICurrentUser): Promise<string> {
     const payload: IJwtPayload = {
       sub: user.id,
+      role: user.role,
     }
 
     return this.jwtService.signAsync(payload)
@@ -65,6 +66,6 @@ export class AuthService {
       password: await argon2.hash(dto.password),
     })
 
-    return this.generateJwt({ id: user.id })
+    return this.generateJwt({ id: user.id, role: user.role })
   }
 }
