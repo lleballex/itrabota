@@ -14,5 +14,5 @@ export class Attachment extends BaseEntity {
   size!: number
 
   @Column("bytea", { select: false })
-  content!: Buffer
+  content?: Buffer
 }

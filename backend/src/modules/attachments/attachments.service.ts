@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
-import { FindOptionsWhere, Repository } from "typeorm"
+import { DeepPartial, FindOptionsWhere, Repository } from "typeorm"
+import { WithRequired } from "@/common/types/with-required.type"
 
 import { Attachment } from "./entities/attachment.entity"
 
@@ -34,7 +35,20 @@ export class AttachmentsService {
     return attachment
   }
 
-  findOneByIdWithContent(id: string) {
-    return this.findOne({ id }, { selectContent: true })
+  findOneById(id: string) {
+    return this.findOne({ id })
+  }
+
+  async findOneByIdWithContent(id: string) {
+    const attachment = await this.findOne({ id }, { selectContent: true })
+
+    return attachment as WithRequired<typeof attachment, "content">
+  }
+
+  async create(data: DeepPartial<Attachment>) {
+    const attachment = this.attachmentsRepo.create(data)
+    const savedAttachment = await this.attachmentsRepo.save(attachment)
+
+    return this.findOneById(savedAttachment.id)
   }
 }

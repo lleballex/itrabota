@@ -9,5 +9,6 @@ import { AttachmentsService } from "./attachments.service"
   imports: [TypeOrmModule.forFeature([Attachment])],
   controllers: [AttachmentsController],
   providers: [AttachmentsService],
+  exports: [AttachmentsService],
 })
 export class AttachmentsModule {}
