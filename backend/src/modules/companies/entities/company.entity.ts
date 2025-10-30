@@ -2,8 +2,7 @@ import { Column, Entity, JoinColumn, OneToOne } from "typeorm"
 
 import { BaseEntity } from "@/database/entities/base.entity"
 import { Attachment } from "@/modules/attachments/entities/attachment.entity"
-
-import { Recruiter } from "./recruiter.entity"
+import { Recruiter } from "@/modules/users/entities/recruiter.entity"
 
 @Entity("company")
 export class Company extends BaseEntity {

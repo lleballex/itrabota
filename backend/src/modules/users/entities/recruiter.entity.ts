@@ -1,8 +1,8 @@
 import { Column, Entity, JoinColumn, OneToOne } from "typeorm"
 
 import { BaseEntity } from "@/database/entities/base.entity"
+import { Company } from "@/modules/companies/entities/company.entity"
 
-import { Company } from "./company.entity"
 import { User } from "./user.entity"
 
 @Entity("recruiter")

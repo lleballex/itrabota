@@ -2,11 +2,11 @@ import { ConflictException, Injectable } from "@nestjs/common"
 
 import { UsersService } from "@/modules/users/users.service"
 import { RecruitersService } from "@/modules/users/recruiters.service"
-import { CompaniesService } from "@/modules/users/companies.service"
+import { CompaniesService } from "@/modules/companies/companies.service"
 import { AttachmentsService } from "@/modules/attachments/attachments.service"
 import { ICurrentUser } from "@/modules/auth/interfaces/current-user.interface"
 import { CreateAttachmentDto } from "@/modules/attachments/dto/create-attachment.dto"
-import { Company } from "@/modules/users/entities/company.entity"
+import { Company } from "@/modules/companies/entities/company.entity"
 
 import { CreateMeRecruiterDto } from "./dto/create-me-recruiter.dto"
 import { UpdateMeRecruiterDto } from "./dto/update-me-recruiter.dto"
