@@ -14,6 +14,7 @@ const formSchema = z.object({
     name: formSchemaFields.string,
     url: formSchemaFields.url.nullable(),
     logo: formSchemaFields.file.nullable(),
+    industry: formSchemaFields.relation,
   }),
 })
 
@@ -31,6 +32,7 @@ export const getFormDefaultValues = (user?: User): DeepPartial<FormValues> => {
       name: user?.recruiter?.company?.name,
       url: user?.recruiter?.company?.url ?? null,
       logo: user?.recruiter?.company?.logo ?? null,
+      industry: user?.recruiter?.company?.industry,
     },
   }
 }

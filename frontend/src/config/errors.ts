@@ -7,4 +7,5 @@ export const Errors = {
   FILE_NOT_FILLED: "Выберите файл",
   PASSWORDS_NOT_MATCH: "Пароли не совпадают",
   INCORRECT_EMAIL_OR_PASSWORD: "Почта или пароль неверны",
+  RELATION_NOT_FILLED: "Выберите значение",
 }

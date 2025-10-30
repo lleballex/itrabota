@@ -27,4 +27,10 @@ export const formSchemaFields = {
     { error: "FILE_NOT_FILLED" }
   ),
   boolean: z.boolean({ error: "BOOLEAN_NOT_FILLED" }),
+  relation: z.object(
+    {
+      id: z.string({ error: "RELATION_NOT_FILLED" }),
+    },
+    { error: "RELATION_NOT_FILLED" }
+  ),
 }

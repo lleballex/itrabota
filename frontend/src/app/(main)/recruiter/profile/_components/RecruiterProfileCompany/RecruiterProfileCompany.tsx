@@ -1,11 +1,15 @@
 import { Controller, useFormContext } from "react-hook-form"
 
 import Input from "@/components/ui/Input"
+import Select from "@/components/ui/Select"
+import { useIndustries } from "@/api/industries/get-industries"
 
 import { FormValues } from "../../form"
 
 export default function RecruiterProfileCompany() {
   const form = useFormContext<FormValues>()
+
+  const industries = useIndustries()
 
   return (
     <section className="flex flex-col gap-2.5">
@@ -36,6 +40,26 @@ export default function RecruiterProfileCompany() {
           )}
         />
       </div>
+      <Controller
+        control={form.control}
+        name="company.industry.id"
+        render={({ field, fieldState }) => (
+          <Select
+            {...field}
+            className="w-[calc((100%-var(--spacing))/2)]"
+            label="Сфера деятельности*"
+            error={fieldState.error}
+            items={
+              industries.status === "success"
+                ? industries.data.map((industry) => ({
+                    value: industry.id,
+                    content: industry.name,
+                  }))
+                : []
+            }
+          />
+        )}
+      />
     </section>
   )
 }

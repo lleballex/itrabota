@@ -28,6 +28,7 @@ interface Props<V> {
 
 // TODO: add correct outline
 // TODO: is it correct to use label inside button and use label without id
+// TODO: add pending
 
 export default function Select<V>({
   className,
