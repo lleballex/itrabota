@@ -11,6 +11,8 @@ import { Company } from "@/modules/companies/entities/company.entity"
 import { CreateMeRecruiterDto } from "./dto/create-me-recruiter.dto"
 import { UpdateMeRecruiterDto } from "./dto/update-me-recruiter.dto"
 
+// TODO: check if industry exists before creating and updating
+
 @Injectable()
 export class MeRecruiterService {
   constructor(

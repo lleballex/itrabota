@@ -7,6 +7,7 @@ import {
   ValidateNested,
 } from "class-validator"
 import { CreateAttachmentDto } from "@/modules/attachments/dto/create-attachment.dto"
+import { AddIndustryDto } from "@/modules/industries/dto/add-industry.dto"
 
 class CreateCompanyDto {
   @IsString()
@@ -21,6 +22,10 @@ class CreateCompanyDto {
   @ValidateNested()
   @IsOptional()
   logo?: CreateAttachmentDto | null
+
+  @Type(() => AddIndustryDto)
+  @ValidateNested()
+  industry!: AddIndustryDto
 }
 
 export class CreateMeRecruiterDto {

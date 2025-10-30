@@ -19,6 +19,7 @@ export class UsersService {
       .leftJoinAndSelect("user.recruiter", "recruiter")
       .leftJoinAndSelect("recruiter.company", "company")
       .leftJoinAndSelect("company.logo", "logo")
+      .leftJoinAndSelect("company.industry", "industry")
       .leftJoinAndSelect("user.candidate", "candidate")
 
     return qb

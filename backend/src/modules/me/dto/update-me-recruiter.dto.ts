@@ -8,6 +8,7 @@ import {
 } from "class-validator"
 
 import { CreateAttachmentDto } from "@/modules/attachments/dto/create-attachment.dto"
+import { AddIndustryDto } from "@/modules/industries/dto/add-industry.dto"
 
 class UpdateCompanyDto {
   @IsString()
@@ -23,6 +24,11 @@ class UpdateCompanyDto {
   @ValidateNested()
   @IsOptional()
   logo?: CreateAttachmentDto | null
+
+  @Type(() => AddIndustryDto)
+  @ValidateNested()
+  @IsOptional()
+  industry!: AddIndustryDto
 }
 
 export class UpdateMeRecruiterDto {
