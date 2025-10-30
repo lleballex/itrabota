@@ -16,6 +16,15 @@ export const formSchemaFields = {
     )
     .pipe(z.number({ error: "NUMBER_NOT_FILLED" })),
   url: z.url({ error: "URL_NOT_FILLED" }),
-  file: z.string({ error: "FILE_NOT_FILLED" }),
+  file: z.object(
+    {
+      id: z.string().optional(),
+      name: z.string(),
+      mimeType: z.string(),
+      size: z.number(),
+      content: z.string().optional(),
+    },
+    { error: "FILE_NOT_FILLED" }
+  ),
   boolean: z.boolean({ error: "BOOLEAN_NOT_FILLED" }),
 }

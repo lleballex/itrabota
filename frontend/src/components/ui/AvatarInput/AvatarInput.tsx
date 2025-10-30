@@ -1,7 +1,13 @@
 "use client"
 
 import classNames from "classnames"
-import { ChangeEventHandler, CSSProperties, useId, useRef } from "react"
+import {
+  ChangeEventHandler,
+  CSSProperties,
+  useId,
+  useMemo,
+  useRef,
+} from "react"
 import Image from "next/image"
 
 import Button from "@/components/ui/Button"
@@ -13,11 +19,27 @@ import FieldContainer from "@/components/ui/FieldContainer"
 
 import styles from "./AvatarInput.module.css"
 
+type Value =
+  | {
+      id?: string
+      name: string
+      mimeType: string
+      size: number
+      content: string
+    }
+  | {
+      id: string
+      name: string
+      mimeType: string
+      size: number
+    }
+  | null
+
 interface Props {
   className?: string
   error?: FormError
-  value?: string | null
-  onChange?: (val: string | null) => void
+  value?: Value
+  onChange?: (val: Value) => void
 }
 
 export default function AvatarInput({
@@ -36,6 +58,17 @@ export default function AvatarInput({
     transformBaseValue: (val) => val || null,
   })
 
+  const src = useMemo(() => {
+    if (!value) {
+      return avatarImg
+    } else if ("content" in value) {
+      return `data:${value.mimeType};base64,${value.content}`
+    } else {
+      // TODO: remove url from here
+      return `http://localhost:8000/api/attachments/${value.id}/content`
+    }
+  }, [value])
+
   const onClick = () => {
     inputRef.current?.click()
   }
@@ -48,11 +81,16 @@ export default function AvatarInput({
     const reader = new FileReader()
 
     reader.onload = () => {
-      const url = reader.result as string
-      onChange(url)
+      const url = reader.result as ArrayBuffer
+      onChange({
+        name: file.name,
+        mimeType: file.type,
+        size: file.size,
+        content: Buffer.from(url).toString("base64"),
+      })
     }
 
-    reader.readAsDataURL(file)
+    reader.readAsArrayBuffer(file)
   }
 
   return (
@@ -69,7 +107,7 @@ export default function AvatarInput({
             "!border-danger": error,
           }
         )}
-        src={value ?? avatarImg}
+        src={src}
         alt="Логотип"
         width={300}
         height={300}

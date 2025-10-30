@@ -9,14 +9,15 @@ export const UserRole = {
 
 export type UserRole = (typeof UserRole)[keyof typeof UserRole]
 
-export const UserRoles: Record<keyof typeof UserRole, string> = {
-  Recruiter: "Рекрутер",
-  Candidate: "Соискатель",
+export const UserRoles: Record<UserRole, string> = {
+  [UserRole.Recruiter]: "Рекрутер",
+  [UserRole.Candidate]: "Соискатель",
 }
 
 export interface User extends BaseEntity {
   email: string
   role: UserRole
-  passwordChangedAt: string
-  profile?: Candidate | Recruiter
+  passwordChangedAt: string | null
+  candidate?: Candidate | null
+  recruiter?: Recruiter | null
 }

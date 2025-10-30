@@ -4,7 +4,6 @@ import { DeepPartial } from "react-hook-form"
 
 import { formSchemaFields } from "@/lib/form-schema-fields"
 import { User } from "@/types/entities/user"
-import { Company } from "@/types/entities/company"
 
 const formSchema = z.object({
   email: formSchemaFields.email,
@@ -23,21 +22,15 @@ export type FormValues = z.infer<typeof formSchema>
 export const formResolver = zodResolver(formSchema)
 
 export const getFormDefaultValues = (user?: User): DeepPartial<FormValues> => {
-  let company: Company | undefined
-
-  if (user?.profile && "company" in user.profile) {
-    company = user.profile.company
-  }
-
   return {
     email: user?.email,
-    firstName: user?.profile?.firstName,
-    lastName: user?.profile?.lastName,
-    patronymic: user?.profile?.patronymic ?? null,
+    firstName: user?.recruiter?.firstName,
+    lastName: user?.recruiter?.lastName,
+    patronymic: user?.recruiter?.patronymic ?? null,
     company: {
-      name: company?.name,
-      url: company?.url ?? null,
-      logo: company?.logo ?? null,
+      name: user?.recruiter?.company?.name,
+      url: user?.recruiter?.company?.url ?? null,
+      logo: user?.recruiter?.company?.logo ?? null,
     },
   }
 }
