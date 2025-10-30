@@ -26,7 +26,8 @@ export default function AuthProvider({
   const children = useMemo(() => {
     if (me.status === "success") {
       if (!roles || roles.includes(me.data.role)) {
-        if (!me.data.profile && !allowNoProfile) {
+        if (!me.data.recruiter && !me.data.candidate && !allowNoProfile) {
+          // TODO: check profile by the role
           // TODO: toast
           router.push(
             {
