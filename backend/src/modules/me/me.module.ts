@@ -4,11 +4,11 @@ import { UsersModule } from "@/modules/users/users.module"
 import { AttachmentsModule } from "@/modules/attachments/attachments.module"
 
 import { MeController } from "./me.controller"
-import { MeService } from "./me.service"
+import { MeRecruiterService } from "./me-recruiter.service"
 
 @Module({
   imports: [UsersModule, AttachmentsModule],
   controllers: [MeController],
-  providers: [MeService],
+  providers: [MeRecruiterService],
 })
 export class MeModule {}

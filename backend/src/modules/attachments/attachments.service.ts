@@ -51,4 +51,9 @@ export class AttachmentsService {
 
     return this.findOneById(savedAttachment.id)
   }
+
+  async delete(id: string) {
+    const attachment = await this.findOneById(id)
+    await this.attachmentsRepo.remove(attachment)
+  }
 }

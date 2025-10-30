@@ -21,4 +21,11 @@ export class CompaniesService {
 
     return this.findOneById(savedCompany.id)
   }
+
+  async update(id: string, data: DeepPartial<Company>) {
+    const company = this.companiesRepo.create({ id, ...data })
+    await this.companiesRepo.save(company)
+
+    return this.findOneById(id)
+  }
 }

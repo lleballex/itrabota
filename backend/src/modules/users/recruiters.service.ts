@@ -27,4 +27,11 @@ export class RecruitersService {
 
     return this.findOneById(savedRecruiter.id)
   }
+
+  async update(id: string, data: DeepPartial<Recruiter>) {
+    const recruiter = this.recruitersRepo.create({ id, ...data })
+    await this.recruitersRepo.save(recruiter)
+
+    return this.findOneById(id)
+  }
 }

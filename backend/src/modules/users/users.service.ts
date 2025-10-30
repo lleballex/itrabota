@@ -84,9 +84,9 @@ export class UsersService {
 
   async update(id: string, data: DeepPartial<User>) {
     const user = this.usersRepo.create({ id, ...data })
-    const savedUser = await this.usersRepo.save(user)
+    await this.usersRepo.save(user)
 
-    return this.findOneById(savedUser.id)
+    return this.findOneById(id)
   }
 
   async isEmailAvailable(email: string, options?: { userId?: string }) {

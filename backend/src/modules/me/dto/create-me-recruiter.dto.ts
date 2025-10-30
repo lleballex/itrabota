@@ -6,9 +6,24 @@ import {
   IsString,
   ValidateNested,
 } from "class-validator"
-import { CreateCompanyDto } from "./create-company.dto"
+import { CreateAttachmentDto } from "@/modules/attachments/dto/create-attachment.dto"
 
-export class CreateRecruiterDto {
+class CreateCompanyDto {
+  @IsString()
+  @IsNotEmpty()
+  name!: string
+
+  @IsString()
+  @IsOptional()
+  url?: string | null
+
+  @Type(() => CreateAttachmentDto)
+  @ValidateNested()
+  @IsOptional()
+  logo?: CreateAttachmentDto | null
+}
+
+export class CreateMeRecruiterDto {
   @IsString()
   @IsNotEmpty()
   firstName!: string
