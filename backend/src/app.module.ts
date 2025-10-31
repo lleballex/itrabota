@@ -9,6 +9,7 @@ import { CompaniesModule } from "@/modules/companies/companies.module"
 import { IndustriesModule } from "@/modules/industries/industries.module"
 import { MeModule } from "@/modules/me/me.module"
 import { SkillsModule } from "@/modules/skills/skills.module"
+import { SpecializationsModule } from "@/modules/specializations/specializations.module"
 import { UsersModule } from "@/modules/users/users.module"
 
 @Module({
@@ -35,6 +36,7 @@ import { UsersModule } from "@/modules/users/users.module"
     IndustriesModule,
     MeModule,
     SkillsModule,
+    SpecializationsModule,
     UsersModule,
   ],
 })

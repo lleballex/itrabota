@@ -1,0 +1,15 @@
+import { Controller, Get } from "@nestjs/common"
+
+import { SpecializationsService } from "./specializations.service"
+
+@Controller("specializations")
+export class SpecializationsController {
+  constructor(
+    private readonly specializationsService: SpecializationsService,
+  ) {}
+
+  @Get()
+  findAll() {
+    return this.specializationsService.findAll()
+  }
+}
