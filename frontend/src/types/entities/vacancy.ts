@@ -1,8 +1,8 @@
 import { BaseEntity } from "./base-entity"
 import { City } from "./city"
-import { Company } from "./company"
 import { Specialization } from "./specialization"
 import { Skill } from "./skill"
+import { Recruiter } from "./recruiter"
 
 export interface Vacancy extends BaseEntity {
   title: string
@@ -22,7 +22,7 @@ export interface Vacancy extends BaseEntity {
   skills?: Skill[]
   specialization?: Specialization
   city?: City
-  company?: Company
+  recruiter?: Recruiter
 }
 
 export const VacancyStatus = {

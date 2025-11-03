@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from "@nestjs/common"
+import { Body, Controller, Get, Post, Query } from "@nestjs/common"
 
 import { CurrentUser } from "@/modules/auth/decorators/current-user.decorator"
 import { ICurrentUser } from "@/modules/auth/interfaces/current-user.interface"
@@ -7,10 +7,20 @@ import { UserRole } from "@/modules/users/entities/user.entity"
 
 import { VacanciesService } from "./vacancies.service"
 import { CreateVacancyDto } from "./dto/create-vacancy.dto"
+import { GetRecruiterVacanciesDto } from "./dto/get-recruiter-vacancies.dto"
 
 @Controller("vacancies")
 export class VacanciesController {
   constructor(private readonly vacanciesService: VacanciesService) {}
+
+  @Get("recruiter")
+  @Auth(UserRole.Recruiter)
+  findAllForRecruiter(
+    @Query() query: GetRecruiterVacanciesDto,
+    @CurrentUser() user: ICurrentUser,
+  ) {
+    return this.vacanciesService.findAllForRecruiter(query, user)
+  }
 
   @Post()
   @Auth(UserRole.Recruiter)

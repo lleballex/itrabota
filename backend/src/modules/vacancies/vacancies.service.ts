@@ -7,6 +7,7 @@ import { UsersService } from "@/modules/users/users.service"
 
 import { Vacancy } from "./entities/vacancy.entity"
 import { CreateVacancyDto } from "./dto/create-vacancy.dto"
+import { GetRecruiterVacanciesDto } from "./dto/get-recruiter-vacancies.dto"
 
 @Injectable()
 export class VacanciesService {
@@ -17,10 +18,17 @@ export class VacanciesService {
     private readonly usersService: UsersService,
   ) {}
 
-  private async findOne(where: FindOptionsWhere<Vacancy>) {
-    const qb = this.vacanciesRepo
+  private createQB() {
+    return this.vacanciesRepo
       .createQueryBuilder("vacancy")
-      .setFindOptions({ where })
+      .leftJoinAndSelect("vacancy.recruiter", "recruiter")
+      .leftJoinAndSelect("recruiter.company", "company")
+      .leftJoinAndSelect("company.industry", "industry")
+      .leftJoinAndSelect("company.logo", "logo")
+  }
+
+  private async findOne(where: FindOptionsWhere<Vacancy>) {
+    const qb = this.createQB().setFindOptions({ where })
 
     const vacancy = await qb.getOne()
 
@@ -33,6 +41,27 @@ export class VacanciesService {
 
   findOneById(id: string) {
     return this.findOne({ id })
+  }
+
+  async findAllForRecruiter(
+    dto: GetRecruiterVacanciesDto,
+    user_: ICurrentUser,
+  ) {
+    const user = await this.usersService.findFilledRecruiterById(user_.id)
+
+    const qb = this.createQB().andWhere("recruiter.id = :recruiterId", {
+      recruiterId: user.recruiter.id,
+    })
+
+    if (dto.query) {
+      qb.andWhere("vacancy.title ILIKE :query", { query: `%${dto.query}%` })
+    }
+
+    if (dto.status) {
+      qb.andWhere("vacancy.status = :status", { status: dto.status })
+    }
+
+    return qb.getMany()
   }
 
   async create(dto: CreateVacancyDto, user_: ICurrentUser) {

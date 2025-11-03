@@ -29,7 +29,10 @@ export default function VacancyCard({ className, vacancy, url }: Props) {
       )}
       href={url}
     >
-      <Avatar className="shrink-0 w-18 h-18" src={vacancy.company?.logo} />
+      <Avatar
+        className="shrink-0 w-18 h-18"
+        src={vacancy.recruiter?.company?.logo}
+      />
 
       <div className="flex flex-col gap-2 grow pb-4 border-b border-border group-[:last-child]:border-b-0">
         <div className="flex items-end justify-between">
@@ -46,13 +49,13 @@ export default function VacancyCard({ className, vacancy, url }: Props) {
 
         <h3 className="text-h3">{vacancy.title}</h3>
 
-        {vacancy.company && (
+        {vacancy.recruiter?.company && (
           <div className="flex items-center gap-2">
-            <p>{vacancy.company.name}</p>
-            {vacancy.company.industry && (
+            <p>{vacancy.recruiter.company.name}</p>
+            {vacancy.recruiter.company.industry && (
               <>
                 <Separator type="vertical" />
-                <p>{vacancy.company.industry?.name}</p>
+                <p>{vacancy.recruiter.company.industry.name}</p>
               </>
             )}
           </div>

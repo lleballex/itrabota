@@ -20,6 +20,7 @@ const Content = () => {
   const [searchStatus, setSearchStatus] = useState<IVacancyStatus | null>(null)
 
   const vacancies = useVacancies({
+    role: UserRole.Recruiter,
     query: searchQuery ?? undefined,
     status: searchStatus ?? undefined,
   })
@@ -60,13 +61,15 @@ const Content = () => {
         <RemoteData
           data={vacancies}
           onSuccess={(vacancies) =>
-            vacancies.map((vacancy) => (
-              <VacancyCard
-                key={vacancy.id}
-                vacancy={vacancy}
-                url={Routes.recruiter.vacancy(vacancy.id)}
-              />
-            ))
+            vacancies.length
+              ? vacancies.map((vacancy) => (
+                  <VacancyCard
+                    key={vacancy.id}
+                    vacancy={vacancy}
+                    url={Routes.recruiter.vacancy(vacancy.id)}
+                  />
+                ))
+              : "Ничего не найдено"
           }
         />
       </div>
