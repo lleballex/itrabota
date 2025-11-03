@@ -1,4 +1,4 @@
-import { FormEventHandler, useEffect } from "react"
+import { FormEventHandler, useEffect, useRef } from "react"
 import classNames from "classnames"
 
 import { useFieldValue } from "@/lib/use-field-value"
@@ -23,13 +23,28 @@ export default function Textarea({
   value: baseValue,
   onChange: baseOnChange,
 }: Props) {
+  const editorRef = useRef<HTMLDivElement>(null)
+  const shouldSkipSync = useRef(false)
+
   const { value, onChange: onChange_ } = useFieldValue({
     baseValue,
     baseOnChange,
     transformBaseValue: (val) => val ?? null,
   })
 
+  useEffect(() => {
+    if (shouldSkipSync.current) {
+      shouldSkipSync.current = false
+      return
+    }
+
+    if (editorRef.current && editorRef.current.innerText !== value) {
+      editorRef.current.innerText = value ?? ""
+    }
+  }, [value])
+
   const onChange: FormEventHandler = (e) => {
+    shouldSkipSync.current = true
     const val = (e.target as HTMLElement).innerText
     onChange_(val)
   }
@@ -43,7 +58,12 @@ export default function Textarea({
         )}
       >
         {label && <FieldLabel>{label}</FieldLabel>}
-        <div className="outline-none" onInput={onChange} contentEditable />
+        <div
+          className="outline-none"
+          ref={editorRef}
+          onInput={onChange}
+          contentEditable
+        />
       </div>
     </FieldContainer>
   )

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from "@nestjs/common"
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import { FindOptionsWhere, Repository } from "typeorm"
 
@@ -9,6 +13,7 @@ import { Vacancy } from "./entities/vacancy.entity"
 import { CreateVacancyDto } from "./dto/create-vacancy.dto"
 import { GetRecruiterVacanciesDto } from "./dto/get-recruiter-vacancies.dto"
 import { FunnelStepsService } from "./funnel-steps.service"
+import { UpdateVacancyDto } from "./dto/update-vacancy-dto"
 
 @Injectable()
 export class VacanciesService {
@@ -35,6 +40,7 @@ export class VacanciesService {
     const qb = this.createQB()
       .setFindOptions({ where })
       .leftJoinAndSelect("vacancy.funnelSteps", "funnelStep")
+      .orderBy("funnelStep.index", "ASC")
 
     const vacancy = await qb.getOne()
 
@@ -100,5 +106,19 @@ export class VacanciesService {
     }
 
     return this.findOneById(savedVacancy.id)
+  }
+
+  async update(id: string, dto: UpdateVacancyDto, user_: ICurrentUser) {
+    const vacancy = await this.findOneById(id)
+    const user = await this.usersService.findFilledRecruiterById(user_.id)
+
+    if (vacancy.recruiter?.id !== user.recruiter.id) {
+      throw new ForbiddenException("You are not the author of the vacancy")
+    }
+
+    const updatedVacancy = this.vacanciesRepo.create({ ...dto, id })
+    await this.vacanciesRepo.save(updatedVacancy)
+
+    return this.findOneById(vacancy.id)
   }
 }

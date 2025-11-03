@@ -19,6 +19,7 @@ import { useCreateVacancy } from "@/api/vacancies/create-vacancy"
 import { handleFormApiError } from "@/lib/handle-form-api-error"
 import { useToastsStore } from "@/stores/toasts"
 import { Routes } from "@/config/routes"
+import { useUpdateVacancy } from "@/api/vacancies/update-vacancy"
 
 interface Props {
   vacancy?: Vacancy
@@ -58,18 +59,35 @@ export default function VacancyForm({ vacancy }: Props) {
   }, [form.formState.errors])
 
   const { mutate: create, status: createStatus } = useCreateVacancy()
+  const { mutate: update, status: updateStatus } = useUpdateVacancy()
 
   const onSubmit = form.handleSubmit((data) => {
-    create(data, {
-      onSuccess: () => {
-        addToast({
-          type: "success",
-          message: "Вакансия создана",
-        })
-        router.push(Routes.recruiter.vacancies)
-      },
-      onError: (error) => handleFormApiError({ error, form }),
-    })
+    if (vacancy) {
+      update(
+        { id: vacancy.id, ...data },
+        {
+          onSuccess: () => {
+            addToast({
+              type: "success",
+              message: "Вакансия изменена",
+            })
+            router.push(Routes.recruiter.vacancy(vacancy.id))
+          },
+          onError: (error) => handleFormApiError({ error, form }),
+        }
+      )
+    } else {
+      create(data, {
+        onSuccess: () => {
+          addToast({
+            type: "success",
+            message: "Вакансия создана",
+          })
+          router.push(Routes.recruiter.vacancies)
+        },
+        onError: (error) => handleFormApiError({ error, form }),
+      })
+    }
   })
 
   return (
@@ -104,7 +122,7 @@ export default function VacancyForm({ vacancy }: Props) {
             <Button
               type="glass"
               htmlType="submit"
-              pending={createStatus === "pending"}
+              pending={createStatus === "pending" || updateStatus === "pending"}
             >
               {vacancy ? "Сохранить" : "Создать"}
             </Button>

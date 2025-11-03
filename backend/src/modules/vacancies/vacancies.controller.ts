@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common"
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from "@nestjs/common"
 
 import { CurrentUser } from "@/modules/auth/decorators/current-user.decorator"
 import { ICurrentUser } from "@/modules/auth/interfaces/current-user.interface"
@@ -8,6 +16,7 @@ import { UserRole } from "@/modules/users/entities/user.entity"
 import { VacanciesService } from "./vacancies.service"
 import { CreateVacancyDto } from "./dto/create-vacancy.dto"
 import { GetRecruiterVacanciesDto } from "./dto/get-recruiter-vacancies.dto"
+import { UpdateVacancyDto } from "./dto/update-vacancy-dto"
 
 @Controller("vacancies")
 export class VacanciesController {
@@ -31,5 +40,15 @@ export class VacanciesController {
   @Get(":id")
   findOne(@Param("id") id: string) {
     return this.vacanciesService.findOneById(id)
+  }
+
+  @Patch(":id")
+  @Auth(UserRole.Recruiter)
+  update(
+    @Param("id") id: string,
+    @Body() body: UpdateVacancyDto,
+    @CurrentUser() user: ICurrentUser,
+  ) {
+    return this.vacanciesService.update(id, body, user)
   }
 }

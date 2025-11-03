@@ -21,6 +21,7 @@ import Button from "@/components/ui/Button"
 import VacancyItem from "./_components/VacancyItem/VacancyItem"
 import Icon from "@/components/ui/Icon"
 import { getCompanyLogo } from "@/lib/get-company-logo"
+import { Routes } from "@/config/routes"
 
 const Content = () => {
   const { vacancyId } = useParams<{ vacancyId: string }>()
@@ -153,7 +154,10 @@ const Content = () => {
           )}
 
           <div className="flex self-center items-center gap-2 sticky bottom-[var(--spacing-screen)]">
-            <Button type="glass">
+            <Button
+              type="glass"
+              link={{ url: Routes.recruiter.editVacancy(vacancy.id) }}
+            >
               <Icon icon="pen" />
               Изменить
             </Button>

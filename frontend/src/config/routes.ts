@@ -11,6 +11,7 @@ export const Routes = {
     newVacancy: "/recruiter/new-vacancy",
     vacancies: "/recruiter/vacancies",
     vacancy: (id: string) => `/recruiter/vacancies/${id}`,
+    editVacancy: (id: string) => `/recruiter/vacancies/${id}/edit`,
   },
 
   candidate: {
