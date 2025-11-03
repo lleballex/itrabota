@@ -27,11 +27,14 @@ export class VacanciesService {
       .leftJoinAndSelect("recruiter.company", "company")
       .leftJoinAndSelect("company.industry", "industry")
       .leftJoinAndSelect("company.logo", "logo")
-      .leftJoinAndSelect("vacancy.funnelSteps", "funnelStep")
+      .leftJoinAndSelect("vacancy.specialization", "specialization")
+      .leftJoinAndSelect("vacancy.city", "city")
   }
 
   private async findOne(where: FindOptionsWhere<Vacancy>) {
-    const qb = this.createQB().setFindOptions({ where })
+    const qb = this.createQB()
+      .setFindOptions({ where })
+      .leftJoinAndSelect("vacancy.funnelSteps", "funnelStep")
 
     const vacancy = await qb.getOne()
 

@@ -42,13 +42,13 @@ const Content = () => {
             />
             <div className="flex flex-col gap-1">
               <h1 className="text-h1">{vacancy.title}</h1>
-              {vacancy.company && (
+              {vacancy.recruiter?.company && (
                 <div className="flex items-center gap-2">
-                  <p>{vacancy.company.name}</p>
-                  {vacancy.company.industry && (
+                  <p>{vacancy.recruiter.company.name}</p>
+                  {vacancy.recruiter.company.industry && (
                     <>
                       <Separator className="!h-[1em]" type="vertical" />
-                      <p>{vacancy.company.industry?.name}</p>
+                      <p>{vacancy.recruiter.company.industry?.name}</p>
                     </>
                   )}
                 </div>
@@ -105,33 +105,52 @@ const Content = () => {
             </div>
           )}
 
-          <div className="flex flex-col gap-1.5">
-            <p className="text-h5">Описание</p>
-            <p>{vacancy.description}</p>
-          </div>
+          {vacancy.description && (
+            <div className="flex flex-col gap-1.5">
+              <p className="text-h5">Описание</p>
+              <p>{vacancy.description}</p>
+            </div>
+          )}
 
-          <div className="flex gap-5">
-            <div className="flex flex-col gap-5">
-              <div className="flex flex-col gap-1.5">
-                <p className="text-h5">Требования</p>
-                <p>{vacancy.requirements}</p>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <p className="text-h5">Условия</p>
-                <p>{vacancy.conditions}</p>
-              </div>
+          {(vacancy.requirements ||
+            vacancy.conditions ||
+            vacancy.responsibilities ||
+            vacancy.niceToHave) && (
+            <div className="flex gap-5">
+              {(vacancy.requirements || vacancy.conditions) && (
+                <div className="flex flex-col gap-5 w-full">
+                  {vacancy.requirements && (
+                    <div className="flex flex-col gap-1.5">
+                      <p className="text-h5">Требования</p>
+                      <p>{vacancy.requirements}</p>
+                    </div>
+                  )}
+                  {vacancy.conditions && (
+                    <div className="flex flex-col gap-1.5">
+                      <p className="text-h5">Условия</p>
+                      <p>{vacancy.conditions}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+              {(vacancy.responsibilities || vacancy.niceToHave) && (
+                <div className="flex flex-col gap-5 w-full">
+                  {vacancy.responsibilities && (
+                    <div className="flex flex-col gap-1.5">
+                      <p className="text-h5">Обязанности</p>
+                      <p>{vacancy.responsibilities}</p>
+                    </div>
+                  )}
+                  {vacancy.niceToHave && (
+                    <div className="flex flex-col gap-1.5">
+                      <p className="text-h5">Будет плюсом</p>
+                      <p>{vacancy.niceToHave}</p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-            <div className="flex flex-col gap-5">
-              <div className="flex flex-col gap-1.5">
-                <p className="text-h5">Обязанности</p>
-                <p>{vacancy.responsibilities}</p>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <p className="text-h5">Будет плюсом</p>
-                <p>{vacancy.niceToHave}</p>
-              </div>
-            </div>
-          </div>
+          )}
 
           <div className="flex self-center items-center gap-2 sticky bottom-[var(--spacing-screen)]">
             <Button type="glass">

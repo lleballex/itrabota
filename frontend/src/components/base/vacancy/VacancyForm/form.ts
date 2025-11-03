@@ -28,7 +28,7 @@ const formSchema = z.object({
   description: formSchemaFields.string.nullable(),
   requirements: formSchemaFields.string.nullable(),
   niceToHave: formSchemaFields.string.nullable(),
-  responsibilites: formSchemaFields.string.nullable(),
+  responsibilities: formSchemaFields.string.nullable(),
   conditions: formSchemaFields.string.nullable(),
   funnelSteps: z.array(
     z.object({
@@ -61,7 +61,7 @@ export const getFormDefaultValues = (
   description: vacancy?.description ?? null,
   requirements: vacancy?.requirements ?? null,
   niceToHave: vacancy?.niceToHave ?? null,
-  responsibilites: vacancy?.responsibilities ?? null,
+  responsibilities: vacancy?.responsibilities ?? null,
   conditions: vacancy?.conditions ?? null,
   funnelSteps: vacancy?.funnelSteps ?? [],
 })

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query } from "@nestjs/common"
+import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common"
 
 import { CurrentUser } from "@/modules/auth/decorators/current-user.decorator"
 import { ICurrentUser } from "@/modules/auth/interfaces/current-user.interface"
@@ -26,5 +26,10 @@ export class VacanciesController {
   @Auth(UserRole.Recruiter)
   create(@Body() body: CreateVacancyDto, @CurrentUser() user: ICurrentUser) {
     return this.vacanciesService.create(body, user)
+  }
+
+  @Get(":id")
+  findOne(@Param("id") id: string) {
+    return this.vacanciesService.findOneById(id)
   }
 }

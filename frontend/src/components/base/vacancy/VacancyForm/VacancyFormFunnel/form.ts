@@ -2,11 +2,13 @@ import { FieldPath } from "react-hook-form"
 
 import { FormInputValues } from "../form"
 
+// TODO: what to do with array
+
 export const formFields: FieldPath<FormInputValues>[] = [
-  "funnel",
-  "funnel.0",
-  "funnel.0.name",
-  "funnel.0.approveMessage",
-  "funnel.0.rejectMessage",
-  "funnel.0.shouldCreateCall",
+  "funnelSteps",
+  "funnelSteps.0",
+  "funnelSteps.0.name",
+  "funnelSteps.0.approveMessage",
+  "funnelSteps.0.rejectMessage",
+  "funnelSteps.0.shouldCreateCall",
 ]

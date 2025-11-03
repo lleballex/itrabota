@@ -135,7 +135,7 @@ export default function VacancyFormMain() {
           />
           <Controller
             control={form.control}
-            name="city"
+            name="cityId"
             render={({ field, fieldState }) => (
               <Select
                 {...field}
@@ -235,7 +235,7 @@ export default function VacancyFormMain() {
         <div className="flex gap-2">
           <Controller
             control={form.control}
-            name="responsibilites"
+            name="responsibilities"
             render={({ field, fieldState }) => (
               <Textarea
                 {...field}
