@@ -1,6 +1,7 @@
 "use client"
 
 import { useParams } from "next/navigation"
+import Image from "next/image"
 
 import AuthProvider from "@/components/special/AuthProvider"
 import { UserRole } from "@/types/entities/user"
@@ -14,12 +15,12 @@ import {
   VacancyStatus,
   VacancyWorkExperiences,
 } from "@/types/entities/vacancy"
-import Avatar from "@/components/ui/Avatar"
 import Separator from "@/components/ui/Separator"
 import Button from "@/components/ui/Button"
 
 import VacancyItem from "./_components/VacancyItem/VacancyItem"
 import Icon from "@/components/ui/Icon"
+import { getCompanyLogo } from "@/lib/get-company-logo"
 
 const Content = () => {
   const { vacancyId } = useParams<{ vacancyId: string }>()
@@ -32,9 +33,12 @@ const Content = () => {
       onSuccess={(vacancy) => (
         <div className="flex flex-col gap-6">
           <div className="flex gap-3 items-center">
-            <Avatar
-              className="shrink-0 w-20 h-20"
-              src={vacancy.company?.logo}
+            <Image
+              className="shrink-0 w-20 h-20 rounded-full"
+              src={getCompanyLogo(vacancy.recruiter?.company)}
+              width={300}
+              height={300}
+              alt=""
             />
             <div className="flex flex-col gap-1">
               <h1 className="text-h1">{vacancy.title}</h1>

@@ -1,6 +1,7 @@
 import classNames from "classnames"
 import Link from "next/link"
 import dayjs from "dayjs"
+import Image from "next/image"
 
 import {
   Vacancy,
@@ -9,10 +10,10 @@ import {
   VacancyWorkExperiences,
 } from "@/types/entities/vacancy"
 import VacancyStatus from "@/components/base/vacancy/VacancyStatus"
-import Avatar from "@/components/ui/Avatar"
 import Separator from "@/components/ui/Separator"
 import { getVacancySalary } from "@/lib/get-vacancy-salary"
 import { pluralize } from "@/lib/pluralize"
+import { getCompanyLogo } from "@/lib/get-company-logo"
 
 interface Props {
   className?: string
@@ -29,9 +30,12 @@ export default function VacancyCard({ className, vacancy, url }: Props) {
       )}
       href={url}
     >
-      <Avatar
-        className="shrink-0 w-18 h-18"
-        src={vacancy.recruiter?.company?.logo}
+      <Image
+        className="shrink-0 w-18 h-18 rounded-full"
+        src={getCompanyLogo(vacancy.recruiter?.company)}
+        width={300}
+        height={300}
+        alt=""
       />
 
       <div className="flex flex-col gap-2 grow pb-4 border-b border-border group-[:last-child]:border-b-0">

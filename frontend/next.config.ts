@@ -1,7 +1,13 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
-  /* config options here */
-};
+  images: {
+    remotePatterns: [
+      {
+        hostname: process.env.NEXT_PUBLIC_ATTACHMENT_HOST,
+      },
+    ],
+  },
+}
 
-export default nextConfig;
+export default nextConfig

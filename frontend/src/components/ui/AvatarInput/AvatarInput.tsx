@@ -13,7 +13,7 @@ import Image from "next/image"
 import Button from "@/components/ui/Button"
 import Icon from "@/components/ui/Icon"
 import { useFieldValue } from "@/lib/use-field-value"
-import avatarImg from "@/assets/images/avatar.png"
+import userPlaceholderImg from "@/assets/images/user-placeholder.png"
 import { FormError } from "@/types/form-error"
 import FieldContainer from "@/components/ui/FieldContainer"
 
@@ -59,8 +59,9 @@ export default function AvatarInput({
   })
 
   const src = useMemo(() => {
+    // TODO: improve. for company logo display other placeholder
     if (!value) {
-      return avatarImg
+      return userPlaceholderImg
     } else if ("content" in value) {
       return `data:${value.mimeType};base64,${value.content}`
     } else {
