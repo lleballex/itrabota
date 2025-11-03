@@ -1,6 +1,6 @@
 import { BaseEntity } from "./base-entity"
 
-export interface VacancyFunnelStep extends BaseEntity {
+export interface FunnelStep extends BaseEntity {
   index: number
   name: string
   approveMessage: string | null

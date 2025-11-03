@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsBoolean,
   IsEnum,
   IsInt,
   IsNotEmpty,
@@ -7,6 +8,7 @@ import {
   IsPositive,
   IsString,
   IsUUID,
+  ValidateNested,
 } from "class-validator"
 
 import {
@@ -15,6 +17,26 @@ import {
   VacancySchedule,
   VacancyWorkExperience,
 } from "../entities/vacancy.entity"
+import { Type } from "class-transformer"
+
+class CreateFunnelStepDto {
+  @IsString()
+  @IsNotEmpty()
+  name!: string
+
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  approveMessage?: string | null
+
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  rejectMessage?: string | null
+
+  @IsBoolean()
+  shouldCreateCall!: boolean
+}
 
 export class CreateVacancyDto {
   @IsString()
@@ -79,4 +101,10 @@ export class CreateVacancyDto {
   @IsUUID()
   @IsOptional()
   cityId?: string | null
+
+  @IsArray()
+  @Type(() => CreateFunnelStepDto)
+  @ValidateNested({ each: true })
+  @IsOptional()
+  funnelSteps?: CreateFunnelStepDto[]
 }

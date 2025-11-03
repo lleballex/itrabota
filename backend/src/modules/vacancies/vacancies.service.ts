@@ -8,6 +8,7 @@ import { UsersService } from "@/modules/users/users.service"
 import { Vacancy } from "./entities/vacancy.entity"
 import { CreateVacancyDto } from "./dto/create-vacancy.dto"
 import { GetRecruiterVacanciesDto } from "./dto/get-recruiter-vacancies.dto"
+import { FunnelStepsService } from "./funnel-steps.service"
 
 @Injectable()
 export class VacanciesService {
@@ -15,6 +16,7 @@ export class VacanciesService {
     @InjectRepository(Vacancy)
     private readonly vacanciesRepo: Repository<Vacancy>,
 
+    private readonly funnelStepsService: FunnelStepsService,
     private readonly usersService: UsersService,
   ) {}
 
@@ -25,6 +27,7 @@ export class VacanciesService {
       .leftJoinAndSelect("recruiter.company", "company")
       .leftJoinAndSelect("company.industry", "industry")
       .leftJoinAndSelect("company.logo", "logo")
+      .leftJoinAndSelect("vacancy.funnelSteps", "funnelStep")
   }
 
   private async findOne(where: FindOptionsWhere<Vacancy>) {
@@ -49,9 +52,11 @@ export class VacanciesService {
   ) {
     const user = await this.usersService.findFilledRecruiterById(user_.id)
 
-    const qb = this.createQB().andWhere("recruiter.id = :recruiterId", {
-      recruiterId: user.recruiter.id,
-    })
+    const qb = this.createQB()
+      .andWhere("recruiter.id = :recruiterId", {
+        recruiterId: user.recruiter.id,
+      })
+      .orderBy("vacancy.createdAt", "DESC")
 
     if (dto.query) {
       qb.andWhere("vacancy.title ILIKE :query", { query: `%${dto.query}%` })
@@ -64,8 +69,12 @@ export class VacanciesService {
     return qb.getMany()
   }
 
-  async create(dto: CreateVacancyDto, user_: ICurrentUser) {
+  async create(dto_: CreateVacancyDto, user_: ICurrentUser) {
+    const { funnelSteps: funnelStepsDto, ...dto } = dto_
+
     const user = await this.usersService.findFilledRecruiterById(user_.id)
+
+    // TODO: start transaction
 
     const vacancy = this.vacanciesRepo.create({
       ...dto,
@@ -76,6 +85,16 @@ export class VacanciesService {
     })
 
     const savedVacancy = await this.vacanciesRepo.save(vacancy)
+
+    if (funnelStepsDto) {
+      for (const [funnelStepIdx, funnelStepDto] of funnelStepsDto.entries()) {
+        await this.funnelStepsService.create({
+          ...funnelStepDto,
+          index: funnelStepIdx,
+          vacancy: { id: savedVacancy.id },
+        })
+      }
+    }
 
     return this.findOneById(savedVacancy.id)
   }

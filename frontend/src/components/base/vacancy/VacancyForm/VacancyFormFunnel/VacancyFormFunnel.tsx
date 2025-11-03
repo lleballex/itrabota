@@ -23,11 +23,13 @@ export default function VacancyFormFunnel() {
     move: moveFormFunnelStep,
   } = useFieldArray({
     control: form.control,
-    name: "funnel",
+    name: "funnelSteps",
   })
 
   const addFormFunnelStep = () => {
-    addFormFunnelStep_(formDefaultFunnelStep as FormOutputValues["funnel"][0])
+    addFormFunnelStep_(
+      formDefaultFunnelStep as FormOutputValues["funnelSteps"][0]
+    )
   }
 
   const moveFormFunnelStepForward = (stepIdx: number) => {
@@ -62,7 +64,7 @@ export default function VacancyFormFunnel() {
               </Button>
               <Controller
                 control={form.control}
-                name={`funnel.${stepIdx}.name`}
+                name={`funnelSteps.${stepIdx}.name`}
                 render={({ field, fieldState }) => (
                   <Input
                     {...field}
@@ -79,7 +81,7 @@ export default function VacancyFormFunnel() {
 
             <Controller
               control={form.control}
-              name={`funnel.${stepIdx}.shouldCreateCall`}
+              name={`funnelSteps.${stepIdx}.shouldCreateCall`}
               render={({ field, fieldState }) => (
                 <Checkbox
                   {...field}
@@ -93,7 +95,7 @@ export default function VacancyFormFunnel() {
 
             <Controller
               control={form.control}
-              name={`funnel.${stepIdx}.approveMessage`}
+              name={`funnelSteps.${stepIdx}.approveMessage`}
               render={({ field, fieldState }) => (
                 <Textarea
                   {...field}
@@ -106,7 +108,7 @@ export default function VacancyFormFunnel() {
 
             <Controller
               control={form.control}
-              name={`funnel.${stepIdx}.rejectMessage`}
+              name={`funnelSteps.${stepIdx}.rejectMessage`}
               render={({ field, fieldState }) => (
                 <Textarea
                   {...field}

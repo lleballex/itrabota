@@ -30,7 +30,7 @@ const formSchema = z.object({
   niceToHave: formSchemaFields.string.nullable(),
   responsibilites: formSchemaFields.string.nullable(),
   conditions: formSchemaFields.string.nullable(),
-  funnel: z.array(
+  funnelSteps: z.array(
     z.object({
       name: formSchemaFields.string,
       approveMessage: formSchemaFields.string.nullable(),
@@ -63,13 +63,14 @@ export const getFormDefaultValues = (
   niceToHave: vacancy?.niceToHave ?? null,
   responsibilites: vacancy?.responsibilities ?? null,
   conditions: vacancy?.conditions ?? null,
-  // TODO: add funnel
+  funnelSteps: vacancy?.funnelSteps ?? [],
 })
 
-export const formDefaultFunnelStep: DeepPartial<FormOutputValues["funnel"][0]> =
-  {
-    name: undefined,
-    approveMessage: null,
-    rejectMessage: null,
-    shouldCreateCall: false,
-  }
+export const formDefaultFunnelStep: DeepPartial<
+  FormOutputValues["funnelSteps"][0]
+> = {
+  name: undefined,
+  approveMessage: null,
+  rejectMessage: null,
+  shouldCreateCall: false,
+}

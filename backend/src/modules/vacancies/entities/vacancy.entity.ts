@@ -10,7 +10,9 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
 } from "typeorm"
+import { FunnelStep } from "./funnel-step.entity"
 
 export const VacancyStatus = {
   Active: "active",
@@ -121,4 +123,7 @@ export class Vacancy extends BaseEntity {
   })
   @JoinColumn()
   recruiter?: Recruiter
+
+  @OneToMany(() => FunnelStep, (step) => step.vacancy)
+  funnelSteps?: FunnelStep[]
 }

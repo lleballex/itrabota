@@ -3,6 +3,7 @@ import { City } from "./city"
 import { Specialization } from "./specialization"
 import { Skill } from "./skill"
 import { Recruiter } from "./recruiter"
+import { FunnelStep } from "./funnel-step"
 
 export interface Vacancy extends BaseEntity {
   title: string
@@ -23,6 +24,7 @@ export interface Vacancy extends BaseEntity {
   specialization?: Specialization
   city?: City
   recruiter?: Recruiter
+  funnelSteps?: FunnelStep[]
 }
 
 export const VacancyStatus = {
