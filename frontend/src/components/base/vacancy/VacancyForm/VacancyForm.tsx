@@ -1,6 +1,7 @@
 "use client"
 
 import { FormProvider, useForm } from "react-hook-form"
+import { useRouter } from "next/navigation"
 
 import { Vacancy } from "@/types/entities/vacancy"
 import Button from "@/components/ui/Button"
@@ -14,12 +15,20 @@ import {
 } from "./form"
 import { getFormStepByField, useFormSteps } from "./form-steps"
 import { useEffect } from "react"
+import { useCreateVacancy } from "@/api/vacancies/create-vacancy"
+import { handleFormApiError } from "@/lib/handle-form-api-error"
+import { useToastsStore } from "@/stores/toasts"
+import { Routes } from "@/config/routes"
 
 interface Props {
   vacancy?: Vacancy
 }
 
 export default function VacancyForm({ vacancy }: Props) {
+  const router = useRouter()
+
+  const { addToast } = useToastsStore()
+
   const form = useForm<FormInputValues, unknown, FormOutputValues>({
     resolver: formResolver,
     defaultValues: getFormDefaultValues(vacancy),
@@ -45,10 +54,22 @@ export default function VacancyForm({ vacancy }: Props) {
     if (errorStep && errorStep.stepIdx !== stepIdx) {
       goToStep(errorStep.stepIdx)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.formState.errors])
 
+  const { mutate: create, status: createStatus } = useCreateVacancy()
+
   const onSubmit = form.handleSubmit((data) => {
-    console.log(data)
+    create(data, {
+      onSuccess: () => {
+        addToast({
+          type: "success",
+          message: "Вакансия создана",
+        })
+        router.push(Routes.recruiter.vacancies)
+      },
+      onError: (error) => handleFormApiError({ error, form }),
+    })
   })
 
   return (
@@ -80,7 +101,11 @@ export default function VacancyForm({ vacancy }: Props) {
             </Button>
           )}
           {!nextStep && (
-            <Button type="glass" htmlType="submit">
+            <Button
+              type="glass"
+              htmlType="submit"
+              pending={createStatus === "pending"}
+            >
               {vacancy ? "Сохранить" : "Создать"}
             </Button>
           )}

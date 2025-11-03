@@ -13,7 +13,7 @@ import { formSchemaFields } from "@/lib/form-schema-fields"
 
 const formSchema = z.object({
   title: formSchemaFields.string,
-  specializationId: formSchemaFields.string, // TODO: error for enum
+  specializationId: formSchemaFields.relation,
   employmentType: z.enum(VacancyEmploymentType, { error: "ENUM_NOT_FILLED" }), // TODO: move to file with fields
   format: z.enum(VacancyFormat, { error: "ENUM_NOT_FILLED" }),
   schedule: z.enum(VacancySchedule, { error: "ENUM_NOT_FILLED" }),
@@ -24,7 +24,7 @@ const formSchema = z.object({
   salaryTo: formSchemaFields.number
     .pipe(z.number().int().positive())
     .nullable(),
-  city: formSchemaFields.string.nullable(),
+  cityId: formSchemaFields.relation.nullable(),
   description: formSchemaFields.string.nullable(),
   requirements: formSchemaFields.string.nullable(),
   niceToHave: formSchemaFields.string.nullable(),
@@ -57,7 +57,7 @@ export const getFormDefaultValues = (
   workExperience: vacancy?.workExperience,
   salaryFrom: vacancy?.salaryFrom ?? null,
   salaryTo: vacancy?.salaryTo ?? null,
-  city: vacancy?.city?.id ?? null,
+  cityId: vacancy?.city?.id ?? null,
   description: vacancy?.description ?? null,
   requirements: vacancy?.requirements ?? null,
   niceToHave: vacancy?.niceToHave ?? null,
