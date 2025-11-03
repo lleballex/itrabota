@@ -32,6 +32,7 @@ const formSchema = z.object({
   conditions: formSchemaFields.string.nullable(),
   funnelSteps: z.array(
     z.object({
+      id: formSchemaFields.string.optional(),
       name: formSchemaFields.string,
       approveMessage: formSchemaFields.string.nullable(),
       rejectMessage: formSchemaFields.string.nullable(),
@@ -69,6 +70,7 @@ export const getFormDefaultValues = (
 export const formDefaultFunnelStep: DeepPartial<
   FormOutputValues["funnelSteps"][0]
 > = {
+  id: undefined,
   name: undefined,
   approveMessage: null,
   rejectMessage: null,

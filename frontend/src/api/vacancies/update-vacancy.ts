@@ -24,6 +24,13 @@ interface Data {
   skillIds?: string[]
   specializationId?: string
   cityId?: string | null
+  funnelSteps?: {
+    id?: string
+    name: string
+    approveMessage?: string | null
+    rejectMessage?: string | null
+    shouldCreateCall: boolean
+  }[]
 }
 
 export const useUpdateVacancy = createUseMutation(({ id, ...data }: Data) =>

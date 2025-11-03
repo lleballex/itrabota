@@ -51,6 +51,40 @@ export class VacanciesService {
     return vacancy
   }
 
+  private async handleFunnelStepsUpsert(
+    funnelStepsDto: UpdateVacancyDto["funnelSteps"], // TODO: it's not only for updating
+    vacancy: Vacancy,
+  ) {
+    if (!funnelStepsDto) return
+
+    if (vacancy.funnelSteps) {
+      for (const funnelStep of vacancy.funnelSteps) {
+        const funnelStepExists = funnelStepsDto.some(
+          (i) => i.id === funnelStep.id,
+        )
+
+        if (!funnelStepExists) {
+          await this.funnelStepsService.delete(funnelStep.id)
+        }
+      }
+    }
+
+    for (const [funnelStepIdx, funnelStepDto] of funnelStepsDto.entries()) {
+      if (funnelStepDto.id) {
+        await this.funnelStepsService.update(funnelStepDto.id, {
+          ...funnelStepDto,
+          index: funnelStepIdx,
+        })
+      } else {
+        await this.funnelStepsService.create({
+          ...funnelStepDto,
+          index: funnelStepIdx,
+          vacancy: { id: vacancy.id },
+        })
+      }
+    }
+  }
+
   findOneById(id: string) {
     return this.findOne({ id })
   }
@@ -85,7 +119,7 @@ export class VacanciesService {
 
     // TODO: start transaction
 
-    const vacancy = this.vacanciesRepo.create({
+    let vacancy = this.vacanciesRepo.create({
       ...dto,
       specialization: { id: dto.specializationId },
       city: dto.cityId ? { id: dto.cityId } : null,
@@ -93,22 +127,16 @@ export class VacanciesService {
       recruiter: { id: user.recruiter.id },
     })
 
-    const savedVacancy = await this.vacanciesRepo.save(vacancy)
+    vacancy = await this.vacanciesRepo.save(vacancy)
 
-    if (funnelStepsDto) {
-      for (const [funnelStepIdx, funnelStepDto] of funnelStepsDto.entries()) {
-        await this.funnelStepsService.create({
-          ...funnelStepDto,
-          index: funnelStepIdx,
-          vacancy: { id: savedVacancy.id },
-        })
-      }
-    }
+    await this.handleFunnelStepsUpsert(funnelStepsDto, vacancy)
 
-    return this.findOneById(savedVacancy.id)
+    return this.findOneById(vacancy.id)
   }
 
-  async update(id: string, dto: UpdateVacancyDto, user_: ICurrentUser) {
+  async update(id: string, dto_: UpdateVacancyDto, user_: ICurrentUser) {
+    const { funnelSteps: funnelStepsDto, ...dto } = dto_
+
     const vacancy = await this.findOneById(id)
     const user = await this.usersService.findFilledRecruiterById(user_.id)
 
@@ -116,8 +144,12 @@ export class VacanciesService {
       throw new ForbiddenException("You are not the author of the vacancy")
     }
 
+    // TODO: start transaction
+
     const updatedVacancy = this.vacanciesRepo.create({ ...dto, id })
     await this.vacanciesRepo.save(updatedVacancy)
+
+    await this.handleFunnelStepsUpsert(funnelStepsDto, vacancy)
 
     return this.findOneById(vacancy.id)
   }

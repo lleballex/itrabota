@@ -19,7 +19,11 @@ import {
 } from "../entities/vacancy.entity"
 import { Type } from "class-transformer"
 
-class CreateFunnelStepDto {
+class CreateOrUpdateFunnelStepDto {
+  @IsUUID()
+  @IsOptional()
+  id?: string
+
   @IsString()
   @IsNotEmpty()
   name!: string
@@ -108,10 +112,9 @@ export class UpdateVacancyDto {
   @IsOptional()
   cityId?: string | null
 
-  // @IsArray()
-  // @Type(() => CreateFunnelStepDto)
-  // @ValidateNested({ each: true })
-  // @IsOptional()
-  // funnelSteps?: UpdateFunnelStepDto[]
-  // TODO: funnel
+  @IsArray()
+  @Type(() => CreateOrUpdateFunnelStepDto)
+  @ValidateNested({ each: true })
+  @IsOptional()
+  funnelSteps?: CreateOrUpdateFunnelStepDto[]
 }

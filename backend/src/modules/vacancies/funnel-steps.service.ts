@@ -31,4 +31,16 @@ export class FunnelStepsService {
 
     return this.findOneById(savedFunnelStep.id)
   }
+
+  async update(id: string, data: DeepPartial<FunnelStep>) {
+    const funnelStep = this.funnelStepsRepo.create({ ...data, id })
+    await this.funnelStepsRepo.save(funnelStep)
+
+    return this.findOneById(id)
+  }
+
+  async delete(id: string) {
+    const funnelStep = await this.findOneById(id)
+    await this.funnelStepsRepo.remove(funnelStep)
+  }
 }
