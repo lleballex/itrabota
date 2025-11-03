@@ -12,6 +12,7 @@ import { MeModule } from "@/modules/me/me.module"
 import { SkillsModule } from "@/modules/skills/skills.module"
 import { SpecializationsModule } from "@/modules/specializations/specializations.module"
 import { UsersModule } from "@/modules/users/users.module"
+import { VacanciesModule } from "@/modules/vacancies/vacancies.module"
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { UsersModule } from "@/modules/users/users.module"
     SkillsModule,
     SpecializationsModule,
     UsersModule,
+    VacanciesModule,
   ],
 })
 export class AppModule {}

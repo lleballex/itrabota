@@ -1,9 +1,10 @@
-import { Column, Entity, JoinColumn, OneToOne } from "typeorm"
+import { Column, Entity, JoinColumn, OneToMany, OneToOne } from "typeorm"
 
 import { BaseEntity } from "@/database/entities/base.entity"
 import { Company } from "@/modules/companies/entities/company.entity"
 
 import { User } from "./user.entity"
+import { Vacancy } from "@/modules/vacancies/entities/vacancy.entity"
 
 @Entity("recruiter")
 export class Recruiter extends BaseEntity {
@@ -28,4 +29,7 @@ export class Recruiter extends BaseEntity {
     onDelete: "CASCADE",
   })
   company?: Company
+
+  @OneToMany(() => Vacancy, (vacancy) => vacancy.recruiter)
+  vacancies?: Vacancy[]
 }
