@@ -4,11 +4,11 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
   ValidateNested,
 } from "class-validator"
 
 import { CreateAttachmentDto } from "@/modules/attachments/dto/create-attachment.dto"
-import { AddIndustryDto } from "@/modules/industries/dto/add-industry.dto"
 
 class UpdateCompanyDto {
   @IsString()
@@ -25,10 +25,9 @@ class UpdateCompanyDto {
   @IsOptional()
   logo?: CreateAttachmentDto | null
 
-  @Type(() => AddIndustryDto)
-  @ValidateNested()
+  @IsUUID("4")
   @IsOptional()
-  industry!: AddIndustryDto
+  industryId!: string
 }
 
 export class UpdateMeRecruiterDto {

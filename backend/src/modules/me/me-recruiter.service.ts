@@ -79,6 +79,7 @@ export class MeRecruiterService {
 
     await this.companiesService.create({
       ...companyDto,
+      industry: { id: companyDto.industryId },
       logo: { id: companyLogo?.id },
       recruiter: { id: recruiter.id },
     })
@@ -111,6 +112,7 @@ export class MeRecruiterService {
 
       await this.companiesService.update(user.recruiter.company.id, {
         ...companyDto,
+        industry: { id: companyDto.industryId },
         logo: { id: companyLogo?.id },
       })
     }

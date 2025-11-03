@@ -42,7 +42,7 @@ export default function RecruiterProfileCompany() {
       </div>
       <Controller
         control={form.control}
-        name="company.industry.id"
+        name="company.industryId"
         render={({ field, fieldState }) => (
           <Select
             {...field}

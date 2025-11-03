@@ -9,6 +9,7 @@ interface Data {
   company?: {
     name?: string
     url?: string | null
+    industryId: string
     logo?: {
       name: string
       mimeType: string
