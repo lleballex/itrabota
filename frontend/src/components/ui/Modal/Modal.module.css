@@ -1,0 +1,22 @@
+.root {
+  margin: auto;
+  inset: 0;
+  background: none;
+  color: inherit;
+  scale: 0;
+  transition-behavior: allow-discrete;
+}
+
+.root[open] {
+  scale: 1;
+}
+
+.root::backdrop {
+  display: none;
+}
+
+@starting-style {
+  .root[open] {
+    scale: 0;
+  }
+}

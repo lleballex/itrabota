@@ -42,11 +42,11 @@ export default function Button({
   const style = useMemo(() => {
     return {
       primary:
-        "flex items-center gap-1 h-[var(--height-button)] px-3 rounded-full text-fg font-bold bg-primary transition-all hover:opacity-70",
+        "flex items-center justify-center gap-1 h-[var(--height-button)] px-3 rounded-full text-fg-heading font-bold bg-primary transition-all hover:opacity-70",
       secondary:
-        "flex items-center gap-1 h-[var(--height-button)] px-3 rounded-full text-primary font-bold bg-secondary transition-all hover:opacity-70",
+        "flex items-center justify-center gap-1 h-[var(--height-button)] px-3 rounded-full text-primary font-bold bg-secondary transition-all hover:opacity-70",
       glass:
-        "glass flex items-center gap-1 h-control px-2.5 rounded-full text-fg font-bold transition-all hover:scale-115",
+        "glass flex items-center justify-center gap-1 h-control px-2.5 rounded-full text-fg font-bold transition-all hover:scale-115",
       text: "flex items-center gap-1 text-primary font-bold transition-all hover:opacity-70",
       base: "",
     }[type]
