@@ -9,6 +9,7 @@ import { Candidate } from "@/modules/users/entities/candidate.entity"
 import { WorkExperienceService } from "@/modules/users/work-experience.service"
 
 import { CreateMeCandidateDto } from "./dto/create-me-candidate.dto"
+import { UpdateMeCandidateDto } from "./dto/update-me-candidate.dto"
 
 @Injectable()
 export class MeCandidateService {
@@ -53,13 +54,27 @@ export class MeCandidateService {
   }
 
   private async handleWorkExperienceUpsert(
-    dto: CreateMeCandidateDto["workExperience"],
+    dto: UpdateMeCandidateDto["workExperience"],
     candidate: Candidate,
   ) {
-    if (dto) {
-      for (const workExperienceItemDto of dto) {
+    if (!dto) return
+
+    if (candidate.workExperience) {
+      for (const item of candidate.workExperience) {
+        const itemExists = dto.some((i) => i.id === item.id)
+
+        if (!itemExists) {
+          await this.workExperieceService.remove(item.id)
+        }
+      }
+    }
+
+    for (const itemDto of dto) {
+      if (itemDto.id) {
+        await this.workExperieceService.update(itemDto.id, itemDto)
+      } else {
         await this.workExperieceService.create({
-          ...workExperienceItemDto,
+          ...itemDto,
           candidate: { id: candidate.id },
         })
       }
@@ -93,6 +108,36 @@ export class MeCandidateService {
     })
 
     await this.handleWorkExperienceUpsert(workExperienceDto, candidate)
+
+    return this.usersService.findOneById(user.id)
+  }
+
+  async update(dto_: UpdateMeCandidateDto, user_: ICurrentUser) {
+    const {
+      email,
+      avatar: avatarDto,
+      workExperience: workExperienceDto,
+      ...dto
+    } = dto_
+
+    const user = await this.usersService.findFilledCandidateById(user_.id)
+
+    await this.validateEmail(email, user.id)
+
+    // TODO: start transtion
+
+    await this.handleEmailUpdate(email, user.id)
+
+    const avatar = await this.handleAvatarUpsert(avatarDto, user.candidate)
+
+    await this.candidatesService.update(user.candidate.id, {
+      ...dto,
+      city: typeof dto.cityId === "string" ? { id: dto.cityId } : dto.cityId,
+      skills: dto.skillIds ? dto.skillIds.map((id) => ({ id })) : dto.skillIds,
+      avatar: { id: avatar?.id },
+    })
+
+    await this.handleWorkExperienceUpsert(workExperienceDto, user.candidate)
 
     return this.usersService.findOneById(user.id)
   }

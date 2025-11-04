@@ -8,6 +8,7 @@ import { User, UserRole } from "@/types/entities/user"
 import { useCreateMeCandidate } from "@/api/me/create-me-candidate"
 import { handleFormApiError } from "@/lib/handle-form-api-error"
 import { useToastsStore } from "@/stores/toasts"
+import { useUpdateMeCandidate } from "@/api/me/update-me-candidate"
 
 import {
   FormInputValues,
@@ -34,26 +35,44 @@ const Content = ({ me }: Props) => {
   })
 
   const { mutate: create, status: createStatus } = useCreateMeCandidate()
+  const { mutate: update, status: updateStatus } = useUpdateMeCandidate()
 
   const onSubmit = form.handleSubmit((data) => {
-    create(
-      { ...data, avatar: data.avatar as any },
-      {
-        onSuccess: () => {
-          addToast({
-            type: "success",
-            message: "Данные сохранены",
-          })
-        },
-        onError: (error) => handleFormApiError({ error, form }),
-      }
-    )
+    if (me.candidate) {
+      update(
+        { ...data, avatar: data.avatar as any },
+        {
+          onSuccess: () => {
+            addToast({
+              type: "success",
+              message: "Данные сохранены",
+            })
+          },
+          onError: (error) => handleFormApiError({ error, form }),
+        }
+      )
+    } else {
+      create(
+        { ...data, avatar: data.avatar as any },
+        {
+          onSuccess: () => {
+            addToast({
+              type: "success",
+              message: "Данные сохранены",
+            })
+          },
+          onError: (error) => handleFormApiError({ error, form }),
+        }
+      )
+    }
   })
 
   return (
     <ProfileForm.Root form={form} onSubmit={onSubmit}>
       <CandidateProfileAvatar />
-      <ProfileForm.Main pending={createStatus === "pending"}>
+      <ProfileForm.Main
+        pending={createStatus === "pending" || updateStatus === "pending"}
+      >
         <CandidateProfileMain />
         <ProfileForm.BlockSeparator />
         <CandidateProfileContacts />

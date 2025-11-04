@@ -11,6 +11,7 @@ import { CreateMeRecruiterDto } from "./dto/create-me-recruiter.dto"
 import { UpdateMeRecruiterDto } from "./dto/update-me-recruiter.dto"
 import { CreateMeCandidateDto } from "./dto/create-me-candidate.dto"
 import { MeCandidateService } from "./me-candidate.service"
+import { UpdateMeCandidateDto } from "./dto/update-me-candidate.dto"
 
 @Controller("me")
 export class MeController {
@@ -51,5 +52,14 @@ export class MeController {
     @CurrentUser() user: ICurrentUser,
   ) {
     return this.meCandidateService.create(body, user)
+  }
+
+  @Patch("/candidate")
+  @Auth(UserRole.Candidate)
+  updateCandidate(
+    @Body() body: UpdateMeCandidateDto,
+    @CurrentUser() user: ICurrentUser,
+  ) {
+    return this.meCandidateService.update(body, user)
   }
 }

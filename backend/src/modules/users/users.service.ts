@@ -89,6 +89,16 @@ export class UsersService {
     return user as WithConcreted<typeof user, "role", typeof UserRole.Candidate>
   }
 
+  async findFilledCandidateById(id: string) {
+    const user = await this.findCandidateById(id)
+
+    if (!user.candidate) {
+      throw new Error("Candidate must be filled")
+    }
+
+    return user as WithRequired<typeof user, "candidate">
+  }
+
   async create(data: DeepPartial<User>) {
     const user = this.usersRepo.create(data)
     const savedUser = await this.usersRepo.save(user)
