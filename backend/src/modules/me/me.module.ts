@@ -6,10 +6,11 @@ import { CompaniesModule } from "@/modules/companies/companies.module"
 
 import { MeController } from "./me.controller"
 import { MeRecruiterService } from "./me-recruiter.service"
+import { MeCandidateService } from "./me-candidate.service"
 
 @Module({
   imports: [UsersModule, AttachmentsModule, CompaniesModule],
   controllers: [MeController],
-  providers: [MeRecruiterService],
+  providers: [MeRecruiterService, MeCandidateService],
 })
 export class MeModule {}

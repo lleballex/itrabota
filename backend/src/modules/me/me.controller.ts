@@ -9,11 +9,14 @@ import { UserRole } from "@/modules/users/entities/user.entity"
 import { MeRecruiterService } from "./me-recruiter.service"
 import { CreateMeRecruiterDto } from "./dto/create-me-recruiter.dto"
 import { UpdateMeRecruiterDto } from "./dto/update-me-recruiter.dto"
+import { CreateMeCandidateDto } from "./dto/create-me-candidate.dto"
+import { MeCandidateService } from "./me-candidate.service"
 
 @Controller("me")
 export class MeController {
   constructor(
     private readonly meRecruiterService: MeRecruiterService,
+    private readonly meCandidateService: MeCandidateService,
     private readonly usersService: UsersService,
   ) {}
 
@@ -39,5 +42,14 @@ export class MeController {
     @CurrentUser() user: ICurrentUser,
   ) {
     return this.meRecruiterService.update(body, user)
+  }
+
+  @Post("/candidate")
+  @Auth(UserRole.Candidate)
+  createCandidate(
+    @Body() body: CreateMeCandidateDto,
+    @CurrentUser() user: ICurrentUser,
+  ) {
+    return this.meCandidateService.create(body, user)
   }
 }

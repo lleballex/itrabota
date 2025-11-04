@@ -21,6 +21,9 @@ export class UsersService {
       .leftJoinAndSelect("company.logo", "logo")
       .leftJoinAndSelect("company.industry", "industry")
       .leftJoinAndSelect("user.candidate", "candidate")
+      .leftJoinAndSelect("candidate.city", "city")
+      .leftJoinAndSelect("candidate.workExperience", "workExperienceItem")
+      .leftJoinAndSelect("candidate.avatar", "avatar")
 
     return qb
   }
@@ -57,7 +60,7 @@ export class UsersService {
   }
 
   async findRecruiterById(id: string) {
-    const user = await this.findOne({ id })
+    const user = await this.findOneById(id)
 
     if (user.role !== UserRole.Recruiter) {
       throw new Error("User must be a recruiter")
@@ -74,6 +77,16 @@ export class UsersService {
     }
 
     return user as WithRequired<typeof user, "recruiter">
+  }
+
+  async findCandidateById(id: string) {
+    const user = await this.findOneById(id)
+
+    if (user.role !== UserRole.Candidate) {
+      throw new Error("User must be a candidate")
+    }
+
+    return user as WithConcreted<typeof user, "role", typeof UserRole.Candidate>
   }
 
   async create(data: DeepPartial<User>) {
