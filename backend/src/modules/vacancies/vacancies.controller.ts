@@ -17,6 +17,7 @@ import { VacanciesService } from "./vacancies.service"
 import { CreateVacancyDto } from "./dto/create-vacancy.dto"
 import { GetRecruiterVacanciesDto } from "./dto/get-recruiter-vacancies.dto"
 import { UpdateVacancyDto } from "./dto/update-vacancy-dto"
+import { GetCandidateVacanciesDto } from "./dto/get-candidate-vacancies.dto"
 
 @Controller("vacancies")
 export class VacanciesController {
@@ -29,6 +30,15 @@ export class VacanciesController {
     @CurrentUser() user: ICurrentUser,
   ) {
     return this.vacanciesService.findAllForRecruiter(query, user)
+  }
+
+  @Get("candidate")
+  @Auth(UserRole.Candidate)
+  findAllForCandidate(
+    @Query() query: GetCandidateVacanciesDto,
+    @CurrentUser() user: ICurrentUser,
+  ) {
+    return this.vacanciesService.findAllForCandidate(query, user)
   }
 
   @Post()

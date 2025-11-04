@@ -9,11 +9,12 @@ import { FindOptionsWhere, Repository } from "typeorm"
 import { ICurrentUser } from "@/modules/auth/interfaces/current-user.interface"
 import { UsersService } from "@/modules/users/users.service"
 
-import { Vacancy } from "./entities/vacancy.entity"
+import { Vacancy, VacancyStatus } from "./entities/vacancy.entity"
 import { CreateVacancyDto } from "./dto/create-vacancy.dto"
 import { GetRecruiterVacanciesDto } from "./dto/get-recruiter-vacancies.dto"
 import { FunnelStepsService } from "./funnel-steps.service"
 import { UpdateVacancyDto } from "./dto/update-vacancy-dto"
+import { GetCandidateVacanciesDto } from "./dto/get-candidate-vacancies.dto"
 
 @Injectable()
 export class VacanciesService {
@@ -34,6 +35,7 @@ export class VacanciesService {
       .leftJoinAndSelect("company.logo", "logo")
       .leftJoinAndSelect("vacancy.specialization", "specialization")
       .leftJoinAndSelect("vacancy.city", "city")
+      .orderBy("vacancy.createdAt", "DESC")
   }
 
   private async findOne(where: FindOptionsWhere<Vacancy>) {
@@ -95,11 +97,9 @@ export class VacanciesService {
   ) {
     const user = await this.usersService.findFilledRecruiterById(user_.id)
 
-    const qb = this.createQB()
-      .andWhere("recruiter.id = :recruiterId", {
-        recruiterId: user.recruiter.id,
-      })
-      .orderBy("vacancy.createdAt", "DESC")
+    const qb = this.createQB().andWhere("recruiter.id = :recruiterId", {
+      recruiterId: user.recruiter.id,
+    })
 
     if (dto.query) {
       qb.andWhere("vacancy.title ILIKE :query", { query: `%${dto.query}%` })
@@ -107,6 +107,23 @@ export class VacanciesService {
 
     if (dto.status) {
       qb.andWhere("vacancy.status = :status", { status: dto.status })
+    }
+
+    return qb.getMany()
+  }
+
+  async findAllForCandidate(
+    dto: GetCandidateVacanciesDto,
+    user_: ICurrentUser,
+  ) {
+    await this.usersService.findFilledCandidateById(user_.id)
+
+    const qb = this.createQB().andWhere("vacancy.status = :status", {
+      status: VacancyStatus.Active,
+    })
+
+    if (dto.query) {
+      qb.andWhere("vacancy.title ILIKE :query", { query: `%${dto.query}%` })
     }
 
     return qb.getMany()

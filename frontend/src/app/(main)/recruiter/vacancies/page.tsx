@@ -67,6 +67,7 @@ const Content = () => {
                     key={vacancy.id}
                     vacancy={vacancy}
                     url={Routes.recruiter.vacancy(vacancy.id)}
+                    role={UserRole.Recruiter}
                   />
                 ))
               : "Ничего не найдено"

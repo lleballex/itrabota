@@ -5,6 +5,7 @@ import Image from "next/image"
 
 import {
   Vacancy,
+  VacancyFormat,
   VacancyFormats,
   VacancySchedules,
   VacancyWorkExperiences,
@@ -14,14 +15,16 @@ import Separator from "@/components/ui/Separator"
 import { getVacancySalary } from "@/lib/get-vacancy-salary"
 import { pluralize } from "@/lib/pluralize"
 import { getCompanyLogo } from "@/lib/get-company-logo"
+import { UserRole } from "@/types/entities/user"
 
 interface Props {
   className?: string
   vacancy: Vacancy
   url: string
+  role: UserRole
 }
 
-export default function VacancyCard({ className, vacancy, url }: Props) {
+export default function VacancyCard({ className, vacancy, url, role }: Props) {
   return (
     <Link
       className={classNames(
@@ -42,7 +45,9 @@ export default function VacancyCard({ className, vacancy, url }: Props) {
         <div className="flex items-end justify-between">
           <div className="flex items-center gap-6 text-sm text-secondary-light">
             <p>От {dayjs(vacancy.createdAt).format("DD MMMM YYYY")}</p>
-            <VacancyStatus status={vacancy.status} />
+            {role === UserRole.Recruiter && (
+              <VacancyStatus status={vacancy.status} />
+            )}
           </div>
           {vacancy.specialization && (
             <p className="text-sm border border-border rounded px-1.5 py-0.5">
@@ -67,22 +72,28 @@ export default function VacancyCard({ className, vacancy, url }: Props) {
 
         <div className="flex items-center gap-6">
           <p>{VacancyWorkExperiences[vacancy.workExperience]}</p>
-          <p>{VacancyFormats[vacancy.format]}</p>
+          <p>
+            {VacancyFormats[vacancy.format]}{" "}
+            {vacancy.format !== VacancyFormat.Remote &&
+              vacancy.city &&
+              `(${vacancy.city.name})`}
+          </p>
           <p>{VacancySchedules[vacancy.schedule]}</p>
           <p>{getVacancySalary(vacancy)}</p>
         </div>
 
-        {vacancy.responsesCount !== undefined && (
-          <p className="text-primary">
-            {vacancy.responsesCount
-              ? pluralize(vacancy.responsesCount, {
-                  one: "отклик",
-                  few: "отклика",
-                  many: "откликов",
-                })
-              : "Нет откликов"}
-          </p>
-        )}
+        {role === UserRole.Recruiter &&
+          vacancy.responsesCount !== undefined && (
+            <p className="text-primary">
+              {vacancy.responsesCount
+                ? pluralize(vacancy.responsesCount, {
+                    one: "отклик",
+                    few: "отклика",
+                    many: "откликов",
+                  })
+                : "Нет откликов"}
+            </p>
+          )}
       </div>
     </Link>
   )

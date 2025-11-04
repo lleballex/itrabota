@@ -11,24 +11,30 @@ interface SidebarLink {
 }
 
 const recruiterLinks: SidebarLink[] = [
-  {
-    url: Routes.recruiter.dashboard,
-    title: "Дашборд",
-    icon: <Icon icon="house" />,
-  },
+  // {
+  //   url: Routes.recruiter.dashboard,
+  //   title: "Дашборд",
+  //   icon: <Icon icon="house" />,
+  // },
   {
     url: Routes.recruiter.vacancies,
     title: "Вакансии",
     icon: <Icon icon="files" />,
   },
-  {
-    url: Routes.recruiter.candidates,
-    title: "Соискатели",
-    icon: <Icon icon="users" />,
-  },
+  // {
+  //   url: Routes.recruiter.candidates,
+  //   title: "Соискатели",
+  //   icon: <Icon icon="users" />,
+  // },
 ]
 
-const candidateLinks: SidebarLink[] = []
+const candidateLinks: SidebarLink[] = [
+  {
+    url: Routes.candidate.vacancies,
+    title: "Вакансии",
+    icon: <Icon icon="files" />,
+  },
+]
 
 export const sidebarLinks = {
   [UserRole.Recruiter]: recruiterLinks,

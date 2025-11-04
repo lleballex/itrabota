@@ -9,11 +9,19 @@ interface RecruiterParams {
   status?: VacancyStatus
 }
 
+interface CandidateParams {
+  role: typeof UserRole.Candidate
+  query?: string
+}
+
 export const useVacancies = createUseQuery(
   "vacancies",
-  ({ role, ...params }: RecruiterParams) => {
-    return axios
-      .get<Vacancy[]>("/vacancies/recruiter", { params })
-      .then((res) => res.data)
+  ({ role, ...params }: RecruiterParams | CandidateParams) => {
+    const url = {
+      [UserRole.Recruiter]: "/vacancies/recruiter",
+      [UserRole.Candidate]: "/vacancies/candidate",
+    }[role]
+
+    return axios.get<Vacancy[]>(url, { params }).then((res) => res.data)
   }
 )

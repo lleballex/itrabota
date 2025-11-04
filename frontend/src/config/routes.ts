@@ -6,8 +6,6 @@ export const Routes = {
 
   recruiter: {
     profile: "/recruiter/profile",
-    dashboard: "/recruiter",
-    candidates: "/recruiter/candidates",
     newVacancy: "/recruiter/new-vacancy",
     vacancies: "/recruiter/vacancies",
     vacancy: (id: string) => `/recruiter/vacancies/${id}`,
@@ -16,5 +14,7 @@ export const Routes = {
 
   candidate: {
     profile: "/candidate/profile",
+    vacancies: "/candidate/vacancies",
+    vacancy: (id: string) => `/candidate/vacancies/${id}`,
   },
 }
