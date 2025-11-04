@@ -1,12 +1,13 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { FC, useMemo } from "react"
+import { FC, ReactNode, useEffect, useState } from "react"
 
 import { useMe } from "@/api/auth/get-me"
 import { Routes } from "@/config/routes"
 import { User, UserRole } from "@/types/entities/user"
 import Icon from "@/components/ui/Icon"
+import { useToastsStore } from "@/stores/toasts"
 
 interface Props {
   roles?: UserRole[]
@@ -21,37 +22,55 @@ export default function AuthProvider({
 }: Props) {
   const router = useRouter()
 
+  const { addToast } = useToastsStore()
+
   const me = useMe()
 
-  const children = useMemo(() => {
+  const [children, setChildren] = useState<ReactNode>(null)
+
+  useEffect(() => {
     if (me.status === "success") {
       if (!roles || roles.includes(me.data.role)) {
-        if (!me.data.recruiter && !me.data.candidate && !allowNoProfile) {
-          // TODO: check profile by the role
-          // TODO: toast
+        const profile = {
+          [UserRole.Recruiter]: me.data.recruiter,
+          [UserRole.Candidate]: me.data.candidate,
+        }[me.data.role]
+
+        if (!profile && !allowNoProfile) {
+          addToast({
+            type: "danger",
+            message: "Необходимо заполнить данные профиля",
+          })
           router.push(
             {
               [UserRole.Recruiter]: Routes.recruiter.profile,
               [UserRole.Candidate]: Routes.candidate.profile,
             }[me.data.role]
           )
-          return null
+          setChildren(null)
+        } else {
+          setChildren(<Component me={me.data} />)
         }
-
-        return <Component me={me.data} />
       } else {
-        // TODO: toast
-        router.push(Routes.login)
-        return null
+        addToast({
+          type: "danger",
+          message: "Доступ к странице запрещен",
+        })
+        router.push(Routes.home)
+        setChildren(null)
       }
     } else if (me.status === "error") {
-      // TODO: toast
+      addToast({
+        type: "danger",
+        message: "Необходимо войти в аккаунт",
+      })
       router.push(Routes.login)
-      return null
+      setChildren(null)
     } else {
-      return <Loader />
+      setChildren(<Loader />)
     }
-  }, [Component, me, roles, router, allowNoProfile])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [me, roles, allowNoProfile, Component])
 
   return children
 }

@@ -35,7 +35,7 @@ export default function MainLayoutHeaderUser({ user }: Props) {
       <Popover.Trigger>
         <Button className="gap-2 !p-1 !pr-2 font-medium" type="glass">
           <Image
-            className="w-[calc(var(--height-control)-var(--spacing)*2)] aspect-square"
+            className="w-[calc(var(--height-control)-var(--spacing)*2)] aspect-square rounded-full"
             src={getUserAvatar(user)}
             width={50}
             height={50}
