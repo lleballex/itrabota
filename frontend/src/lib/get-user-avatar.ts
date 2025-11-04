@@ -6,7 +6,7 @@ import userPlaceholderImg from "@/assets/images/user-placeholder.png"
 export const getUserAvatar = (user: User) => {
   const logo = {
     [UserRole.Recruiter]: user.recruiter?.company?.logo,
-    [UserRole.Candidate]: undefined,
+    [UserRole.Candidate]: user.candidate?.avatar,
   }[user.role]
 
   if (!logo) {
