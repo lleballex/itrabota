@@ -1,16 +1,10 @@
 import { Column, Entity, OneToOne } from "typeorm"
 
 import { BaseEntity } from "@/database/entities/base.entity"
+import { UserRole } from "@/modules/users/types/user-role"
 
 import { Candidate } from "./candidate.entity"
 import { Recruiter } from "./recruiter.entity"
-
-export const UserRole = {
-  Recruiter: "recruiter",
-  Candidate: "candidate",
-} as const
-
-export type UserRole = (typeof UserRole)[keyof typeof UserRole]
 
 @Entity("user")
 export class User extends BaseEntity {

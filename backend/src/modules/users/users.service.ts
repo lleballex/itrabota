@@ -3,9 +3,10 @@ import { DeepPartial, FindOptionsWhere, Repository } from "typeorm"
 import { InjectRepository } from "@nestjs/typeorm"
 
 import { WithRequired } from "@/common/types/with-required.type"
-
-import { User, UserRole } from "./entities/user.entity"
+import { UserRole } from "@/modules/users/types/user-role"
 import { WithConcreted } from "@/common/types/with-concreted.type"
+
+import { User } from "./entities/user.entity"
 
 @Injectable()
 export class UsersService {

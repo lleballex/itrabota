@@ -12,6 +12,7 @@ import { BaseEntity } from "@/database/entities/base.entity"
 import { Attachment } from "@/modules/attachments/entities/attachment.entity"
 import { City } from "@/modules/cities/entities/city.entity"
 import { Skill } from "@/modules/skills/entities/skills.entity"
+import { Application } from "@/modules/applications/entities/application.entity"
 
 import { User } from "./user.entity"
 import { WorkExperienceItem } from "./work-experence-item.entity"
@@ -60,4 +61,7 @@ export class Candidate extends BaseEntity {
   })
   @JoinColumn()
   user?: User
+
+  @OneToMany(() => Application, (application) => application.candidate)
+  applications?: Application[]
 }

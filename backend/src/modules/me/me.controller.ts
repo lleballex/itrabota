@@ -4,7 +4,7 @@ import { Auth } from "@/modules/auth/decorators/auth.decorator"
 import { CurrentUser } from "@/modules/auth/decorators/current-user.decorator"
 import { ICurrentUser } from "@/modules/auth/interfaces/current-user.interface"
 import { UsersService } from "@/modules/users/users.service"
-import { UserRole } from "@/modules/users/entities/user.entity"
+import { UserRole } from "@/modules/users/types/user-role"
 
 import { MeRecruiterService } from "./me-recruiter.service"
 import { CreateMeRecruiterDto } from "./dto/create-me-recruiter.dto"

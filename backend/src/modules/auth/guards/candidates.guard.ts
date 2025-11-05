@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common"
 import { Request } from "express"
 
-import { UserRole } from "@/modules/users/entities/user.entity"
+import { UserRole } from "@/modules/users/types/user-role"
 
 import { ICurrentUser } from "../interfaces/current-user.interface"
 

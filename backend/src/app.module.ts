@@ -13,6 +13,7 @@ import { SkillsModule } from "@/modules/skills/skills.module"
 import { SpecializationsModule } from "@/modules/specializations/specializations.module"
 import { UsersModule } from "@/modules/users/users.module"
 import { VacanciesModule } from "@/modules/vacancies/vacancies.module"
+import { ApplicationsModule } from "@/modules/applications/applications.module"
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { VacanciesModule } from "@/modules/vacancies/vacancies.module"
 
     AuthModule,
     AttachmentsModule,
+    ApplicationsModule,
     CitiesModule,
     CompaniesModule,
     IndustriesModule,

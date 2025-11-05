@@ -1,6 +1,7 @@
-import { Column, Entity, JoinColumn, ManyToOne } from "typeorm"
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm"
 
 import { BaseEntity } from "@/database/entities/base.entity"
+import { Application } from "@/modules/applications/entities/application.entity"
 
 import { Vacancy } from "./vacancy.entity"
 
@@ -27,4 +28,7 @@ export class FunnelStep extends BaseEntity {
   })
   @JoinColumn()
   vacancy?: Vacancy
+
+  @OneToMany(() => Application, (application) => application.vacancy)
+  applications?: Application[]
 }

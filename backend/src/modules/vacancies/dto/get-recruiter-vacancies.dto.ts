@@ -1,7 +1,7 @@
 import { IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator"
 import { ApiProperty } from "@nestjs/swagger"
 
-import { UserRole } from "@/modules/users/entities/user.entity"
+import { UserRole } from "@/modules/users/types/user-role"
 
 import { VacancyStatus } from "../entities/vacancy.entity"
 

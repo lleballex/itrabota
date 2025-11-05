@@ -11,7 +11,9 @@ import {
 import { CurrentUser } from "@/modules/auth/decorators/current-user.decorator"
 import { ICurrentUser } from "@/modules/auth/interfaces/current-user.interface"
 import { Auth } from "@/modules/auth/decorators/auth.decorator"
-import { UserRole } from "@/modules/users/entities/user.entity"
+import { UserRole } from "@/modules/users/types/user-role"
+import { CreateApplicationDto } from "@/modules/applications/dto/create-application.dto"
+import { ApplicationsService } from "@/modules/applications/applications.service"
 
 import { VacanciesService } from "./vacancies.service"
 import { CreateVacancyDto } from "./dto/create-vacancy.dto"
@@ -21,7 +23,10 @@ import { GetCandidateVacanciesDto } from "./dto/get-candidate-vacancies.dto"
 
 @Controller("vacancies")
 export class VacanciesController {
-  constructor(private readonly vacanciesService: VacanciesService) {}
+  constructor(
+    private readonly vacanciesService: VacanciesService,
+    private readonly applicationsService: ApplicationsService,
+  ) {}
 
   @Get("recruiter")
   @Auth(UserRole.Recruiter)
@@ -60,5 +65,15 @@ export class VacanciesController {
     @CurrentUser() user: ICurrentUser,
   ) {
     return this.vacanciesService.update(id, body, user)
+  }
+
+  @Post(":id/applications")
+  @Auth(UserRole.Candidate)
+  createApplication(
+    @Param("id") id: string,
+    @Body() body: CreateApplicationDto,
+    @CurrentUser() user: ICurrentUser,
+  ) {
+    return this.applicationsService.create(body, id, user)
   }
 }

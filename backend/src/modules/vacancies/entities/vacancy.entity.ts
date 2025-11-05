@@ -13,6 +13,7 @@ import {
   OneToMany,
 } from "typeorm"
 import { FunnelStep } from "./funnel-step.entity"
+import { Application } from "@/modules/applications/entities/application.entity"
 
 export const VacancyStatus = {
   Active: "active",
@@ -126,4 +127,7 @@ export class Vacancy extends BaseEntity {
 
   @OneToMany(() => FunnelStep, (step) => step.vacancy)
   funnelSteps?: FunnelStep[]
+
+  @OneToMany(() => Application, (application) => application.vacancy)
+  applications?: Application[]
 }
