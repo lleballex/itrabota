@@ -20,7 +20,7 @@ export const useRemoteData = <D, E extends Error>({
   useEffect(() => {
     if (status === "pending") {
       setRemoteData({ status: "pending" })
-    } else if (status === "success" && data) {
+    } else if (status === "success" && data !== undefined) {
       setRemoteData({ status: "success", data })
     } else if (status === "error" && error) {
       setRemoteData({ status: "error", error })
