@@ -1,31 +1,25 @@
+import { ReactNode } from "react"
 import Image from "next/image"
 
-import { useVacancy } from "@/api/vacancies/get-vacancy"
-import RemoteData from "@/components/ui/RemoteData"
 import {
   Vacancy,
   VacancyEmploymentTypes,
   VacancyFormats,
   VacancySchedules,
-  VacancyStatus,
   VacancyWorkExperiences,
 } from "@/types/entities/vacancy"
 import { getCompanyLogo } from "@/lib/get-company-logo"
 import Separator from "@/components/ui/Separator"
-import Button from "@/components/ui/Button"
-import { Routes } from "@/config/routes"
-import Icon from "@/components/ui/Icon"
-import { UserRole } from "@/types/entities/user"
 import { getVacancySalary } from "@/lib/get-vacancy-salary"
 
 import VacancyDetailedItem from "./VacancyDetailedItem"
 
-interface ContentProps {
+interface Props {
   vacancy: Vacancy
-  role: UserRole
+  controls?: ReactNode
 }
 
-const Content = ({ vacancy, role }: ContentProps) => {
+export default function VacancyDetailed({ vacancy, controls }: Props) {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex gap-3 items-center">
@@ -148,49 +142,11 @@ const Content = ({ vacancy, role }: ContentProps) => {
         </div>
       )}
 
-      <div className="flex self-center items-center gap-2 sticky bottom-[var(--spacing-screen)]">
-        {role === UserRole.Recruiter && (
-          <>
-            <Button
-              type="glass"
-              link={{ url: Routes.recruiter.editVacancy(vacancy.id) }}
-            >
-              <Icon icon="pen" />
-              Изменить
-            </Button>
-            {vacancy.status === VacancyStatus.Active && (
-              <Button type="glass">
-                <Icon icon="archive" />В архив
-              </Button>
-            )}
-            {vacancy.status === VacancyStatus.Archived && (
-              <Button type="glass">
-                <Icon icon="archiveRestore" />
-                Вернуть из архива
-              </Button>
-            )}
-          </>
-        )}
-        {role === UserRole.Candidate && (
-          <Button type="glass">Откликнуться</Button>
-        )}
-      </div>
+      {controls && (
+        <div className="flex self-center items-center gap-2 sticky bottom-[var(--spacing-screen)]">
+          {controls}
+        </div>
+      )}
     </div>
-  )
-}
-
-interface Props {
-  id: string
-  role: UserRole
-}
-
-export default function VacancyDetailed({ id: vacancyId, role }: Props) {
-  const vacancy = useVacancy({ id: vacancyId })
-
-  return (
-    <RemoteData
-      data={vacancy}
-      onSuccess={(vacancy) => <Content vacancy={vacancy} role={role} />}
-    />
   )
 }
