@@ -12,6 +12,7 @@ const ApplicationStatus = {
   Rejected: "rejected",
   Approved: "approved",
 }
+
 type ApplicationStatus =
   (typeof ApplicationStatus)[keyof typeof ApplicationStatus]
 

@@ -30,7 +30,13 @@ export class ApplicationsService {
   ) {}
 
   private async findOne(where: FindOptionsWhere<Application>) {
-    const application = await this.applicationsRepo.findOne({ where })
+    const application = await this.applicationsRepo
+      .createQueryBuilder("application")
+      .setFindOptions({ where })
+      .leftJoinAndSelect("application.messages", "message")
+      .leftJoinAndSelect("application.funnelStep", "funnelStep")
+      .orderBy("message.createdAt", "ASC")
+      .getOne()
 
     if (!application) {
       throw new NotFoundException("Application not found")
@@ -57,6 +63,17 @@ export class ApplicationsService {
 
   async findOneById(id: string) {
     return this.findOne({ id })
+  }
+
+  async findOneForCurCandidate(vacancyId: string, user_: ICurrentUser) {
+    const vacancy = await this.vacanciesService.findOneById(vacancyId)
+    const user = await this.usersService.findFilledCandidateById(user_.id)
+    const application = await this.findOne({
+      vacancy: { id: vacancy.id },
+      candidate: { id: user.candidate.id },
+    })
+
+    return application
   }
 
   async create(
