@@ -17,6 +17,7 @@ import { CreateApplicationDto } from "./dto/create-application.dto"
 import { ApplicationMessagesService } from "./application-messages.service"
 import { UserRole } from "../users/types/user-role"
 import { ApplicationMessageType } from "./entities/application-message.entity"
+import { GetRecruiterApplicationsDto } from "./dto/get-recruiter-applications.dto"
 
 @Injectable()
 export class ApplicationsService {
@@ -29,14 +30,17 @@ export class ApplicationsService {
     private readonly vacanciesService: VacanciesService,
   ) {}
 
-  private async findOne(where: FindOptionsWhere<Application>) {
-    const application = await this.applicationsRepo
+  private createQB() {
+    return this.applicationsRepo
       .createQueryBuilder("application")
-      .setFindOptions({ where })
       .leftJoinAndSelect("application.messages", "message")
       .leftJoinAndSelect("application.funnelStep", "funnelStep")
+      .orderBy("application.createdAt", "DESC")
       .orderBy("message.createdAt", "ASC")
-      .getOne()
+  }
+
+  private async findOne(where: FindOptionsWhere<Application>) {
+    const application = await this.createQB().setFindOptions({ where }).getOne()
 
     if (!application) {
       throw new NotFoundException("Application not found")
@@ -74,6 +78,27 @@ export class ApplicationsService {
     })
 
     return application
+  }
+
+  async findAllForRecruiter(
+    dto: GetRecruiterApplicationsDto,
+    user_: ICurrentUser,
+  ) {
+    const user = await this.usersService.findFilledRecruiterById(user_.id)
+
+    const qb = this.createQB()
+      .leftJoin("application.vacancy", "vacancy")
+      .leftJoin("vacancy.recruiter", "recruiter")
+      .leftJoinAndSelect("application.candidate", "candidate")
+      .where("recruiter.id = :recruiterId", { recruiterId: user.recruiter.id })
+
+    if (dto.vacancyId) {
+      qb.andWhere("vacancy.id = :vacancyId", {
+        vacancyId: dto.vacancyId,
+      })
+    }
+
+    return qb.getMany()
   }
 
   async create(

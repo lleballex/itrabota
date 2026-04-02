@@ -77,9 +77,21 @@ export class VacanciesController {
     return this.applicationsService.create(body, id, user)
   }
 
+  @Get(":id/applications")
+  @Auth(UserRole.Recruiter)
+  getAllApplications(
+    @Param("id") id: string,
+    @CurrentUser() user: ICurrentUser,
+  ) {
+    return this.applicationsService.findAllForRecruiter({ vacancyId: id }, user)
+  }
+
   @Get(":id/applications/me")
   @Auth(UserRole.Candidate)
-  getMyApplication(@Param("id") id: string, @CurrentUser() user: ICurrentUser) {
+  findMyApplication(
+    @Param("id") id: string,
+    @CurrentUser() user: ICurrentUser,
+  ) {
     return this.applicationsService.findOneForCurCandidate(id, user)
   }
 }
