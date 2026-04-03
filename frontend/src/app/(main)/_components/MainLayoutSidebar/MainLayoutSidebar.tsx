@@ -30,9 +30,13 @@ export default function MainLayoutSidebar({ className }: Props) {
             highlightClassName="bg-primary rounded-[calc(var(--radius)-var(--spacing)*2)]"
           >
             {sidebarLinks[me.role].map((link) => (
-              <HighlightList.Item key={link.url} active={pathname === link.url}>
+              <HighlightList.Item
+                activeClassName="text-fg-heading"
+                key={link.url}
+                active={pathname === link.url}
+              >
                 <Link
-                  className="flex items-center gap-1.5 p-1 px-1.5"
+                  className="flex items-center gap-1.5 p-1 px-1.5 transition-all hover:text-fg-heading"
                   href={link.url}
                 >
                   {link.icon}

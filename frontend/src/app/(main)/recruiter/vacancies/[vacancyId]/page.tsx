@@ -21,7 +21,7 @@ interface Props {
 
 const LoadedContent = ({ vacancy }: Props) => {
   const [activeTab, setActiveTab] = useState<"vacancy" | "applications">(
-    "applications"
+    "applications",
   )
 
   return (
@@ -31,7 +31,8 @@ const LoadedContent = ({ vacancy }: Props) => {
         highlightClassName="bg-primary"
       >
         <HighlightList.Item
-          className="w-full py-1"
+          className="w-full py-1 transition-all hover:text-fg-heading"
+          activeClassName="text-fg-heading"
           active={activeTab === "vacancy"}
         >
           <Button type="base" onClick={() => setActiveTab("vacancy")}>
@@ -39,7 +40,8 @@ const LoadedContent = ({ vacancy }: Props) => {
           </Button>
         </HighlightList.Item>
         <HighlightList.Item
-          className="w-full py-1"
+          className="w-full py-1 transition-all hover:text-fg-heading"
+          activeClassName="text-fg-heading"
           active={activeTab === "applications"}
         >
           <Button type="base" onClick={() => setActiveTab("applications")}>
