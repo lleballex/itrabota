@@ -1,6 +1,11 @@
 import { Injectable, NotFoundException } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
-import { DeepPartial, FindOptionsWhere, Repository } from "typeorm"
+import {
+  DeepPartial,
+  EntityManager,
+  FindOptionsWhere,
+  Repository,
+} from "typeorm"
 
 import { FunnelStep } from "./entities/funnel-step.entity"
 
@@ -11,8 +16,12 @@ export class FunnelStepsService {
     private readonly funnelStepsRepo: Repository<FunnelStep>,
   ) {}
 
-  private async findOne(where: FindOptionsWhere<FunnelStep>) {
-    const funnelStep = await this.funnelStepsRepo.findOne({ where })
+  private async findOne(
+    where: FindOptionsWhere<FunnelStep>,
+    manager?: EntityManager,
+  ) {
+    const repo = manager?.getRepository(FunnelStep) ?? this.funnelStepsRepo
+    const funnelStep = await repo.findOne({ where })
 
     if (!funnelStep) {
       throw new NotFoundException("Funnel step not found")
@@ -21,26 +30,36 @@ export class FunnelStepsService {
     return funnelStep
   }
 
-  findOneById(id: string) {
-    return this.findOne({ id })
+  findOneById(id: string, manager?: EntityManager) {
+    return this.findOne({ id }, manager)
   }
 
-  async create(data: DeepPartial<FunnelStep>) {
-    const funnelStep = this.funnelStepsRepo.create(data)
-    const savedFunnelStep = await this.funnelStepsRepo.save(funnelStep)
+  async create(data: DeepPartial<FunnelStep>, manager?: EntityManager) {
+    const repo = manager?.getRepository(FunnelStep) ?? this.funnelStepsRepo
 
-    return this.findOneById(savedFunnelStep.id)
+    const funnelStep = repo.create(data)
+    const savedFunnelStep = await repo.save(funnelStep)
+
+    return this.findOneById(savedFunnelStep.id, manager)
   }
 
-  async update(id: string, data: DeepPartial<FunnelStep>) {
-    const funnelStep = this.funnelStepsRepo.create({ ...data, id })
-    await this.funnelStepsRepo.save(funnelStep)
+  async update(
+    id: string,
+    data: DeepPartial<FunnelStep>,
+    manager?: EntityManager,
+  ) {
+    const repo = manager?.getRepository(FunnelStep) ?? this.funnelStepsRepo
+    const funnelStep = repo.create({ ...data, id })
+
+    await repo.save(funnelStep)
 
     return this.findOneById(id)
   }
 
-  async delete(id: string) {
-    const funnelStep = await this.findOneById(id)
-    await this.funnelStepsRepo.remove(funnelStep)
+  async delete(id: string, manager?: EntityManager) {
+    const repo = manager?.getRepository(FunnelStep) ?? this.funnelStepsRepo
+    const funnelStep = await this.findOneById(id, manager)
+
+    await repo.remove(funnelStep)
   }
 }

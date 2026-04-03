@@ -4,7 +4,12 @@ import {
   NotFoundException,
 } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
-import { FindOptionsWhere, Repository } from "typeorm"
+import {
+  DataSource,
+  EntityManager,
+  FindOptionsWhere,
+  Repository,
+} from "typeorm"
 
 import { ICurrentUser } from "@/modules/auth/interfaces/current-user.interface"
 import { UsersService } from "@/modules/users/users.service"
@@ -15,6 +20,7 @@ import { GetRecruiterVacanciesDto } from "./dto/get-recruiter-vacancies.dto"
 import { FunnelStepsService } from "./funnel-steps.service"
 import { UpdateVacancyDto } from "./dto/update-vacancy-dto"
 import { GetCandidateVacanciesDto } from "./dto/get-candidate-vacancies.dto"
+import { isNullish } from "@/common/lib/is-nullish"
 
 @Injectable()
 export class VacanciesService {
@@ -22,12 +28,15 @@ export class VacanciesService {
     @InjectRepository(Vacancy)
     private readonly vacanciesRepo: Repository<Vacancy>,
 
+    private readonly dataSource: DataSource,
     private readonly funnelStepsService: FunnelStepsService,
     private readonly usersService: UsersService,
   ) {}
 
-  private createQB() {
-    return this.vacanciesRepo
+  private createQB(manager?: EntityManager) {
+    const repo = manager?.getRepository(Vacancy) ?? this.vacanciesRepo
+
+    return repo
       .createQueryBuilder("vacancy")
       .leftJoinAndSelect("vacancy.recruiter", "recruiter")
       .leftJoinAndSelect("recruiter.company", "company")
@@ -35,11 +44,15 @@ export class VacanciesService {
       .leftJoinAndSelect("company.logo", "logo")
       .leftJoinAndSelect("vacancy.specialization", "specialization")
       .leftJoinAndSelect("vacancy.city", "city")
+      .leftJoinAndSelect("vacancy.skills", "skills")
       .orderBy("vacancy.createdAt", "DESC")
   }
 
-  private async findOne(where: FindOptionsWhere<Vacancy>) {
-    const qb = this.createQB()
+  private async findOne(
+    where: FindOptionsWhere<Vacancy>,
+    manager?: EntityManager,
+  ) {
+    const qb = this.createQB(manager)
       .setFindOptions({ where })
       .leftJoinAndSelect("vacancy.funnelSteps", "funnelStep")
       .orderBy("funnelStep.index", "ASC")
@@ -56,6 +69,7 @@ export class VacanciesService {
   private async handleFunnelStepsUpsert(
     funnelStepsDto: UpdateVacancyDto["funnelSteps"], // TODO: it's not only for updating
     vacancy: Vacancy,
+    manager?: EntityManager,
   ) {
     if (!funnelStepsDto) return
 
@@ -66,29 +80,36 @@ export class VacanciesService {
         )
 
         if (!funnelStepExists) {
-          await this.funnelStepsService.delete(funnelStep.id)
+          await this.funnelStepsService.delete(funnelStep.id, manager)
         }
       }
     }
 
     for (const [funnelStepIdx, funnelStepDto] of funnelStepsDto.entries()) {
       if (funnelStepDto.id) {
-        await this.funnelStepsService.update(funnelStepDto.id, {
-          ...funnelStepDto,
-          index: funnelStepIdx,
-        })
+        await this.funnelStepsService.update(
+          funnelStepDto.id,
+          {
+            ...funnelStepDto,
+            index: funnelStepIdx,
+          },
+          manager,
+        )
       } else {
-        await this.funnelStepsService.create({
-          ...funnelStepDto,
-          index: funnelStepIdx,
-          vacancy: { id: vacancy.id },
-        })
+        await this.funnelStepsService.create(
+          {
+            ...funnelStepDto,
+            index: funnelStepIdx,
+            vacancy: { id: vacancy.id },
+          },
+          manager,
+        )
       }
     }
   }
 
-  findOneById(id: string) {
-    return this.findOne({ id })
+  findOneById(id: string, manager?: EntityManager) {
+    return this.findOne({ id }, manager)
   }
 
   async findAllForRecruiter(
@@ -152,22 +173,42 @@ export class VacanciesService {
   }
 
   async update(id: string, dto_: UpdateVacancyDto, user_: ICurrentUser) {
-    const { funnelSteps: funnelStepsDto, ...dto } = dto_
+    const {
+      skillIds,
+      specializationId,
+      cityId,
+      funnelSteps: funnelStepsDto,
+      ...dto
+    } = dto_
 
-    const vacancy = await this.findOneById(id)
-    const user = await this.usersService.findFilledRecruiterById(user_.id)
+    await this.dataSource.transaction(async (manager) => {
+      const vacancy = await this.findOneById(id, manager)
+      const user = await this.usersService.findFilledRecruiterById(
+        user_.id,
+        manager,
+      )
 
-    if (vacancy.recruiter?.id !== user.recruiter.id) {
-      throw new ForbiddenException("You are not the author of the vacancy")
-    }
+      if (vacancy.recruiter?.id !== user.recruiter.id) {
+        throw new ForbiddenException("You are not the author of the vacancy")
+      }
 
-    // TODO: start transaction
+      const vacanciesRepo = manager.getRepository(Vacancy)
 
-    const updatedVacancy = this.vacanciesRepo.create({ ...dto, id })
-    await this.vacanciesRepo.save(updatedVacancy)
+      const updatedVacancy = vacanciesRepo.create({
+        ...dto,
+        id,
+        specialization: isNullish(specializationId)
+          ? specializationId
+          : { id: specializationId },
+        city: isNullish(cityId) ? cityId : { id: cityId },
+        skills: isNullish(skillIds) ? skillIds : skillIds.map((id) => ({ id })),
+      })
 
-    await this.handleFunnelStepsUpsert(funnelStepsDto, vacancy)
+      await vacanciesRepo.save(updatedVacancy)
 
-    return this.findOneById(vacancy.id)
+      await this.handleFunnelStepsUpsert(funnelStepsDto, vacancy, manager)
+    })
+
+    return this.findOneById(id)
   }
 }

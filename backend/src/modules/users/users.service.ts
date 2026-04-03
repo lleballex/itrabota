@@ -1,5 +1,10 @@
 import { Injectable, NotFoundException } from "@nestjs/common"
-import { DeepPartial, FindOptionsWhere, Repository } from "typeorm"
+import {
+  DeepPartial,
+  EntityManager,
+  FindOptionsWhere,
+  Repository,
+} from "typeorm"
 import { InjectRepository } from "@nestjs/typeorm"
 
 import { WithRequired } from "@/common/types/with-required.type"
@@ -14,8 +19,10 @@ export class UsersService {
     @InjectRepository(User) private readonly usersRepo: Repository<User>,
   ) {}
 
-  private createQueryBuider() {
-    const qb = this.usersRepo
+  private createQueryBuider(manager?: EntityManager) {
+    const repo = manager?.getRepository(User) ?? this.usersRepo
+
+    const qb = repo
       .createQueryBuilder("user")
       .leftJoinAndSelect("user.recruiter", "recruiter")
       .leftJoinAndSelect("recruiter.company", "company")
@@ -33,9 +40,12 @@ export class UsersService {
     where: FindOptionsWhere<User>,
     options?: {
       selectPassword?: boolean
+      manager?: EntityManager
     },
   ) {
-    const qb = this.createQueryBuider().setFindOptions({ where })
+    const qb = this.createQueryBuider(options?.manager).setFindOptions({
+      where,
+    })
 
     if (options?.selectPassword) {
       qb.addSelect("user.password")
@@ -50,8 +60,8 @@ export class UsersService {
     return user
   }
 
-  findOneById(id: string) {
-    return this.findOne({ id })
+  findOneById(id: string, manager?: EntityManager) {
+    return this.findOne({ id }, { manager })
   }
 
   async findOneForAuth(email: string) {
@@ -60,8 +70,8 @@ export class UsersService {
     return user as WithRequired<typeof user, "password">
   }
 
-  async findRecruiterById(id: string) {
-    const user = await this.findOneById(id)
+  async findRecruiterById(id: string, manager?: EntityManager) {
+    const user = await this.findOneById(id, manager)
 
     if (user.role !== UserRole.Recruiter) {
       throw new Error("User must be a recruiter")
@@ -70,8 +80,8 @@ export class UsersService {
     return user as WithConcreted<typeof user, "role", typeof UserRole.Recruiter>
   }
 
-  async findFilledRecruiterById(id: string) {
-    const user = await this.findRecruiterById(id)
+  async findFilledRecruiterById(id: string, manager?: EntityManager) {
+    const user = await this.findRecruiterById(id, manager)
 
     if (!user.recruiter) {
       throw new Error("Recruiter must be filled")
