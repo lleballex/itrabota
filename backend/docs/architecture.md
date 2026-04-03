@@ -347,8 +347,10 @@ export class EntitiesService {
     private readonly entitiesRepo: Repository<Entity>,
   ) {}
 
-  private createQB() {
-    return this.entitiesRepo.createQueryBuilder("entity")
+  private createQB(manager?: EntityManager) {
+    const repo = manager?.getRepository(Entity) ?? this.entitiesRepo
+
+    return repo.createQueryBuilder("entity")
     // общие join'ы, сортировка и базовые настройки
   }
 
@@ -356,9 +358,10 @@ export class EntitiesService {
     where: FindOptionsWhere<Entity>,
     options?: {
       // дополнительные параметры при необходимости
+      manager?: EntityManager
     },
   ) {
-    const qb = this.createQB().setFindOptions({ where })
+    const qb = this.createQB(options?.manager).setFindOptions({ where })
 
     const entity = await qb.getOne()
 
@@ -369,8 +372,8 @@ export class EntitiesService {
     return entity
   }
 
-  findOneById(id: string) {
-    return this.findOne({ id })
+  findOneById(id: string, manager?: EntityManager) {
+    return this.findOne({ id }, { manager })
   }
 
   async create(data: DeepPartial<Entity>) {
@@ -424,6 +427,54 @@ export class EntitiesService {
 - используется ли это минимум в нескольких модулях;
 - не размывает ли это границы домена;
 - не станет ли shared-папка свалкой несвязанных абстракций.
+
+### 2.11. Транзакционный паттерн для составных операций
+
+Эталонный подход:
+
+- транзакцию открывает orchestration-метод верхнего уровня через `dataSource.transaction(async (manager) => ...)`;
+- все операции чтения и записи, входящие в эту бизнес-операцию, должны выполняться с тем же `manager`;
+- сервисные методы, которые могут вызываться как внутри, так и вне транзакции, должны принимать `manager?: EntityManager`;
+- репозиторий внутри сервиса выбирается по паттерну:
+  - `const repo = manager?.getRepository(Entity) ?? this.entitiesRepo`;
+- при вызове другого сервисного метода внутри транзакции `manager` нужно явно прокидывать дальше;
+- не открывать вложенные транзакции в дочерних сервисах без отдельной необходимости.
+
+Что это даёт:
+
+- единый `EntityManager` для всей составной операции;
+- отсутствие частичных сохранений при ошибках;
+- отсутствие расхождений, когда часть чтений идёт вне транзакционного контекста.
+
+### 2.12. Паттерн обновления/создания связей через `repo.create(...)` и `isNullish(...)`
+
+Эталонный подход для update/create, когда DTO содержит relation-id поля:
+
+- маппинг связей делать прямо при подготовке payload для `repo.create(...)`, а не отдельными ad-hoc ветками по сервису;
+- для одиночной связи использовать проверку `isNullish(value)`:
+  - `isNullish(value) ? value : { id: value }`;
+- для массива связей использовать:
+  - `isNullish(ids) ? ids : ids.map((id) => ({ id }))`;
+- таким образом один и тот же код поддерживает:
+  - `undefined` как «поле не задано»;
+  - `null` как «явный null» для nullable-связей;
+  - `id`/`id[]` как установку или замену связи.
+
+Пример:
+
+```ts
+const payload = repo.create({
+  id,
+  ...dto,
+  specialization: isNullish(dto.specializationId)
+    ? dto.specializationId
+    : { id: dto.specializationId },
+  city: isNullish(dto.cityId) ? dto.cityId : { id: dto.cityId },
+  skills: isNullish(dto.skillIds)
+    ? dto.skillIds
+    : dto.skillIds.map((skillId) => ({ id: skillId })),
+})
+```
 
 ## 3. Anti-patterns и признаки плохой структуры
 
