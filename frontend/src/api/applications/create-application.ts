@@ -3,7 +3,7 @@ import { createUseMutation } from "../lib/create-use-mutation"
 
 interface Data {
   vacancyId: string
-  content?: string | null
+  message?: string | null
 }
 
 export const useCreateApplication = createUseMutation(
