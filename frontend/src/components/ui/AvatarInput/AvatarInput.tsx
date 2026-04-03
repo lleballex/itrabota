@@ -13,6 +13,7 @@ import Image from "next/image"
 import Button from "@/components/ui/Button"
 import Icon from "@/components/ui/Icon"
 import { useFieldValue } from "@/lib/use-field-value"
+import { getAttachmentUrl } from "@/lib/get-attachment-url"
 import userPlaceholderImg from "@/assets/images/user-placeholder.png"
 import { FormError } from "@/types/form-error"
 import FieldContainer from "@/components/ui/FieldContainer"
@@ -65,8 +66,7 @@ export default function AvatarInput({
     } else if ("content" in value) {
       return `data:${value.mimeType};base64,${value.content}`
     } else {
-      // TODO: remove url from here
-      return `http://localhost:8000/api/attachments/${value.id}/content`
+      return getAttachmentUrl(value)
     }
   }, [value])
 

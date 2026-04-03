@@ -1,5 +1,7 @@
-import { Attachment } from "@/types/entities/attachment"
+interface AttachmentLike {
+  id: string
+}
 
-export const getAttachmentUrl = (attachment: Attachment) => {
-  return `http://localhost:8000/api/attachments/${attachment.id}/content` // TODO: to config
+export const getAttachmentUrl = (attachment: AttachmentLike) => {
+  return process.env.NEXT_PUBLIC_ATTACHMENT_URL.replace(":id", attachment.id)
 }
