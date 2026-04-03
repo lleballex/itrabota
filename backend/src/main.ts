@@ -12,6 +12,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule)
   const configService = app.get(ConfigService<AppConfig, true>)
 
+  app.setGlobalPrefix("api")
+
   app.enableCors({
     origin: configService.get("CORS_ORIGINS", { infer: true }).split(","),
     credentials: true,
@@ -38,6 +40,8 @@ async function bootstrap() {
     SwaggerModule.createDocument(app, swaggerConfig),
   )
 
+  console.log(configService.get("PORT", { infer: true }))
+  console.log("listening")
   await app.listen(configService.get("PORT", { infer: true }))
 }
 
