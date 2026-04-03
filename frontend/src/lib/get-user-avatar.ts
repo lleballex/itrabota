@@ -1,5 +1,4 @@
 import { User, UserRole } from "@/types/entities/user"
-
 import companyPlaceholderImg from "@/assets/images/company-placeholder.png"
 import userPlaceholderImg from "@/assets/images/user-placeholder.png"
 

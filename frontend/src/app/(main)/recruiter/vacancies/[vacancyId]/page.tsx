@@ -1,6 +1,7 @@
 "use client"
 
 import { useParams } from "next/navigation"
+import { useState } from "react"
 
 import AuthProvider from "@/components/special/AuthProvider"
 import { UserRole } from "@/types/entities/user"
@@ -10,17 +11,44 @@ import RemoteData from "@/components/ui/RemoteData"
 import Button from "@/components/ui/Button"
 import { Routes } from "@/config/routes"
 import Icon from "@/components/ui/Icon"
-import { VacancyStatus } from "@/types/entities/vacancy"
+import { Vacancy, VacancyStatus } from "@/types/entities/vacancy"
+import HighlightList from "@/components/ui/HighlightList"
+import RecruiterVacancyApplications from "./_components/RecruiterVacancyApplications"
 
-const Content = () => {
-  const { vacancyId } = useParams<{ vacancyId: string }>()
+interface Props {
+  vacancy: Vacancy
+}
 
-  const vacancy = useVacancy({ id: vacancyId })
+const LoadedContent = ({ vacancy }: Props) => {
+  const [activeTab, setActiveTab] = useState<"vacancy" | "applications">(
+    "applications"
+  )
 
   return (
-    <RemoteData
-      data={vacancy}
-      onSuccess={(vacancy) => (
+    <div className="flex flex-col gap-6 h-full">
+      <HighlightList.Root
+        className="flex flex-row border border-border p-1 rounded"
+        highlightClassName="bg-primary"
+      >
+        <HighlightList.Item
+          className="w-full py-1"
+          active={activeTab === "vacancy"}
+        >
+          <Button type="base" onClick={() => setActiveTab("vacancy")}>
+            Вакансия
+          </Button>
+        </HighlightList.Item>
+        <HighlightList.Item
+          className="w-full py-1"
+          active={activeTab === "applications"}
+        >
+          <Button type="base" onClick={() => setActiveTab("applications")}>
+            Отклики
+          </Button>
+        </HighlightList.Item>
+      </HighlightList.Root>
+
+      {activeTab === "vacancy" && (
         <VacancyDetailed
           vacancy={vacancy}
           controls={
@@ -47,6 +75,23 @@ const Content = () => {
           }
         />
       )}
+
+      {activeTab === "applications" && (
+        <RecruiterVacancyApplications vacancy={vacancy} />
+      )}
+    </div>
+  )
+}
+
+const Content = () => {
+  const { vacancyId } = useParams<{ vacancyId: string }>()
+
+  const vacancy = useVacancy({ id: vacancyId })
+
+  return (
+    <RemoteData
+      data={vacancy}
+      onSuccess={(vacancy) => <LoadedContent vacancy={vacancy} />}
     />
   )
 }
