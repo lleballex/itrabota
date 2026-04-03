@@ -1,24 +1,29 @@
 import { NestFactory } from "@nestjs/core"
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger"
 import { ValidationPipe } from "@nestjs/common"
+import { ConfigService } from "@nestjs/config"
 import * as cookieParser from "cookie-parser"
 import * as express from "express"
 
+import { AppConfig } from "@/config/config.interface"
 import { AppModule } from "./app.module"
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
-
-  app.setGlobalPrefix("api")
+  const configService = app.get(ConfigService<AppConfig, true>)
 
   app.enableCors({
-    origin: "http://localhost:3000", // TODO: from env
+    origin: configService.get("CORS_ORIGINS", { infer: true }).split(","),
     credentials: true,
   })
 
   app.use(cookieParser())
 
-  app.use(express.json({ limit: process.env.MAX_REQUEST_BODY_SIZE }))
+  app.use(
+    express.json({
+      limit: configService.get("MAX_REQUEST_BODY_SIZE", { infer: true }),
+    }),
+  )
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -33,7 +38,7 @@ async function bootstrap() {
     SwaggerModule.createDocument(app, swaggerConfig),
   )
 
-  await app.listen(process.env.PORT ?? 8000)
+  await app.listen(configService.get("PORT", { infer: true }))
 }
 
-bootstrap()
+void bootstrap()
