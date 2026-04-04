@@ -12,6 +12,8 @@ export const Routes = {
     editVacancy: (id: string) => `/recruiter/vacancies/${id}/edit`,
     applications: "/recruiter/applications",
     application: (id: string) => `/recruiter/applications/${id}`,
+    candidates: "/recruiter/candidates",
+    candidate: (id: string) => `/recruiter/candidates/${id}`,
   },
 
   candidate: {

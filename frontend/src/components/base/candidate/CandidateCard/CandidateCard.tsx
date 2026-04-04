@@ -3,14 +3,9 @@ import Image from "next/image"
 import Link from "next/link"
 import { ReactNode } from "react"
 
-import userPlaceholderImg from "@/assets/images/user-placeholder.png"
 import { getProfileAvatar } from "@/lib/get-profile-avatar"
 import { Candidate } from "@/types/entities/candidate"
-import { ApplicationType, ApplicationTypes } from "@/types/entities/application"
 import { UserRole } from "@/types/entities/user"
-import { Vacancy } from "@/types/entities/vacancy"
-import Separator from "@/components/ui/Separator"
-import { getUserName } from "@/lib/get-user-name"
 
 interface Props {
   className?: string
@@ -43,7 +38,7 @@ export default function CandidateCard({
         alt=""
       />
 
-      <div className="flex flex-col gap-2 grow pb-4 border-b border-border group-[:last-child]:border-b-0">
+      <div className="flex flex-col gap-2 grow pb-4 min-h-[calc(var(--spacing)*22)] border-b border-border group-[:last-child]:border-b-0">
         {headerChildren && (
           <div className="flex items-center gap-6 text-sm text-secondary-light">
             {headerChildren}

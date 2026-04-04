@@ -11,12 +11,14 @@ import { RecruitersService } from "./recruiters.service"
 import { WorkExperienceItem } from "./entities/work-experence-item.entity"
 import { CandidatesService } from "./candidates.service"
 import { WorkExperienceService } from "./work-experience.service"
+import { CandidatesController } from "./candidates.controller"
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, Candidate, Recruiter, WorkExperienceItem]), // TODO: remove and recruiter
     CompaniesModule,
   ],
+  controllers: [CandidatesController],
   providers: [
     UsersService,
     RecruitersService,
