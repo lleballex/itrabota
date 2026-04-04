@@ -2,6 +2,7 @@ import { CreateAttachmentDto } from "@/modules/attachments/dto/create-attachment
 import { Type } from "class-transformer"
 import {
   IsArray,
+  IsBoolean,
   IsDateString,
   IsEmail,
   IsNotEmpty,
@@ -76,6 +77,10 @@ export class UpdateMeCandidateDto {
   @IsNotEmpty()
   @IsOptional()
   description?: string | null
+
+  @IsBoolean()
+  @IsOptional()
+  isHidden?: boolean
 
   @IsUUID("4")
   @IsOptional()

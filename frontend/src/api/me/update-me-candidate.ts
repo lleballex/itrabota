@@ -10,6 +10,7 @@ interface Data {
   phoneNumber?: string | null
   tgUsername?: string | null
   description?: string | null
+  isHidden?: boolean
   cityId?: string | null
   avatar?: {
     name: string
@@ -29,5 +30,5 @@ interface Data {
 }
 
 export const useUpdateMeCandidate = createUseMutation((data: Data) =>
-  axios.patch("/me/candidate", data)
+  axios.patch("/me/candidate", data),
 )

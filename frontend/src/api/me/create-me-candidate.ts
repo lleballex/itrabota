@@ -10,6 +10,7 @@ interface Data {
   phoneNumber?: string | null
   tgUsername?: string | null
   description?: string | null
+  isHidden?: boolean
   cityId?: string | null
   avatar?: {
     name: string
@@ -28,5 +29,5 @@ interface Data {
 }
 
 export const useCreateMeCandidate = createUseMutation((data: Data) =>
-  axios.post("/me/candidate", data)
+  axios.post("/me/candidate", data),
 )

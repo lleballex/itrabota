@@ -11,6 +11,7 @@ const formSchema = z.object({
   lastName: formSchemaFields.string,
   patronymic: formSchemaFields.string.nullable(),
   bornAt: formSchemaFields.string, // TODO: date
+  isHidden: formSchemaFields.boolean,
   cityId: formSchemaFields.relation.nullable(),
   email: formSchemaFields.email,
   phoneNumber: formSchemaFields.string.nullable(), // TODO: maybe phone
@@ -25,7 +26,7 @@ const formSchema = z.object({
       startedAt: formSchemaFields.string, // TODO: date
       endedAt: formSchemaFields.string.nullable(), // TODO: date
       description: formSchemaFields.string.nullable(),
-    })
+    }),
   ),
 })
 
@@ -36,13 +37,14 @@ export type FormOutputValues = z.output<typeof formSchema>
 export const formResolver = zodResolver(formSchema)
 
 export const getFormDefaultValues = (
-  user?: User
+  user?: User,
 ): DeepPartial<FormInputValues> => ({
   avatar: user?.candidate?.avatar ?? null,
   firstName: user?.candidate?.firstName,
   lastName: user?.candidate?.lastName,
   patronymic: user?.candidate?.patronymic ?? null,
   bornAt: user?.candidate?.bornAt,
+  isHidden: user?.candidate?.isHidden ?? false,
   cityId: user?.candidate?.city?.id ?? null,
   email: user?.email,
   phoneNumber: user?.candidate?.phoneNumber ?? null,

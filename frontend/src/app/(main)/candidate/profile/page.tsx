@@ -21,6 +21,7 @@ import CandidateProfileContacts from "./_components/CandidateProfileContacts/Can
 import CandidateProfileJob from "./_components/CandidateProfileJob"
 import CandidateProfileWorkExperience from "./_components/CandidateProfileWorkExperience"
 import CandidateProfileAvatar from "./_components/CandidateProfileAvatar"
+import CandidateProfileVisibility from "./_components/CandidateProfileVisibility"
 
 interface Props {
   me: User
@@ -49,7 +50,7 @@ const Content = ({ me }: Props) => {
             })
           },
           onError: (error) => handleFormApiError({ error, form }),
-        }
+        },
       )
     } else {
       create(
@@ -62,7 +63,7 @@ const Content = ({ me }: Props) => {
             })
           },
           onError: (error) => handleFormApiError({ error, form }),
-        }
+        },
       )
     }
   })
@@ -78,6 +79,8 @@ const Content = ({ me }: Props) => {
         <CandidateProfileContacts />
         <ProfileForm.BlockSeparator />
         <CandidateProfileJob />
+        <ProfileForm.BlockSeparator />
+        <CandidateProfileVisibility />
         <ProfileForm.BlockSeparator />
         <CandidateProfileWorkExperience />
       </ProfileForm.Main>

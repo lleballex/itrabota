@@ -40,6 +40,9 @@ export class Candidate extends BaseEntity {
   @Column("text", { nullable: true })
   description!: string | null
 
+  @Column("boolean", { default: false })
+  isHidden!: boolean
+
   @OneToOne(() => City, { nullable: true, onDelete: "SET NULL" })
   @JoinColumn()
   city?: City | null

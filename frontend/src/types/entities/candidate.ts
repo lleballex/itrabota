@@ -13,6 +13,7 @@ export interface Candidate extends BaseEntity {
   phoneNumber: string | null
   tgUsername: string | null
   description: string | null
+  isHidden: boolean
   city?: City | null
   skills?: Skill[]
   workExperience?: WorkExperienceItem[]
