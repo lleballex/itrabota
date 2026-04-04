@@ -341,7 +341,87 @@
   - `skillIds: []` очищает набор навыков;
   - переданные id связей маппятся в relation-object через `repo.create(...)`.
 
-## 4. Applications через vacancies routes
+## 4. Applications
+
+### GET `/api/applications/recruiter`
+
+- Модуль: `applications`
+- Route: `/api/applications/recruiter`
+- HTTP method: `GET`
+- Назначение: получить процессы текущего рекрутера
+- Auth / roles: требуется роль `Recruiter`
+- Params: нет
+- Query DTO: `GetApplicationsDto`
+- Поддерживаемые query-поля:
+- `query` — поиск по `vacancy.title`
+- `status` — фильтр по `ApplicationStatus`
+- `type` — фильтр по `ApplicationType`
+- Body DTO: нет
+- Response DTO:
+- явного response DTO нет
+- по факту возвращается массив `Application[]`
+- Возможные ошибки:
+- ошибки авторизации / роли
+- ошибки получения текущего рекрутера
+- `500 Internal Server Error`
+- Пагинация / фильтрация / сортировка:
+- пагинации нет
+- фильтрация по `query`, `status`, `type`
+- фильтрация по ownership рекрутера через `vacancy.recruiter.id`
+- сортировка по `application.createdAt DESC`
+- дополнительная сортировка сообщений `message.createdAt ASC`
+- Примечания:
+- контракт ответа зависит от текущих join-ов в `ApplicationsService.createQB(...)`
+
+### GET `/api/applications/candidate`
+
+- Модуль: `applications`
+- Route: `/api/applications/candidate`
+- HTTP method: `GET`
+- Назначение: получить процессы текущего кандидата
+- Auth / roles: требуется роль `Candidate`
+- Params: нет
+- Query DTO: `GetApplicationsDto`
+- Поддерживаемые query-поля:
+- `query` — поиск по `vacancy.title`
+- `status` — фильтр по `ApplicationStatus`
+- `type` — фильтр по `ApplicationType`
+- Body DTO: нет
+- Response DTO:
+- явного response DTO нет
+- по факту возвращается массив `Application[]`
+- Возможные ошибки:
+- ошибки авторизации / роли
+- ошибки получения текущего кандидата
+- `500 Internal Server Error`
+- Пагинация / фильтрация / сортировка:
+- пагинации нет
+- фильтрация по `query`, `status`, `type`
+- фильтрация по ownership кандидата через `candidate.id`
+- сортировка по `application.createdAt DESC`
+- дополнительная сортировка сообщений `message.createdAt ASC`
+- Примечания:
+- контракт ответа зависит от текущих join-ов в `ApplicationsService.createQB(...)`
+
+### GET `/api/applications/recruiter/:id`
+
+- Модуль: `applications`
+- Route: `/api/applications/recruiter/:id`
+- HTTP method: `GET`
+- Назначение: получить конкретный процесс для текущего рекрутера
+- Auth / roles: требуется роль `Recruiter`
+- Params:
+- `id: string` — id процесса
+- Query: нет
+- Body DTO: нет
+- Response DTO:
+- явного response DTO нет
+- по факту возвращается `Application`
+- Возможные ошибки:
+- ошибки авторизации / роли
+- `NotFoundException`, если процесс не найден или не принадлежит вакансиям текущего рекрутера
+- `500 Internal Server Error`
+- Пагинация / фильтрация / сортировка: не применимо
 
 ### POST `/api/vacancies/:id/applications`
 
@@ -366,7 +446,8 @@
 - Пагинация / фильтрация / сортировка: не применимо
 - Примечания:
 - endpoint живёт в контроллере вакансий, но делегирует в `ApplicationsService`
-- операция составная, выполняется без транзакции
+- операция составная, выполняется в транзакции
+- при создании отклика `Application.type` принудительно устанавливается в `response`
 - при создании отклика автоматически создаётся системное сообщение `candidate_responded`
 - если передан `message`, создаётся ещё и пользовательское сообщение
 
@@ -390,12 +471,13 @@
 - `500 Internal Server Error`
 - Пагинация / фильтрация / сортировка:
 - пагинации нет
-- фильтрация по vacancy id
+- фильтрация по vacancy id (через сервисный параметр)
 - сортировка по `application.createdAt DESC`
-- внутри также есть сортировка сообщений по `message.createdAt ASC`, но реализация через два `orderBy` может требовать отдельной проверки
+- дополнительная сортировка сообщений `message.createdAt ASC`
 - Примечания:
 - контракт ответа завязан на текущий query builder
 - endpoint частично нестабилен как публичный контракт из-за отсутствия response DTO
+- возвращаемая форма `Application` зависит от join-ов в `ApplicationsService.createQB(...)`, включая `vacancy.specialization`
 
 ### GET `/api/vacancies/:id/applications/me`
 
