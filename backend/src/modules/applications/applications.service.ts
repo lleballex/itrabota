@@ -48,6 +48,7 @@ export class ApplicationsService {
       .leftJoinAndSelect("application.funnelStep", "funnelStep")
       .leftJoinAndSelect("application.vacancy", "vacancy")
       .leftJoinAndSelect("vacancy.recruiter", "recruiter")
+      .leftJoinAndSelect("vacancy.specialization", "specialization")
       .leftJoinAndSelect("recruiter.company", "company")
       .leftJoinAndSelect("company.industry", "industry")
       .leftJoinAndSelect("company.logo", "companyLogo")

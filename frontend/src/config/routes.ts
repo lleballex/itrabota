@@ -10,11 +10,20 @@ export const Routes = {
     vacancies: "/recruiter/vacancies",
     vacancy: (id: string) => `/recruiter/vacancies/${id}`,
     editVacancy: (id: string) => `/recruiter/vacancies/${id}/edit`,
+    applications: "/recruiter/applications",
+    application: (id: string) => `/recruiter/applications/${id}`,
   },
 
   candidate: {
     profile: "/candidate/profile",
     vacancies: "/candidate/vacancies",
-    vacancy: (id: string) => `/candidate/vacancies/${id}`,
+    vacancy: (id: string, options?: { tab?: "vacancy" | "application" }) => {
+      const url = `/candidate/vacancies/${id}`
+      if (options?.tab) {
+        return `${url}?tab=${options.tab}`
+      }
+      return url
+    },
+    applications: "/candidate/applications",
   },
 }

@@ -2,6 +2,7 @@ import classNames from "classnames"
 import Link from "next/link"
 import dayjs from "dayjs"
 import Image from "next/image"
+import { ReactNode } from "react"
 
 import {
   Vacancy,
@@ -22,14 +23,21 @@ interface Props {
   vacancy: Vacancy
   url: string
   role: UserRole
+  headerChildren?: ReactNode
 }
 
-export default function VacancyCard({ className, vacancy, url, role }: Props) {
+export default function VacancyCard({
+  className,
+  vacancy,
+  url,
+  role,
+  headerChildren,
+}: Props) {
   return (
     <Link
       className={classNames(
         className,
-        "group flex gap-4 pt-4 first:-mt-3 relative after:absolute after:top-0 after:-left-[var(--spacing-content)] after:-right-[var(--spacing-content)] after:bottom-0 after:-z-1 after:bg-[rgba(20,20,20)] after:opacity-0 after:transition-all hover:after:opacity-100"
+        "group flex gap-4 pt-4 first:-mt-3 relative after:absolute after:top-0 after:-left-[var(--spacing-content)] after:-right-[var(--spacing-content)] after:bottom-0 after:-z-1 after:bg-[rgba(20,20,20)] after:opacity-0 after:transition-all hover:after:opacity-100",
       )}
       href={url}
     >
@@ -44,9 +52,15 @@ export default function VacancyCard({ className, vacancy, url, role }: Props) {
       <div className="flex flex-col gap-2 grow pb-4 border-b border-border group-[:last-child]:border-b-0">
         <div className="flex items-end justify-between">
           <div className="flex items-center gap-6 text-sm text-secondary-light">
-            <p>От {dayjs(vacancy.createdAt).format("DD MMMM YYYY")}</p>
-            {role === UserRole.Recruiter && (
-              <VacancyStatus status={vacancy.status} />
+            {headerChildren ? (
+              headerChildren
+            ) : (
+              <>
+                <p>От {dayjs(vacancy.createdAt).format("DD MMMM YYYY")}</p>
+                {role === UserRole.Recruiter && (
+                  <VacancyStatus status={vacancy.status} />
+                )}
+              </>
             )}
           </div>
           {vacancy.specialization && (

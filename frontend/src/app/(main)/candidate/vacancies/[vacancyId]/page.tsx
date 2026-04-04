@@ -1,7 +1,7 @@
 "use client"
 
-import { useParams } from "next/navigation"
-import { useState } from "react"
+import { useParams, useSearchParams } from "next/navigation"
+import { useEffect, useMemo, useState } from "react"
 
 import AuthProvider from "@/components/special/AuthProvider"
 import { User, UserRole } from "@/types/entities/user"
@@ -20,13 +20,20 @@ interface Props {
   vacancy: Vacancy
   application: Application | null
   me: User
+  initialTab?: "vacancy" | "application"
 }
 
-const LoadedContent = ({ vacancy, application, me }: Props) => {
+const LoadedContent = ({ vacancy, application, me, initialTab }: Props) => {
   const [isRespondModalActive, setIsRespondModalActive] = useState(false)
   const [activeTab, setActiveTab] = useState<"vacancy" | "application">(
     "vacancy",
   )
+
+  useEffect(() => {
+    if (!initialTab || (initialTab === "application" && !application)) return
+
+    setActiveTab(initialTab)
+  }, [initialTab, application])
 
   return (
     <div className="flex flex-col gap-6">
@@ -92,9 +99,18 @@ const LoadedContent = ({ vacancy, application, me }: Props) => {
 
 const Content = ({ me }: { me: User }) => {
   const { vacancyId } = useParams<{ vacancyId: string }>()
+  const searchParams = useSearchParams()
 
   const vacancy = useVacancy({ id: vacancyId })
   const application = useMyApplication({ vacancyId })
+
+  const initialTab = useMemo(() => {
+    const tab = searchParams.get("tab")
+
+    if (tab === "vacancy" || tab === "application") {
+      return tab
+    }
+  }, [searchParams])
 
   return (
     <RemoteData
@@ -107,6 +123,7 @@ const Content = ({ me }: { me: User }) => {
               vacancy={vacancy}
               application={application}
               me={me}
+              initialTab={initialTab}
             />
           )}
         />

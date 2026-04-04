@@ -10,6 +10,7 @@ import {
   FilesIcon,
   HouseIcon,
   LoaderCircleIcon,
+  MessageSquare,
   PenIcon,
   PlusIcon,
   SearchIcon,
@@ -52,6 +53,9 @@ const ICONS = {
   loader: {
     Component: LoaderCircleIcon,
   },
+  messageSquare: {
+    Component: MessageSquare,
+  },
   pen: {
     Component: PenIcon,
   },
@@ -81,7 +85,7 @@ export default function Icon({ className, icon: iconName }: Props) {
     <icon.Component
       className={classNames(
         className,
-        "w-[1em] h-[1em] text-[20px] stroke-current"
+        "w-[1em] h-[1em] text-[20px] stroke-current",
       )}
     />
   )

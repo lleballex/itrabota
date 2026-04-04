@@ -1,21 +1,38 @@
 import { Application } from "@/types/entities/application"
-import ApplicationChat from "@/components/base/application/ApplicationChat"
-import { Vacancy } from "@/types/entities/vacancy"
 import { UserRole } from "@/types/entities/user"
+import VacancyCard from "@/components/base/vacancy/VacancyCard"
+import CandidateCard from "@/components/base/candidate/CandidateCard"
+
+import ApplicationCardHeader from "./ApplicationCardHeader"
 
 interface Props {
   application: Application
-  vacancy: Vacancy
+  role: UserRole
+  url: string
 }
 
-// TODO: now it's for recruiter
+export default function ApplicationCard({ application, role, url }: Props) {
+  if (role === UserRole.Candidate && application.vacancy) {
+    return (
+      <VacancyCard
+        vacancy={application.vacancy}
+        url={url}
+        role={UserRole.Candidate}
+        headerChildren={<ApplicationCardHeader application={application} />}
+      />
+    )
+  }
 
-export default function ApplicationCard({ application, vacancy }: Props) {
-  return (
-    <ApplicationChat
-      role={UserRole.Recruiter}
-      application={application}
-      vacancy={vacancy}
-    />
-  )
+  if (role === UserRole.Recruiter && application.candidate) {
+    return (
+      <CandidateCard
+        candidate={application.candidate}
+        url={url}
+        headerChildren={<ApplicationCardHeader application={application} />}
+        footerChildren={
+          application.vacancy && <p>{application.vacancy.title}</p>
+        }
+      />
+    )
+  }
 }

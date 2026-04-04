@@ -13,7 +13,26 @@ export const ApplicationStatus = {
 export type ApplicationStatus =
   (typeof ApplicationStatus)[keyof typeof ApplicationStatus]
 
+export const ApplicationStatuses: Record<ApplicationStatus, string> = {
+  [ApplicationStatus.Pending]: "В процессе",
+  [ApplicationStatus.Approved]: "Принят",
+  [ApplicationStatus.Rejected]: "Отклонен",
+}
+
+export const ApplicationType = {
+  Response: "response",
+  Invitation: "invitation",
+} as const
+
+export type ApplicationType = (typeof ApplicationType)[keyof typeof ApplicationType]
+
+export const ApplicationTypes: Record<ApplicationType, string> = {
+  [ApplicationType.Response]: "Отклик",
+  [ApplicationType.Invitation]: "Приглашение",
+}
+
 export interface Application extends BaseEntity {
+  type: ApplicationType
   status: ApplicationStatus
   candidate?: Candidate
   vacancy?: Vacancy
