@@ -8,6 +8,7 @@ import {
   ChevronRightIcon,
   ChevronUpIcon,
   FilesIcon,
+  FileTextIcon,
   HouseIcon,
   LoaderCircleIcon,
   MessageSquare,
@@ -46,6 +47,9 @@ const ICONS = {
   },
   files: {
     Component: FilesIcon,
+  },
+  fileText: {
+    Component: FileTextIcon,
   },
   house: {
     Component: HouseIcon,

@@ -22,7 +22,11 @@ import {
 } from "@/modules/vacancies/entities/vacancy.entity"
 import { Candidate } from "@/modules/users/entities/candidate.entity"
 
-import { Application, ApplicationType } from "./entities/application.entity"
+import {
+  Application,
+  ApplicationStatus,
+  ApplicationType,
+} from "./entities/application.entity"
 import { CreateCandidateApplicationDto } from "./dto/create-candidate-application.dto"
 import { ApplicationMessagesService } from "./application-messages.service"
 import { UserRole } from "../users/types/user-role"
@@ -32,6 +36,7 @@ import {
   IApplicationsSearchParams,
 } from "./interfaces/application-service.interface"
 import { CreateRecruiterApplicationDto } from "./dto/create-recruiter-application.dto"
+import { RejectApplicationDto } from "./dto/reject-application.dto"
 
 @Injectable()
 export class ApplicationsService {
@@ -281,5 +286,71 @@ export class ApplicationsService {
     })
 
     return this.findOne({ id: applicationId })
+  }
+
+  async rejectById(id: string, dto: RejectApplicationDto, user_: ICurrentUser) {
+    await this.dataSource.transaction(async (manager) => {
+      const applicationsRepo = manager.getRepository(Application)
+
+      const application = await this.findOne({ id }, manager)
+
+      if (user_.role === UserRole.Recruiter) {
+        const user = await this.usersService.findFilledRecruiterById(
+          user_.id,
+          manager,
+        )
+
+        if (application.vacancy?.recruiter?.id !== user.recruiter.id) {
+          throw new ForbiddenException(
+            "You are not allowed to reject this application",
+          )
+        }
+      } else if (user_.role === UserRole.Candidate) {
+        const user = await this.usersService.findFilledCandidateById(
+          user_.id,
+          manager,
+        )
+
+        if (application.candidate?.id !== user.candidate.id) {
+          throw new ForbiddenException(
+            "You are not allowed to reject this application",
+          )
+        }
+      } else {
+        throw new ForbiddenException("Unsupported role")
+      }
+
+      if (application.status !== ApplicationStatus.Pending) {
+        throw new ConflictException("Only pending applications can be rejected")
+      }
+
+      application.status = ApplicationStatus.Rejected
+
+      await applicationsRepo.save(application)
+
+      await this.messagesService.create(
+        {
+          application: { id: application.id },
+          type:
+            user_.role === UserRole.Candidate
+              ? ApplicationMessageType.CandidateRejected
+              : ApplicationMessageType.RecruiterRejected,
+          senderRole: user_.role,
+        },
+        manager,
+      )
+
+      await this.messagesService.create(
+        {
+          application: { id: application.id },
+          type: ApplicationMessageType.UserMessage,
+          senderRole: user_.role,
+          content: dto.message,
+        },
+        manager,
+      )
+    })
+
+    return this.findOne({ id })
   }
 }

@@ -9,6 +9,8 @@ export const ApplicationMessageType = {
   UserMessage: "user",
   CandidateResponded: "candidate_responded",
   RecruiterInvited: "recruiter_invited",
+  CandidateRejected: "candidate_rejected",
+  RecruiterRejected: "recruiter_rejected",
 }
 
 export type ApplicationMessageType =

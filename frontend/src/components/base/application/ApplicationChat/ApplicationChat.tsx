@@ -3,7 +3,7 @@ import dayjs from "dayjs"
 import Image from "next/image"
 import { useMemo, useState } from "react"
 
-import { Application } from "@/types/entities/application"
+import { Application, ApplicationStatus } from "@/types/entities/application"
 import {
   ApplicationMessage,
   ApplicationMessageType,
@@ -22,6 +22,7 @@ interface Props {
 
 export default function ApplicationChat({ application, vacancy, role }: Props) {
   const [isRejectModalActive, setIsRejectModalActive] = useState(false)
+  const isPending = application.status === ApplicationStatus.Pending
 
   // TODO: rename
   const man = {
@@ -51,6 +52,14 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
         return role === UserRole.Recruiter
           ? "Вы пригласили кандидата на вакансию"
           : "Рекрутер пригласил вас на вакансию"
+      case ApplicationMessageType.CandidateRejected:
+        return role === UserRole.Candidate
+          ? "Вы отклонили процесс найма"
+          : "Кандидат отклонил процесс найма"
+      case ApplicationMessageType.RecruiterRejected:
+        return role === UserRole.Recruiter
+          ? "Вы отклонили соискателя"
+          : "Рекрутер отклонил процесс найма"
     }
   }
 
@@ -109,7 +118,7 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
             </div>
           ))}
         </div>
-        {role === UserRole.Recruiter && (
+        {role === UserRole.Recruiter && isPending && (
           <div className="flex self-center gap-2 sticky bottom-[var(--spacing-screen)]">
             {nextFunnelStep ? (
               <Button type="glass">Пригласить на {nextFunnelStep.name}</Button>
@@ -125,10 +134,22 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
             </Button>
           </div>
         )}
+        {role === UserRole.Candidate && isPending && (
+          <div className="flex self-center sticky bottom-[var(--spacing-screen)]">
+            <Button
+              className="!text-danger"
+              type="glass"
+              onClick={() => setIsRejectModalActive(true)}
+            >
+              Отклонить процесс
+            </Button>
+          </div>
+        )}
       </div>
 
       <ApplicationRejectModal
         application={application}
+        role={role}
         active={isRejectModalActive}
         onActiveChange={setIsRejectModalActive}
       />

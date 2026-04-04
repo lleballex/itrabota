@@ -9,6 +9,7 @@ import { ApplicationsService } from "./applications.service"
 import { GetApplicationsDto } from "./dto/get-applications.dto"
 import { CreateCandidateApplicationDto } from "./dto/create-candidate-application.dto"
 import { CreateRecruiterApplicationDto } from "./dto/create-recruiter-application.dto"
+import { RejectApplicationDto } from "./dto/reject-application.dto"
 
 @Controller("applications")
 export class ApplicationsController {
@@ -57,5 +58,15 @@ export class ApplicationsController {
     @CurrentUser() user: ICurrentUser,
   ) {
     return this.applicationsService.findOneForRecruiterById(id, user)
+  }
+
+  @Post(":id/reject")
+  @Auth()
+  reject(
+    @Param("id") id: string,
+    @Body() body: RejectApplicationDto,
+    @CurrentUser() user: ICurrentUser,
+  ) {
+    return this.applicationsService.rejectById(id, body, user)
   }
 }

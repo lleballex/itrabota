@@ -2,6 +2,10 @@ import Button from "@/components/ui/Button"
 import Modal from "@/components/ui/Modal"
 import { Application } from "@/types/entities/application"
 import { Controller, useForm } from "react-hook-form"
+import { useRejectApplication } from "@/api/applications/reject-application"
+import { handleFormApiError } from "@/lib/handle-form-api-error"
+import { useToastsStore } from "@/stores/toasts"
+import { UserRole } from "@/types/entities/user"
 import {
   formDefaultValues,
   FormInputValues,
@@ -12,26 +16,58 @@ import Textarea from "@/components/ui/Textarea"
 
 interface Props {
   application: Application
+  role: UserRole
   active: boolean
   onActiveChange: (val: boolean) => void
 }
 
 export default function ApplicationRejectModal({
   application,
+  role,
   active: isActive,
   onActiveChange: onIsActiveChange,
 }: Props) {
+  const { addToast } = useToastsStore()
+
   const form = useForm<FormInputValues, unknown, FormOutputValues>({
     resolver: formResolver,
     defaultValues: formDefaultValues,
   })
 
-  const onSubmit = form.handleSubmit((data) => {})
+  const { mutate: rejectApplication, status: rejectApplicationStatus } =
+    useRejectApplication()
+
+  const onSubmit = form.handleSubmit((data) => {
+    rejectApplication(
+      {
+        applicationId: application.id,
+        ...data,
+      },
+      {
+        onSuccess: () => {
+          addToast({
+            type: "success",
+            message:
+              role === UserRole.Recruiter
+                ? "Соискатель отклонен"
+                : "Процесс найма завершен",
+          })
+          form.reset()
+          onIsActiveChange(false)
+        },
+        onError: (error) => handleFormApiError({ error, form }),
+      },
+    )
+  })
 
   return (
     <Modal.Root active={isActive} onActiveChange={onIsActiveChange} width={650}>
       <form className="contents" onSubmit={onSubmit}>
-        <Modal.Header>Отклонить соискателя</Modal.Header>
+        <Modal.Header>
+          {role === UserRole.Recruiter
+            ? "Отклонить соискателя"
+            : "Завершить процесс найма"}
+        </Modal.Header>
         <Controller
           control={form.control}
           name="message"
@@ -47,7 +83,7 @@ export default function ApplicationRejectModal({
           <Button
             type="primary"
             htmlType="submit"
-            // pending={createApplicationStatus === "pending"}
+            pending={rejectApplicationStatus === "pending"}
           >
             Отклонить
           </Button>
