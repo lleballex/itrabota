@@ -5,6 +5,7 @@ import { UserRole } from "./user"
 export const ApplicationMessageType = {
   UserMessage: "user",
   CandidateResponded: "candidate_responded",
+  RecruiterInvited: "recruiter_invited",
 }
 
 export type ApplicationMessageType =

@@ -1,12 +1,27 @@
+import { UserRole } from "@/types/entities/user"
 import { axios } from "../lib/axios"
 import { createUseMutation } from "../lib/create-use-mutation"
 
-interface Data {
+interface CreateCandidateApplicationData {
+  role: typeof UserRole.Candidate
   vacancyId: string
   message?: string | null
 }
 
-export const useCreateApplication = createUseMutation(
-  ({ vacancyId, ...data }: Data) =>
-    axios.post(`/vacancies/${vacancyId}/applications`, data)
-)
+interface CreateRecruiterApplicationData {
+  role: typeof UserRole.Recruiter
+  candidateId: string
+  vacancyId: string
+  message?: string | null
+}
+
+type Data = CreateCandidateApplicationData | CreateRecruiterApplicationData
+
+export const useCreateApplication = createUseMutation(({ role, ...data }: Data) => {
+  const url = {
+    [UserRole.Candidate]: "/applications/candidate",
+    [UserRole.Recruiter]: "/applications/recruiter",
+  }[role]
+
+  return axios.post(url, data)
+})

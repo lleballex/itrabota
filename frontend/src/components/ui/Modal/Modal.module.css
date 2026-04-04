@@ -4,11 +4,13 @@
   background: none;
   color: inherit;
   scale: 0;
+  opacity: 0;
   transition-behavior: allow-discrete;
 }
 
 .root[open] {
   scale: 1;
+  opacity: 1;
 }
 
 .root::backdrop {
@@ -18,5 +20,6 @@
 @starting-style {
   .root[open] {
     scale: 0;
+    opacity: 0;
   }
 }

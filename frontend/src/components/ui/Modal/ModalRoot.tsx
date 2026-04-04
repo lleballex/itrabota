@@ -60,13 +60,13 @@ export default function ModalRoot({
         className={classNames(
           className,
           styles.root,
-          "transition-all max-w-[90dvw] max-h-[90dvh]"
+          "transition-all max-w-[90dvw] max-h-[90dvh]",
         )}
         role="dialog"
         style={{ width: width }}
       >
         {/* TODO: move values to config */}
-        <div className="glass flex flex-col gap-3 p-6 rounded backdrop-blur-[15px] bg-[rgba(0,0,0,0.5)]">
+        <div className="glass flex flex-col gap-3 p-4 rounded backdrop-blur-[15px] bg-[rgba(0,0,0,0.5)]">
           {children}
         </div>
       </dialog>

@@ -1,6 +1,10 @@
 import { IsNotEmpty, IsOptional, IsString } from "class-validator"
 
-export class CreateApplicationDto {
+export class CreateCandidateApplicationDto {
+  @IsString()
+  @IsNotEmpty()
+  vacancyId!: string
+
   @IsString()
   @IsNotEmpty()
   @IsOptional()

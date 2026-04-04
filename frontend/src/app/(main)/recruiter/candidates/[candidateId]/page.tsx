@@ -15,7 +15,9 @@ const Content = () => {
   return (
     <RemoteData
       data={candidate}
-      onSuccess={(candidate) => <CandidateDetailed candidate={candidate} />}
+      onSuccess={(candidate) => (
+        <CandidateDetailed candidate={candidate} role={UserRole.Recruiter} />
+      )}
     />
   )
 }

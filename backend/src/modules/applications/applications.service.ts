@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -13,16 +14,24 @@ import {
 
 import { ICurrentUser } from "@/modules/auth/interfaces/current-user.interface"
 import { UsersService } from "@/modules/users/users.service"
+import { CandidatesService } from "@/modules/users/candidates.service"
 import { VacanciesService } from "@/modules/vacancies/vacancies.service"
-import { Vacancy } from "@/modules/vacancies/entities/vacancy.entity"
+import {
+  Vacancy,
+  VacancyStatus,
+} from "@/modules/vacancies/entities/vacancy.entity"
 import { Candidate } from "@/modules/users/entities/candidate.entity"
 
 import { Application, ApplicationType } from "./entities/application.entity"
-import { CreateApplicationDto } from "./dto/create-application.dto"
+import { CreateCandidateApplicationDto } from "./dto/create-candidate-application.dto"
 import { ApplicationMessagesService } from "./application-messages.service"
 import { UserRole } from "../users/types/user-role"
 import { ApplicationMessageType } from "./entities/application-message.entity"
-import { IApplicationsSearchParams } from "./interfaces/application-service.interface"
+import {
+  IApplicationCreateData,
+  IApplicationsSearchParams,
+} from "./interfaces/application-service.interface"
+import { CreateRecruiterApplicationDto } from "./dto/create-recruiter-application.dto"
 
 @Injectable()
 export class ApplicationsService {
@@ -33,6 +42,7 @@ export class ApplicationsService {
     private readonly dataSource: DataSource,
     private readonly messagesService: ApplicationMessagesService,
     private readonly usersService: UsersService,
+    private readonly candidatesService: CandidatesService,
     private readonly vacanciesService: VacanciesService,
   ) {}
 
@@ -117,6 +127,43 @@ export class ApplicationsService {
     throw new ConflictException("Application already exists")
   }
 
+  private async create(data: IApplicationCreateData, manager: EntityManager) {
+    const applicationsRepo = manager.getRepository(Application)
+
+    await this.validateBeforeCreating(data.vacancy, data.candidate, manager)
+
+    const application = await applicationsRepo.save(
+      applicationsRepo.create({
+        type: data.type,
+        vacancy: { id: data.vacancy.id },
+        candidate: { id: data.candidate.id },
+      }),
+    )
+
+    await this.messagesService.create(
+      {
+        application: { id: application.id },
+        type: data.systemMessageType,
+        senderRole: data.senderRole,
+      },
+      manager,
+    )
+
+    if (data.userMessage) {
+      await this.messagesService.create(
+        {
+          application: { id: application.id },
+          type: ApplicationMessageType.UserMessage,
+          senderRole: data.senderRole,
+          content: data.userMessage,
+        },
+        manager,
+      )
+    }
+
+    return application.id
+  }
+
   async findOneForRecruiterById(id: string, user_: ICurrentUser) {
     const user = await this.usersService.findFilledRecruiterById(user_.id)
 
@@ -163,16 +210,13 @@ export class ApplicationsService {
     return qb.getMany()
   }
 
-  async create(
-    dto: CreateApplicationDto,
-    vacancyId: string,
+  async createByCandidate(
+    dto: CreateCandidateApplicationDto,
     user_: ICurrentUser,
   ) {
     const applicationId = await this.dataSource.transaction(async (manager) => {
-      const applicationsRepo = manager.getRepository(Application)
-
       const vacancy = await this.vacanciesService.findOneById(
-        vacancyId,
+        dto.vacancyId,
         manager,
       )
       const user = await this.usersService.findFilledCandidateById(
@@ -180,38 +224,60 @@ export class ApplicationsService {
         manager,
       )
 
-      await this.validateBeforeCreating(vacancy, user.candidate, manager)
-
-      const application = await applicationsRepo.save(
-        applicationsRepo.create({
-          type: ApplicationType.Response,
-          vacancy: { id: vacancy.id },
-          candidate: { id: user.candidate.id },
-        }),
-      )
-
-      await this.messagesService.create(
+      return this.create(
         {
-          application: { id: application.id },
-          type: ApplicationMessageType.CandidateResponded,
+          candidate: user.candidate,
+          vacancy,
+          type: ApplicationType.Response,
+          systemMessageType: ApplicationMessageType.CandidateResponded,
+          userMessage: dto.message,
           senderRole: UserRole.Candidate,
         },
         manager,
       )
+    })
 
-      if (dto.message) {
-        await this.messagesService.create(
-          {
-            application: { id: application.id },
-            type: ApplicationMessageType.UserMessage,
-            senderRole: UserRole.Candidate,
-            content: dto.message,
-          },
-          manager,
-        )
+    return this.findOne({ id: applicationId })
+  }
+
+  async createByRecruiter(
+    dto: CreateRecruiterApplicationDto,
+    user_: ICurrentUser,
+  ) {
+    const applicationId = await this.dataSource.transaction(async (manager) => {
+      const vacancy = await this.vacanciesService.findOneById(
+        dto.vacancyId,
+        manager,
+      )
+      const user = await this.usersService.findFilledRecruiterById(
+        user_.id,
+        manager,
+      )
+
+      if (vacancy.recruiter?.id !== user.recruiter.id) {
+        throw new ForbiddenException("You are not the author of the vacancy")
       }
 
-      return application.id
+      if (vacancy.status !== VacancyStatus.Active) {
+        throw new ConflictException("Cannot invite to not active vacancy")
+      }
+
+      const candidate = await this.candidatesService.findOneForRecruiterById(
+        dto.candidateId,
+        user,
+      )
+
+      return this.create(
+        {
+          candidate,
+          vacancy,
+          type: ApplicationType.Invitation,
+          systemMessageType: ApplicationMessageType.RecruiterInvited,
+          userMessage: dto.message,
+          senderRole: UserRole.Recruiter,
+        },
+        manager,
+      )
     })
 
     return this.findOne({ id: applicationId })

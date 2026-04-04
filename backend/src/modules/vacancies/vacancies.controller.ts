@@ -12,7 +12,6 @@ import { CurrentUser } from "@/modules/auth/decorators/current-user.decorator"
 import { ICurrentUser } from "@/modules/auth/interfaces/current-user.interface"
 import { Auth } from "@/modules/auth/decorators/auth.decorator"
 import { UserRole } from "@/modules/users/types/user-role"
-import { CreateApplicationDto } from "@/modules/applications/dto/create-application.dto"
 import { ApplicationsService } from "@/modules/applications/applications.service"
 
 import { VacanciesService } from "./vacancies.service"
@@ -65,16 +64,6 @@ export class VacanciesController {
     @CurrentUser() user: ICurrentUser,
   ) {
     return this.vacanciesService.update(id, body, user)
-  }
-
-  @Post(":id/applications")
-  @Auth(UserRole.Candidate)
-  createApplication(
-    @Param("id") id: string,
-    @Body() body: CreateApplicationDto,
-    @CurrentUser() user: ICurrentUser,
-  ) {
-    return this.applicationsService.create(body, id, user)
   }
 
   @Get(":id/applications")

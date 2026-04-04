@@ -77,14 +77,17 @@ export default function Select<V>({
             <Icon
               className={classNames(
                 styles.triggerIndicator,
-                "ml-auto transition-all"
+                "ml-auto transition-all",
               )}
               icon="chevronDown"
             />
           </Button>
         </Popover.Trigger>
 
-        <Popover.Content className={styles.content} ref={popoverContentRef}>
+        <Popover.Content
+          className={classNames(styles.content, "max-h-[300px]")}
+          ref={popoverContentRef}
+        >
           <HighlightList.Root className="flex flex-col">
             {items.map((item) => (
               <HighlightList.Item

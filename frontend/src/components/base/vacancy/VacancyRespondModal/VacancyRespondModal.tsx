@@ -7,6 +7,7 @@ import { useCreateApplication } from "@/api/applications/create-application"
 import { Vacancy } from "@/types/entities/vacancy"
 import { handleFormApiError } from "@/lib/handle-form-api-error"
 import { useToastsStore } from "@/stores/toasts"
+import { UserRole } from "@/types/entities/user"
 
 import {
   formDefaultValues,
@@ -39,6 +40,7 @@ export default function VacancyRespondModal({
   const onSubmit = form.handleSubmit((data) => {
     createApplication(
       {
+        role: UserRole.Candidate,
         vacancyId: vacancy.id,
         ...data,
       },

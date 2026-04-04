@@ -33,7 +33,7 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
     if (!vacancy.funnelSteps) return null
 
     const curStepIdx = vacancy.funnelSteps.findIndex(
-      (step) => step.id === application.funnelStep?.id
+      (step) => step.id === application.funnelStep?.id,
     )
 
     return vacancy.funnelSteps[curStepIdx + 1] ?? null
@@ -45,8 +45,12 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
         return message.content
       case ApplicationMessageType.CandidateResponded:
         return role === UserRole.Candidate
-          ? "Вы откилкнулись на вакансию"
-          : "Кандидат откилкнулся на вакансию"
+          ? "Вы откликнулись на вакансию"
+          : "Кандидат откликнулся на вакансию"
+      case ApplicationMessageType.RecruiterInvited:
+        return role === UserRole.Recruiter
+          ? "Вы пригласили кандидата на вакансию"
+          : "Рекрутер пригласил вас на вакансию"
     }
   }
 
@@ -94,7 +98,7 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
                 {
                   "self-end text-right": message.senderRole === role,
                   "self-start": message.senderRole !== role,
-                }
+                },
               )}
               key={message.id}
             >
