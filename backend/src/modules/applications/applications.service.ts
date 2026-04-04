@@ -4,7 +4,12 @@ import {
   NotFoundException,
 } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
-import { FindOptionsWhere, Repository } from "typeorm"
+import {
+  DataSource,
+  EntityManager,
+  FindOptionsWhere,
+  Repository,
+} from "typeorm"
 
 import { ICurrentUser } from "@/modules/auth/interfaces/current-user.interface"
 import { UsersService } from "@/modules/users/users.service"
@@ -25,13 +30,16 @@ export class ApplicationsService {
     @InjectRepository(Application)
     private readonly applicationsRepo: Repository<Application>,
 
+    private readonly dataSource: DataSource,
     private readonly messagesService: ApplicationMessagesService,
     private readonly usersService: UsersService,
     private readonly vacanciesService: VacanciesService,
   ) {}
 
-  private createQB() {
-    return this.applicationsRepo
+  private createQB(manager?: EntityManager) {
+    const repo = manager?.getRepository(Application) ?? this.applicationsRepo
+
+    return repo
       .createQueryBuilder("application")
       .leftJoinAndSelect("application.messages", "message")
       .leftJoinAndSelect("application.funnelStep", "funnelStep")
@@ -39,8 +47,13 @@ export class ApplicationsService {
       .orderBy("message.createdAt", "ASC")
   }
 
-  private async findOne(where: FindOptionsWhere<Application>) {
-    const application = await this.createQB().setFindOptions({ where }).getOne()
+  private async findOne(
+    where: FindOptionsWhere<Application>,
+    manager?: EntityManager,
+  ) {
+    const application = await this.createQB(manager)
+      .setFindOptions({ where })
+      .getOne()
 
     if (!application) {
       throw new NotFoundException("Application not found")
@@ -49,12 +62,19 @@ export class ApplicationsService {
     return application
   }
 
-  private async validateBeforeCreating(vacancy: Vacancy, candidate: Candidate) {
+  private async validateBeforeCreating(
+    vacancy: Vacancy,
+    candidate: Candidate,
+    manager?: EntityManager,
+  ) {
     try {
-      await this.findOne({
-        vacancy: { id: vacancy.id },
-        candidate: { id: candidate.id },
-      })
+      await this.findOne(
+        {
+          vacancy: { id: vacancy.id },
+          candidate: { id: candidate.id },
+        },
+        manager,
+      )
     } catch (e) {
       if (e instanceof NotFoundException) {
         return
@@ -65,8 +85,8 @@ export class ApplicationsService {
     throw new ConflictException("Application already exists")
   }
 
-  async findOneById(id: string) {
-    return this.findOne({ id })
+  async findOneById(id: string, manager?: EntityManager) {
+    return this.findOne({ id }, manager)
   }
 
   async findOneForCurCandidate(vacancyId: string, user_: ICurrentUser) {
@@ -106,35 +126,51 @@ export class ApplicationsService {
     vacancyId: string,
     user_: ICurrentUser,
   ) {
-    const vacancy = await this.vacanciesService.findOneById(vacancyId)
-    const user = await this.usersService.findFilledCandidateById(user_.id)
+    const applicationId = await this.dataSource.transaction(async (manager) => {
+      const applicationsRepo = manager.getRepository(Application)
 
-    await this.validateBeforeCreating(vacancy, user.candidate)
+      const vacancy = await this.vacanciesService.findOneById(
+        vacancyId,
+        manager,
+      )
+      const user = await this.usersService.findFilledCandidateById(
+        user_.id,
+        manager,
+      )
 
-    // TODO: start transaction
+      await this.validateBeforeCreating(vacancy, user.candidate, manager)
 
-    const application = await this.applicationsRepo.save(
-      this.applicationsRepo.create({
-        vacancy: { id: vacancy.id },
-        candidate: { id: user.candidate.id },
-      }),
-    )
+      const application = await applicationsRepo.save(
+        applicationsRepo.create({
+          vacancy: { id: vacancy.id },
+          candidate: { id: user.candidate.id },
+        }),
+      )
 
-    await this.messagesService.create({
-      application: { id: application.id },
-      type: ApplicationMessageType.CandidateResponded,
-      senderRole: UserRole.Candidate,
+      await this.messagesService.create(
+        {
+          application: { id: application.id },
+          type: ApplicationMessageType.CandidateResponded,
+          senderRole: UserRole.Candidate,
+        },
+        manager,
+      )
+
+      if (dto.message) {
+        await this.messagesService.create(
+          {
+            application: { id: application.id },
+            type: ApplicationMessageType.UserMessage,
+            senderRole: UserRole.Candidate,
+            content: dto.message,
+          },
+          manager,
+        )
+      }
+
+      return application.id
     })
 
-    if (dto.message) {
-      await this.messagesService.create({
-        application: { id: application.id },
-        type: ApplicationMessageType.UserMessage,
-        senderRole: UserRole.Candidate,
-        content: dto.message,
-      })
-    }
-
-    return this.findOneById(application.id)
+    return this.findOneById(applicationId)
   }
 }

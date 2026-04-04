@@ -90,8 +90,8 @@ export class UsersService {
     return user as WithRequired<typeof user, "recruiter">
   }
 
-  async findCandidateById(id: string) {
-    const user = await this.findOneById(id)
+  async findCandidateById(id: string, manager?: EntityManager) {
+    const user = await this.findOneById(id, manager)
 
     if (user.role !== UserRole.Candidate) {
       throw new Error("User must be a candidate")
@@ -100,8 +100,8 @@ export class UsersService {
     return user as WithConcreted<typeof user, "role", typeof UserRole.Candidate>
   }
 
-  async findFilledCandidateById(id: string) {
-    const user = await this.findCandidateById(id)
+  async findFilledCandidateById(id: string, manager?: EntityManager) {
+    const user = await this.findCandidateById(id, manager)
 
     if (!user.candidate) {
       throw new Error("Candidate must be filled")
@@ -110,25 +110,32 @@ export class UsersService {
     return user as WithRequired<typeof user, "candidate">
   }
 
-  async create(data: DeepPartial<User>) {
-    const user = this.usersRepo.create(data)
-    const savedUser = await this.usersRepo.save(user)
+  async create(data: DeepPartial<User>, manager?: EntityManager) {
+    const repo = manager?.getRepository(User) ?? this.usersRepo
 
-    return this.findOneById(savedUser.id)
+    const user = repo.create(data)
+    const savedUser = await repo.save(user)
+
+    return this.findOneById(savedUser.id, manager)
   }
 
-  async update(id: string, data: DeepPartial<User>) {
-    const user = this.usersRepo.create({ id, ...data })
-    await this.usersRepo.save(user)
+  async update(id: string, data: DeepPartial<User>, manager?: EntityManager) {
+    const repo = manager?.getRepository(User) ?? this.usersRepo
+    const user = repo.create({ id, ...data })
 
-    return this.findOneById(id)
+    await repo.save(user)
+
+    return this.findOneById(id, manager)
   }
 
-  async isEmailAvailable(email: string, options?: { userId?: string }) {
+  async isEmailAvailable(
+    email: string,
+    options?: { userId?: string; manager?: EntityManager },
+  ) {
     let user: User
 
     try {
-      user = await this.findOne({ email })
+      user = await this.findOne({ email }, { manager: options?.manager })
     } catch (e) {
       if (e instanceof NotFoundException) {
         return true

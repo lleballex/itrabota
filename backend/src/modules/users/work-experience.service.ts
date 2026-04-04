@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common"
-import { DeepPartial, Repository } from "typeorm"
+import { DeepPartial, EntityManager, Repository } from "typeorm"
 
 import { WorkExperienceItem } from "./entities/work-experence-item.entity"
 import { InjectRepository } from "@nestjs/typeorm"
@@ -11,8 +11,10 @@ export class WorkExperienceService {
     private readonly workExperienceRepo: Repository<WorkExperienceItem>,
   ) {}
 
-  async findOneById(id: string) {
-    const item = await this.workExperienceRepo.findOne({ where: { id } })
+  async findOneById(id: string, manager?: EntityManager) {
+    const repo =
+      manager?.getRepository(WorkExperienceItem) ?? this.workExperienceRepo
+    const item = await repo.findOne({ where: { id } })
 
     if (!item) {
       throw new NotFoundException("WorkExperienceItem not found")
@@ -21,22 +23,35 @@ export class WorkExperienceService {
     return item
   }
 
-  async create(data: DeepPartial<WorkExperienceItem>) {
-    const item = this.workExperienceRepo.create(data)
-    const savedItem = await this.workExperienceRepo.save(item)
+  async create(data: DeepPartial<WorkExperienceItem>, manager?: EntityManager) {
+    const repo =
+      manager?.getRepository(WorkExperienceItem) ?? this.workExperienceRepo
 
-    return this.findOneById(savedItem.id)
+    const item = repo.create(data)
+    const savedItem = await repo.save(item)
+
+    return this.findOneById(savedItem.id, manager)
   }
 
-  async update(id: string, data: DeepPartial<WorkExperienceItem>) {
-    const item = this.workExperienceRepo.create({ ...data, id })
-    await this.workExperienceRepo.save(item)
+  async update(
+    id: string,
+    data: DeepPartial<WorkExperienceItem>,
+    manager?: EntityManager,
+  ) {
+    const repo =
+      manager?.getRepository(WorkExperienceItem) ?? this.workExperienceRepo
+    const item = repo.create({ ...data, id })
 
-    return this.findOneById(id)
+    await repo.save(item)
+
+    return this.findOneById(id, manager)
   }
 
-  async remove(id: string) {
-    const item = await this.findOneById(id)
-    await this.workExperienceRepo.remove(item)
+  async remove(id: string, manager?: EntityManager) {
+    const repo =
+      manager?.getRepository(WorkExperienceItem) ?? this.workExperienceRepo
+    const item = await this.findOneById(id, manager)
+
+    await repo.remove(item)
   }
 }

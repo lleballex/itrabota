@@ -153,23 +153,32 @@ export class VacanciesService {
   async create(dto_: CreateVacancyDto, user_: ICurrentUser) {
     const { funnelSteps: funnelStepsDto, ...dto } = dto_
 
-    const user = await this.usersService.findFilledRecruiterById(user_.id)
+    const vacancyId = await this.dataSource.transaction(async (manager) => {
+      const vacanciesRepo = manager.getRepository(Vacancy)
 
-    // TODO: start transaction
+      const user = await this.usersService.findFilledRecruiterById(
+        user_.id,
+        manager,
+      )
 
-    let vacancy = this.vacanciesRepo.create({
-      ...dto,
-      specialization: { id: dto.specializationId },
-      city: dto.cityId ? { id: dto.cityId } : null,
-      skills: dto.skillIds?.map((id) => ({ id })),
-      recruiter: { id: user.recruiter.id },
+      let vacancy = vacanciesRepo.create({
+        ...dto,
+        specialization: { id: dto.specializationId },
+        city: isNullish(dto.cityId) ? dto.cityId : { id: dto.cityId },
+        skills: isNullish(dto.skillIds)
+          ? dto.skillIds
+          : dto.skillIds.map((id) => ({ id })),
+        recruiter: { id: user.recruiter.id },
+      })
+
+      vacancy = await vacanciesRepo.save(vacancy)
+
+      await this.handleFunnelStepsUpsert(funnelStepsDto, vacancy, manager)
+
+      return vacancy.id
     })
 
-    vacancy = await this.vacanciesRepo.save(vacancy)
-
-    await this.handleFunnelStepsUpsert(funnelStepsDto, vacancy)
-
-    return this.findOneById(vacancy.id)
+    return this.findOneById(vacancyId)
   }
 
   async update(id: string, dto_: UpdateVacancyDto, user_: ICurrentUser) {

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
-import { DeepPartial, Repository } from "typeorm"
+import { DeepPartial, EntityManager, Repository } from "typeorm"
 
 import { ApplicationMessage } from "./entities/application-message.entity"
 
@@ -11,8 +11,9 @@ export class ApplicationMessagesService {
     private readonly messagesRepo: Repository<ApplicationMessage>,
   ) {}
 
-  async findOneById(id: string) {
-    const message = await this.messagesRepo.findOne({ where: { id } })
+  async findOneById(id: string, manager?: EntityManager) {
+    const repo = manager?.getRepository(ApplicationMessage) ?? this.messagesRepo
+    const message = await repo.findOne({ where: { id } })
 
     if (!message) {
       throw new NotFoundException("Application message not found")
@@ -21,9 +22,10 @@ export class ApplicationMessagesService {
     return message
   }
 
-  async create(data: DeepPartial<ApplicationMessage>) {
-    const message = await this.messagesRepo.save(this.messagesRepo.create(data))
+  async create(data: DeepPartial<ApplicationMessage>, manager?: EntityManager) {
+    const repo = manager?.getRepository(ApplicationMessage) ?? this.messagesRepo
+    const message = await repo.save(repo.create(data))
 
-    return this.findOneById(message.id)
+    return this.findOneById(message.id, manager)
   }
 }

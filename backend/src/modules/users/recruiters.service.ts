@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
-import { DeepPartial, Repository } from "typeorm"
+import { DeepPartial, EntityManager, Repository } from "typeorm"
 
 import { Recruiter } from "./entities/recruiter.entity"
 
@@ -11,8 +11,9 @@ export class RecruitersService {
     private readonly recruitersRepo: Repository<Recruiter>,
   ) {}
 
-  async findOneById(id: string) {
-    const recruiter = await this.recruitersRepo.findOneBy({ id })
+  async findOneById(id: string, manager?: EntityManager) {
+    const repo = manager?.getRepository(Recruiter) ?? this.recruitersRepo
+    const recruiter = await repo.findOneBy({ id })
 
     if (!recruiter) {
       throw new Error("Recruiter not found")
@@ -21,17 +22,24 @@ export class RecruitersService {
     return recruiter
   }
 
-  async create(data: DeepPartial<Recruiter>) {
-    const recruiter = this.recruitersRepo.create(data)
-    const savedRecruiter = await this.recruitersRepo.save(recruiter)
+  async create(data: DeepPartial<Recruiter>, manager?: EntityManager) {
+    const repo = manager?.getRepository(Recruiter) ?? this.recruitersRepo
 
-    return this.findOneById(savedRecruiter.id)
+    const recruiter = repo.create(data)
+    const savedRecruiter = await repo.save(recruiter)
+
+    return this.findOneById(savedRecruiter.id, manager)
   }
 
-  async update(id: string, data: DeepPartial<Recruiter>) {
-    const recruiter = this.recruitersRepo.create({ id, ...data })
-    await this.recruitersRepo.save(recruiter)
+  async update(
+    id: string,
+    data: DeepPartial<Recruiter>,
+    manager?: EntityManager,
+  ) {
+    const repo = manager?.getRepository(Recruiter) ?? this.recruitersRepo
+    const recruiter = repo.create({ id, ...data })
 
-    return this.findOneById(id)
+    await repo.save(recruiter)
+    return this.findOneById(id, manager)
   }
 }

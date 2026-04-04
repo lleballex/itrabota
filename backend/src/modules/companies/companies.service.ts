@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
-import { DeepPartial, Repository } from "typeorm"
+import { DeepPartial, EntityManager, Repository } from "typeorm"
 
 import { Company } from "./entities/company.entity"
 
@@ -11,21 +11,31 @@ export class CompaniesService {
     private readonly companiesRepo: Repository<Company>,
   ) {}
 
-  findOneById(id: string) {
-    return this.companiesRepo.findOneBy({ id })
+  findOneById(id: string, manager?: EntityManager) {
+    const repo = manager?.getRepository(Company) ?? this.companiesRepo
+
+    return repo.findOneBy({ id })
   }
 
-  async create(data: DeepPartial<Company>) {
-    const company = this.companiesRepo.create(data)
-    const savedCompany = await this.companiesRepo.save(company)
+  async create(data: DeepPartial<Company>, manager?: EntityManager) {
+    const repo = manager?.getRepository(Company) ?? this.companiesRepo
 
-    return this.findOneById(savedCompany.id)
+    const company = repo.create(data)
+    const savedCompany = await repo.save(company)
+
+    return this.findOneById(savedCompany.id, manager)
   }
 
-  async update(id: string, data: DeepPartial<Company>) {
-    const company = this.companiesRepo.create({ id, ...data })
-    await this.companiesRepo.save(company)
+  async update(
+    id: string,
+    data: DeepPartial<Company>,
+    manager?: EntityManager,
+  ) {
+    const repo = manager?.getRepository(Company) ?? this.companiesRepo
+    const company = repo.create({ id, ...data })
 
-    return this.findOneById(id)
+    await repo.save(company)
+
+    return this.findOneById(id, manager)
   }
 }
