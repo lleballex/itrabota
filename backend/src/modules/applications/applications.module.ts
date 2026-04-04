@@ -8,6 +8,7 @@ import { Application } from "./entities/application.entity"
 import { ApplicationMessage } from "./entities/application-message.entity"
 import { ApplicationsService } from "./applications.service"
 import { ApplicationMessagesService } from "./application-messages.service"
+import { ApplicationsController } from "./applications.controller"
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ApplicationMessagesService } from "./application-messages.service"
     UsersModule,
     forwardRef(() => VacanciesModule),
   ],
+  controllers: [ApplicationsController],
   providers: [ApplicationsService, ApplicationMessagesService],
   exports: [ApplicationsService],
 })

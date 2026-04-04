@@ -7,17 +7,28 @@ import { FunnelStep } from "@/modules/vacancies/entities/funnel-step.entity"
 
 import { ApplicationMessage } from "./application-message.entity"
 
-const ApplicationStatus = {
+export const ApplicationStatus = {
   Pending: "pending",
   Rejected: "rejected",
   Approved: "approved",
 }
 
-type ApplicationStatus =
+export type ApplicationStatus =
   (typeof ApplicationStatus)[keyof typeof ApplicationStatus]
+
+export const ApplicationType = {
+  Response: "response",
+  Invitation: "invitation",
+}
+
+export type ApplicationType =
+  (typeof ApplicationType)[keyof typeof ApplicationType]
 
 @Entity("application")
 export class Application extends BaseEntity {
+  @Column("enum", { enum: ApplicationType })
+  type!: ApplicationType
+
   @Column("enum", {
     enum: ApplicationStatus,
     default: ApplicationStatus.Pending,

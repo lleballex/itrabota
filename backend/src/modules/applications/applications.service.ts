@@ -17,12 +17,12 @@ import { VacanciesService } from "@/modules/vacancies/vacancies.service"
 import { Vacancy } from "@/modules/vacancies/entities/vacancy.entity"
 import { Candidate } from "@/modules/users/entities/candidate.entity"
 
-import { Application } from "./entities/application.entity"
+import { Application, ApplicationType } from "./entities/application.entity"
 import { CreateApplicationDto } from "./dto/create-application.dto"
 import { ApplicationMessagesService } from "./application-messages.service"
 import { UserRole } from "../users/types/user-role"
 import { ApplicationMessageType } from "./entities/application-message.entity"
-import { GetRecruiterApplicationsDto } from "./dto/get-recruiter-applications.dto"
+import { IApplicationsSearchParams } from "./interfaces/application-service.interface"
 
 @Injectable()
 export class ApplicationsService {
@@ -36,22 +36,53 @@ export class ApplicationsService {
     private readonly vacanciesService: VacanciesService,
   ) {}
 
-  private createQB(manager?: EntityManager) {
+  private createQB(
+    params?: IApplicationsSearchParams,
+    manager?: EntityManager,
+  ) {
     const repo = manager?.getRepository(Application) ?? this.applicationsRepo
 
-    return repo
+    const qb = repo
       .createQueryBuilder("application")
       .leftJoinAndSelect("application.messages", "message")
       .leftJoinAndSelect("application.funnelStep", "funnelStep")
+      .leftJoinAndSelect("application.vacancy", "vacancy")
+      .leftJoinAndSelect("vacancy.recruiter", "recruiter")
+      .leftJoinAndSelect("recruiter.company", "company")
+      .leftJoinAndSelect("company.industry", "industry")
+      .leftJoinAndSelect("company.logo", "companyLogo")
+      .leftJoinAndSelect("application.candidate", "candidate")
+      .leftJoinAndSelect("candidate.city", "candidateCity")
+      .leftJoinAndSelect("candidate.avatar", "candidateAvatar")
       .orderBy("application.createdAt", "DESC")
-      .orderBy("message.createdAt", "ASC")
+      .addOrderBy("message.createdAt", "ASC")
+
+    if (params?.vacancyId) {
+      qb.andWhere("vacancy.id = :vacancyId", {
+        vacancyId: params.vacancyId,
+      })
+    }
+
+    if (params?.query) {
+      qb.andWhere("vacancy.title ILIKE :query", { query: `%${params.query}%` })
+    }
+
+    if (params?.type) {
+      qb.andWhere("application.type = :type", { type: params?.type })
+    }
+
+    if (params?.status) {
+      qb.andWhere("application.status = :status", { status: params?.status })
+    }
+
+    return qb
   }
 
   private async findOne(
     where: FindOptionsWhere<Application>,
     manager?: EntityManager,
   ) {
-    const application = await this.createQB(manager)
+    const application = await this.createQB(undefined, manager)
       .setFindOptions({ where })
       .getOne()
 
@@ -85,11 +116,16 @@ export class ApplicationsService {
     throw new ConflictException("Application already exists")
   }
 
-  async findOneById(id: string, manager?: EntityManager) {
-    return this.findOne({ id }, manager)
+  async findOneForRecruiterById(id: string, user_: ICurrentUser) {
+    const user = await this.usersService.findFilledRecruiterById(user_.id)
+
+    return this.findOne({
+      id,
+      vacancy: { recruiter: { id: user.recruiter.id } },
+    })
   }
 
-  async findOneForCurCandidate(vacancyId: string, user_: ICurrentUser) {
+  async findOneForCandidateByVacancyId(vacancyId: string, user_: ICurrentUser) {
     const vacancy = await this.vacanciesService.findOneById(vacancyId)
     const user = await this.usersService.findFilledCandidateById(user_.id)
     const application = await this.findOne({
@@ -101,22 +137,27 @@ export class ApplicationsService {
   }
 
   async findAllForRecruiter(
-    dto: GetRecruiterApplicationsDto,
+    params: IApplicationsSearchParams,
     user_: ICurrentUser,
   ) {
     const user = await this.usersService.findFilledRecruiterById(user_.id)
 
-    const qb = this.createQB()
-      .leftJoin("application.vacancy", "vacancy")
-      .leftJoin("vacancy.recruiter", "recruiter")
-      .leftJoinAndSelect("application.candidate", "candidate")
-      .where("recruiter.id = :recruiterId", { recruiterId: user.recruiter.id })
+    const qb = this.createQB(params).andWhere("recruiter.id = :recruiterId", {
+      recruiterId: user.recruiter.id,
+    })
 
-    if (dto.vacancyId) {
-      qb.andWhere("vacancy.id = :vacancyId", {
-        vacancyId: dto.vacancyId,
-      })
-    }
+    return qb.getMany()
+  }
+
+  async findAllForCandidate(
+    params: IApplicationsSearchParams,
+    user_: ICurrentUser,
+  ) {
+    const user = await this.usersService.findFilledCandidateById(user_.id)
+
+    const qb = this.createQB(params).andWhere("candidate.id = :candidateId", {
+      candidateId: user.candidate.id,
+    })
 
     return qb.getMany()
   }
@@ -142,6 +183,7 @@ export class ApplicationsService {
 
       const application = await applicationsRepo.save(
         applicationsRepo.create({
+          type: ApplicationType.Response,
           vacancy: { id: vacancy.id },
           candidate: { id: user.candidate.id },
         }),
@@ -171,6 +213,6 @@ export class ApplicationsService {
       return application.id
     })
 
-    return this.findOneById(applicationId)
+    return this.findOne({ id: applicationId })
   }
 }

@@ -92,6 +92,6 @@ export class VacanciesController {
     @Param("id") id: string,
     @CurrentUser() user: ICurrentUser,
   ) {
-    return this.applicationsService.findOneForCurCandidate(id, user)
+    return this.applicationsService.findOneForCandidateByVacancyId(id, user)
   }
 }
