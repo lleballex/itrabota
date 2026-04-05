@@ -13,6 +13,8 @@ import { Vacancy } from "@/types/entities/vacancy"
 import { getProfileAvatar } from "@/lib/get-profile-avatar"
 import Button from "@/components/ui/Button"
 import ApplicationRejectModal from "@/components/base/application/ApplicationRejectModal"
+import { useAcceptApplicationByCandidate } from "@/api/applications/accept-application-by-candidate"
+import ApplicationOfferModal from "@/components/base/application/ApplicationOfferModal"
 
 interface Props {
   application: Application
@@ -22,7 +24,12 @@ interface Props {
 
 export default function ApplicationChat({ application, vacancy, role }: Props) {
   const [isRejectModalActive, setIsRejectModalActive] = useState(false)
-  const isPending = application.status === ApplicationStatus.Pending
+  const [isOfferModalActive, setIsOfferModalActive] = useState(false)
+
+  const {
+    mutate: acceptApplicationByCandidate,
+    status: acceptApplicationByCandidateStatus,
+  } = useAcceptApplicationByCandidate()
 
   // TODO: rename
   const man = {
@@ -31,7 +38,7 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
   }[role]
 
   const nextFunnelStep = useMemo(() => {
-    if (!vacancy.funnelSteps) return null
+    if (!vacancy.funnelSteps?.length) return null
 
     const curStepIdx = vacancy.funnelSteps.findIndex(
       (step) => step.id === application.funnelStep?.id,
@@ -39,6 +46,33 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
 
     return vacancy.funnelSteps[curStepIdx + 1] ?? null
   }, [vacancy, application])
+
+  const isWaitingForCandidateResponse = useMemo(() => {
+    if (
+      !application.messages?.length ||
+      application.status !== ApplicationStatus.Pending
+    ) {
+      return false
+    }
+
+    const lastMessage =
+      application.messages[application.messages.length - 1].type ===
+      ApplicationMessageType.UserMessage
+        ? application.messages[application.messages.length - 2]
+        : application.messages[application.messages.length - 1]
+
+    return (
+      lastMessage.type === ApplicationMessageType.RecruiterInvited ||
+      lastMessage.type === ApplicationMessageType.RecruiterOfferedStep ||
+      lastMessage.type === ApplicationMessageType.RecruiterOfferedJob
+    )
+  }, [application])
+
+  const onAccept = () => {
+    acceptApplicationByCandidate({
+      applicationId: application.id,
+    })
+  }
 
   const getMessageContent = (message: ApplicationMessage) => {
     switch (message.type) {
@@ -52,6 +86,18 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
         return role === UserRole.Recruiter
           ? "Вы пригласили кандидата на вакансию"
           : "Рекрутер пригласил вас на вакансию"
+      case ApplicationMessageType.CandidateAccepted:
+        return role === UserRole.Candidate
+          ? "Вы приняли приглашение"
+          : "Кандидат принял приглашение"
+      case ApplicationMessageType.RecruiterOfferedStep:
+        return role === UserRole.Recruiter
+          ? "Вы пригласили кандидата на следующий этап"
+          : "Рекрутер пригласил вас на следующий этап"
+      case ApplicationMessageType.RecruiterOfferedJob:
+        return role === UserRole.Recruiter
+          ? "Вы пригласили кандидата трудоустроиться"
+          : "Рекрутер пригласил вас трудоустроиться"
       case ApplicationMessageType.CandidateRejected:
         return role === UserRole.Candidate
           ? "Вы отклонили процесс найма"
@@ -118,33 +164,49 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
             </div>
           ))}
         </div>
-        {role === UserRole.Recruiter && isPending && (
-          <div className="flex self-center gap-2 sticky bottom-[var(--spacing-screen)]">
-            {nextFunnelStep ? (
-              <Button type="glass">Пригласить на {nextFunnelStep.name}</Button>
-            ) : (
-              <Button type="glass">Принять</Button>
-            )}
-            <Button
-              className="!text-danger"
-              type="glass"
-              onClick={() => setIsRejectModalActive(true)}
-            >
-              Отказать
-            </Button>
-          </div>
-        )}
-        {role === UserRole.Candidate && isPending && (
-          <div className="flex self-center sticky bottom-[var(--spacing-screen)]">
-            <Button
-              className="!text-danger"
-              type="glass"
-              onClick={() => setIsRejectModalActive(true)}
-            >
-              Отклонить процесс
-            </Button>
-          </div>
-        )}
+
+        {role === UserRole.Recruiter &&
+          application.status === ApplicationStatus.Pending && (
+            <div className="flex self-center gap-2 sticky bottom-[var(--spacing-screen)]">
+              {!isWaitingForCandidateResponse && (
+                <Button
+                  type="glass"
+                  onClick={() => setIsOfferModalActive(true)}
+                >
+                  Пригласить на {nextFunnelStep?.name}
+                </Button>
+              )}
+              <Button
+                className="!text-danger"
+                type="glass"
+                onClick={() => setIsRejectModalActive(true)}
+              >
+                Отказать
+              </Button>
+            </div>
+          )}
+
+        {role === UserRole.Candidate &&
+          application.status === ApplicationStatus.Pending && (
+            <div className="flex self-center gap-2 sticky bottom-[var(--spacing-screen)]">
+              {isWaitingForCandidateResponse && (
+                <Button
+                  type="glass"
+                  pending={acceptApplicationByCandidateStatus === "pending"}
+                  onClick={onAccept}
+                >
+                  Принять
+                </Button>
+              )}
+              <Button
+                className="!text-danger"
+                type="glass"
+                onClick={() => setIsRejectModalActive(true)}
+              >
+                Отклонить процесс
+              </Button>
+            </div>
+          )}
       </div>
 
       <ApplicationRejectModal
@@ -152,6 +214,12 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
         role={role}
         active={isRejectModalActive}
         onActiveChange={setIsRejectModalActive}
+      />
+
+      <ApplicationOfferModal
+        application={application}
+        active={isOfferModalActive}
+        onActiveChange={setIsOfferModalActive}
       />
     </>
   )

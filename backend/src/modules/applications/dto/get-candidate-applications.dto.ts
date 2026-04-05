@@ -5,7 +5,7 @@ import {
   ApplicationType,
 } from "../entities/application.entity"
 
-export class GetApplicationsDto {
+export class GetCandidateApplicationsDto {
   @IsString()
   @IsNotEmpty()
   @IsOptional()

@@ -41,6 +41,7 @@ export default function ApplicationRejectModal({
     rejectApplication(
       {
         applicationId: application.id,
+        role,
         ...data,
       },
       {

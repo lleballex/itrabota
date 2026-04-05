@@ -21,4 +21,5 @@ export interface IApplicationCreateData {
   senderRole: UserRole
   systemMessageType: ApplicationMessageType
   userMessage?: string | null
+  funnelStepId?: string | null
 }

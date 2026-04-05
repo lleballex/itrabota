@@ -8,7 +8,10 @@ import { Application } from "./entities/application.entity"
 import { ApplicationMessage } from "./entities/application-message.entity"
 import { ApplicationsService } from "./applications.service"
 import { ApplicationMessagesService } from "./application-messages.service"
-import { ApplicationsController } from "./applications.controller"
+import { CandidateApplicationsService } from "./candidate-applications.service"
+import { RecruiterApplicationsService } from "./recruiter-applications.service"
+import { CandidateApplicationsController } from "./candidate-applications.controller"
+import { RecruiterApplicationsController } from "./recruiter-applications.controller"
 
 @Module({
   imports: [
@@ -16,8 +19,16 @@ import { ApplicationsController } from "./applications.controller"
     UsersModule,
     forwardRef(() => VacanciesModule),
   ],
-  controllers: [ApplicationsController],
-  providers: [ApplicationsService, ApplicationMessagesService],
-  exports: [ApplicationsService],
+  controllers: [
+    CandidateApplicationsController,
+    RecruiterApplicationsController,
+  ],
+  providers: [
+    ApplicationsService,
+    CandidateApplicationsService,
+    RecruiterApplicationsService,
+    ApplicationMessagesService,
+  ],
+  exports: [CandidateApplicationsService, RecruiterApplicationsService],
 })
 export class ApplicationsModule {}

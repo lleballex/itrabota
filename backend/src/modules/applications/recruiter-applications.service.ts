@@ -1,0 +1,206 @@
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+} from "@nestjs/common"
+import { DataSource } from "typeorm"
+
+import { UsersService } from "@/modules/users/users.service"
+import { ICurrentUser } from "@/modules/auth/interfaces/current-user.interface"
+import { VacanciesService } from "@/modules/vacancies/vacancies.service"
+import { VacancyStatus } from "@/modules/vacancies/entities/vacancy.entity"
+import { CandidatesService } from "@/modules/users/candidates.service"
+import { UserRole } from "@/modules/users/types/user-role"
+
+import { ApplicationsService } from "./applications.service"
+import { CreateRecruiterApplicationDto } from "./dto/create-recruiter-application.dto"
+import {
+  Application,
+  ApplicationStatus,
+  ApplicationType,
+} from "./entities/application.entity"
+import { ApplicationMessageType } from "./entities/application-message.entity"
+import { RejectApplicationDto } from "./dto/reject-application.dto"
+import { IRecruiterApplicationsSearchParams } from "./interfaces/recruiter-applications-service.interface"
+import { OfferRecruiterApplicationDto } from "./dto/offer-recruiter-application"
+import { ApplicationMessagesService } from "./application-messages.service"
+
+@Injectable()
+export class RecruiterApplicationsService {
+  constructor(
+    private readonly dataSource: DataSource,
+    private readonly applicationsService: ApplicationsService,
+    private readonly messagesService: ApplicationMessagesService,
+    private readonly usersService: UsersService,
+    private readonly vacanciesService: VacanciesService,
+    private readonly candidatesService: CandidatesService,
+  ) {}
+
+  async findAll(dto: IRecruiterApplicationsSearchParams, user_: ICurrentUser) {
+    const user = await this.usersService.findFilledRecruiterById(user_.id)
+
+    const qb = this.applicationsService
+      ._createQB(dto)
+      .andWhere("recruiter.id = :recruiterId", {
+        recruiterId: user.recruiter.id,
+      })
+
+    return qb.getMany()
+  }
+
+  async create(dto: CreateRecruiterApplicationDto, user_: ICurrentUser) {
+    const applicationId = await this.dataSource.transaction(async (manager) => {
+      const vacancy = await this.vacanciesService.findOneById(
+        dto.vacancyId,
+        manager,
+      )
+
+      const user = await this.usersService.findFilledRecruiterById(
+        user_.id,
+        manager,
+      )
+
+      if (vacancy.recruiter?.id !== user.recruiter.id) {
+        throw new ForbiddenException("You are not the author of the vacancy")
+      }
+
+      if (vacancy.status !== VacancyStatus.Active) {
+        throw new ConflictException("Cannot invite to not active vacancy")
+      }
+
+      const candidate = await this.candidatesService.findOneForRecruiterById(
+        dto.candidateId,
+        user,
+      )
+
+      return this.applicationsService._create(
+        {
+          candidate,
+          vacancy,
+          type: ApplicationType.Invitation,
+          systemMessageType: ApplicationMessageType.RecruiterInvited,
+          userMessage: dto.message,
+          senderRole: UserRole.Recruiter,
+          funnelStepId: vacancy.funnelSteps?.[0]?.id ?? null,
+        },
+        manager,
+      )
+    })
+
+    return this.applicationsService._findOne({ id: applicationId })
+  }
+
+  async findOneById(id: string, user_: ICurrentUser) {
+    const user = await this.usersService.findFilledRecruiterById(user_.id)
+
+    return this.applicationsService._findOne({
+      id,
+      vacancy: { recruiter: { id: user.recruiter.id } },
+    })
+  }
+
+  async rejectById(id: string, dto: RejectApplicationDto, user_: ICurrentUser) {
+    await this.dataSource.transaction(async (manager) => {
+      const application = await this.applicationsService._findOne(
+        { id },
+        manager,
+      )
+
+      const user = await this.usersService.findFilledRecruiterById(
+        user_.id,
+        manager,
+      )
+
+      if (application.vacancy?.recruiter?.id !== user.recruiter.id) {
+        throw new ForbiddenException(
+          "You are not allowed to reject this application",
+        )
+      }
+
+      await this.applicationsService.reject(
+        application,
+        { role: user.role, message: dto.message },
+        manager,
+      )
+    })
+
+    return this.applicationsService._findOne({ id })
+  }
+
+  async offerById(
+    id: string,
+    dto: OfferRecruiterApplicationDto,
+    user_: ICurrentUser,
+  ) {
+    await this.dataSource.transaction(async (manager) => {
+      const applicationsRepo = manager.getRepository(Application)
+
+      const user = await this.usersService.findFilledRecruiterById(
+        user_.id,
+        manager,
+      )
+
+      const application = await this.applicationsService._findOne(
+        { id },
+        manager,
+      )
+
+      if (application.status !== ApplicationStatus.Pending) {
+        throw new ConflictException(
+          "Only pending applications can be moved to next step",
+        )
+      }
+
+      if (application.vacancy?.recruiter?.id !== user.recruiter.id) {
+        throw new ForbiddenException(
+          "You are not allowed to move this application to next step",
+        )
+      }
+
+      if (this.applicationsService.isWaitingForCandidateResponse(application)) {
+        throw new ConflictException(
+          "Cannot move application until candidate responds to the invitation",
+        )
+      }
+
+      const nextFunnelStep =
+        this.applicationsService.getNextFunnelStep(application)
+
+      if (nextFunnelStep) {
+        application.funnelStep = nextFunnelStep
+        await applicationsRepo.save(application)
+
+        await this.messagesService.create(
+          {
+            application: { id: application.id },
+            type: ApplicationMessageType.RecruiterOfferedStep,
+            senderRole: UserRole.Recruiter,
+          },
+          manager,
+        )
+      } else {
+        application.status = ApplicationStatus.Approved
+        await applicationsRepo.save(application)
+
+        await this.messagesService.create(
+          {
+            application: { id: application.id },
+            type: ApplicationMessageType.RecruiterOfferedJob,
+            senderRole: UserRole.Recruiter,
+          },
+          manager,
+        )
+      }
+
+      await this.messagesService.create(
+        {
+          application: { id: application.id },
+          type: ApplicationMessageType.UserMessage,
+          senderRole: UserRole.Recruiter,
+          content: dto.message,
+        },
+        manager,
+      )
+    })
+  }
+}

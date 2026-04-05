@@ -12,7 +12,8 @@ import { CurrentUser } from "@/modules/auth/decorators/current-user.decorator"
 import { ICurrentUser } from "@/modules/auth/interfaces/current-user.interface"
 import { Auth } from "@/modules/auth/decorators/auth.decorator"
 import { UserRole } from "@/modules/users/types/user-role"
-import { ApplicationsService } from "@/modules/applications/applications.service"
+import { CandidateApplicationsService } from "@/modules/applications/candidate-applications.service"
+import { RecruiterApplicationsService } from "@/modules/applications/recruiter-applications.service"
 
 import { VacanciesService } from "./vacancies.service"
 import { CreateVacancyDto } from "./dto/create-vacancy.dto"
@@ -24,7 +25,8 @@ import { GetCandidateVacanciesDto } from "./dto/get-candidate-vacancies.dto"
 export class VacanciesController {
   constructor(
     private readonly vacanciesService: VacanciesService,
-    private readonly applicationsService: ApplicationsService,
+    private readonly candidateApplicationsService: CandidateApplicationsService,
+    private readonly recruiterApplicationsService: RecruiterApplicationsService,
   ) {}
 
   @Get("recruiter")
@@ -72,7 +74,7 @@ export class VacanciesController {
     @Param("id") id: string,
     @CurrentUser() user: ICurrentUser,
   ) {
-    return this.applicationsService.findAllForRecruiter({ vacancyId: id }, user)
+    return this.recruiterApplicationsService.findAll({ vacancyId: id }, user)
   }
 
   @Get(":id/applications/me")
@@ -81,6 +83,6 @@ export class VacanciesController {
     @Param("id") id: string,
     @CurrentUser() user: ICurrentUser,
   ) {
-    return this.applicationsService.findOneForCandidateByVacancyId(id, user)
+    return this.candidateApplicationsService.findOneByVacancyId(id, user)
   }
 }
