@@ -14,6 +14,7 @@ export const Routes = {
     application: (id: string) => `/recruiter/applications/${id}`,
     candidates: "/recruiter/candidates",
     candidate: (id: string) => `/recruiter/candidates/${id}`,
+    calendar: "/recruiter/calendar",
   },
 
   candidate: {
@@ -27,5 +28,6 @@ export const Routes = {
       return url
     },
     applications: "/candidate/applications",
+    calendar: "/candidate/calendar",
   },
 }

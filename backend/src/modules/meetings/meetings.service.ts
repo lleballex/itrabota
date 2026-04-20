@@ -67,6 +67,26 @@ export class MeetingsService {
     return slots
   }
 
+  async getCandidateMeetings(user_: ICurrentUser, from: string, to: string) {
+    const user = await this.usersService.findFilledCandidateById(user_.id)
+
+    return this.getMeetings({
+      candidateId: user.candidate.id,
+      from,
+      to,
+    })
+  }
+
+  async getRecruiterMeetings(user_: ICurrentUser, from: string, to: string) {
+    const user = await this.usersService.findFilledRecruiterById(user_.id)
+
+    return this.getMeetings({
+      recruiterId: user.recruiter.id,
+      from,
+      to,
+    })
+  }
+
   async assertSlotAvailable(
     recruiterId: string,
     meetingStartsAt: string,
@@ -96,6 +116,41 @@ export class MeetingsService {
     const meeting = repo.create(data)
 
     return repo.save(meeting)
+  }
+
+  private async getMeetings(params: {
+    candidateId?: string
+    recruiterId?: string
+    from: string
+    to: string
+  }) {
+    const { fromDate, toDate } = this.parseRange(params.from, params.to)
+
+    const qb = this.meetingsRepo
+      .createQueryBuilder("meeting")
+      .leftJoinAndSelect("meeting.application", "application")
+      .leftJoinAndSelect("application.vacancy", "vacancy")
+      .leftJoinAndSelect("meeting.funnelStep", "funnelStep")
+      .leftJoinAndSelect("meeting.candidate", "candidate")
+      .leftJoinAndSelect("meeting.recruiter", "recruiter")
+      .leftJoinAndSelect("recruiter.company", "company")
+      .where("meeting.startsAt < :toDate", { toDate })
+      .andWhere("meeting.endsAt > :fromDate", { fromDate })
+      .orderBy("meeting.startsAt", "ASC")
+
+    if (params.candidateId) {
+      qb.andWhere("candidate.id = :candidateId", {
+        candidateId: params.candidateId,
+      })
+    }
+
+    if (params.recruiterId) {
+      qb.andWhere("recruiter.id = :recruiterId", {
+        recruiterId: params.recruiterId,
+      })
+    }
+
+    return qb.getMany()
   }
 
   private async getAvailableSlotsForRecruiter(
@@ -183,6 +238,21 @@ export class MeetingsService {
       workdayStartUtc: this.moscowHourToUtc(date, MEETING_WORKDAY_START_HOUR),
       workdayEndUtc: this.moscowHourToUtc(date, MEETING_WORKDAY_END_HOUR),
     }
+  }
+
+  private parseRange(from: string, to: string) {
+    const fromDate = new Date(from)
+    const toDate = new Date(to)
+
+    if (Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime())) {
+      throw new BadRequestException("from and to must be valid ISO dates")
+    }
+
+    if (fromDate >= toDate) {
+      throw new BadRequestException("from must be earlier than to")
+    }
+
+    return { fromDate, toDate }
   }
 
   private moscowHourToUtc(date: string, hour: number) {

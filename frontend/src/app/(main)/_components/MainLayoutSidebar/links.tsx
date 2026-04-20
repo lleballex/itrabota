@@ -27,6 +27,11 @@ const recruiterLinks: SidebarLink[] = [
     icon: <Icon icon="messageSquare" />,
   },
   {
+    url: Routes.recruiter.calendar,
+    title: "Календарь",
+    icon: <Icon icon="calendar" />,
+  },
+  {
     url: Routes.recruiter.candidates,
     title: "Соискатели",
     icon: <Icon icon="users" />,
@@ -48,6 +53,11 @@ const candidateLinks: SidebarLink[] = [
     url: Routes.candidate.applications,
     title: "Отклики",
     icon: <Icon icon="messageSquare" />,
+  },
+  {
+    url: Routes.candidate.calendar,
+    title: "Календарь",
+    icon: <Icon icon="calendar" />,
   },
 ]
 

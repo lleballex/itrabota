@@ -8,6 +8,7 @@ type QueryKey =
   | "industries"
   | "applications"
   | "candidates"
+  | "meetings"
   | "meetingSlots"
 
 declare module "@tanstack/react-query" {
