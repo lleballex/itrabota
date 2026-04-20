@@ -9,6 +9,7 @@ import { CreateCandidateApplicationDto } from "./dto/create-candidate-applicatio
 import { RejectApplicationDto } from "./dto/reject-application.dto"
 import { CandidateApplicationsService } from "./candidate-applications.service"
 import { GetCandidateApplicationsDto } from "./dto/get-candidate-applications.dto"
+import { AcceptCandidateApplicationDto } from "./dto/accept-candidate-application.dto"
 
 @Controller("applications/candidate")
 @Auth(UserRole.Candidate)
@@ -43,7 +44,11 @@ export class CandidateApplicationsController {
   }
 
   @Post(":id/accept")
-  accept(@Param("id") id: string, @CurrentUser() user: ICurrentUser) {
-    return this.candidateApplicationsService.acceptById(id, user)
+  accept(
+    @Param("id") id: string,
+    @Body() body: AcceptCandidateApplicationDto,
+    @CurrentUser() user: ICurrentUser,
+  ) {
+    return this.candidateApplicationsService.acceptById(id, body, user)
   }
 }

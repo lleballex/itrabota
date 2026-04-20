@@ -2,6 +2,7 @@ import classNames from "classnames"
 import dayjs from "dayjs"
 import Image from "next/image"
 import { useMemo, useState } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 
 import { Application, ApplicationStatus } from "@/types/entities/application"
 import {
@@ -15,6 +16,8 @@ import Button from "@/components/ui/Button"
 import ApplicationRejectModal from "@/components/base/application/ApplicationRejectModal"
 import { useAcceptApplicationByCandidate } from "@/api/applications/accept-application-by-candidate"
 import ApplicationOfferModal from "@/components/base/application/ApplicationOfferModal"
+import ApplicationMeetingModal from "@/components/base/application/ApplicationMeetingModal"
+import { formatMeetingDateTime } from "@/lib/meeting"
 
 interface Props {
   application: Application
@@ -23,8 +26,10 @@ interface Props {
 }
 
 export default function ApplicationChat({ application, vacancy, role }: Props) {
+  const queryClient = useQueryClient()
   const [isRejectModalActive, setIsRejectModalActive] = useState(false)
   const [isOfferModalActive, setIsOfferModalActive] = useState(false)
+  const [isMeetingModalActive, setIsMeetingModalActive] = useState(false)
 
   const {
     mutate: acceptApplicationByCandidate,
@@ -68,9 +73,26 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
     )
   }, [application])
 
+  const hasMeetingForCurrentStep = useMemo(
+    () =>
+      application.meetings?.some(
+        (meeting) => meeting.funnelStep?.id === application.funnelStep?.id,
+      ) ?? false,
+    [application],
+  )
+
   const onAccept = () => {
+    if (application.funnelStep?.shouldCreateCall && !hasMeetingForCurrentStep) {
+      setIsMeetingModalActive(true)
+      return
+    }
+
     acceptApplicationByCandidate({
       applicationId: application.id,
+    }, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["applications"] })
+      },
     })
   }
 
@@ -106,6 +128,20 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
         return role === UserRole.Recruiter
           ? "Вы отклонили соискателя"
           : "Рекрутер отклонил процесс найма"
+      case ApplicationMessageType.MeetingScheduled:
+        if (!message.meeting) {
+          return role === UserRole.Candidate
+            ? "Вы назначили встречу"
+            : "Соискатель назначил встречу"
+        }
+
+        return role === UserRole.Candidate
+          ? `Вы назначили встречу на ${formatMeetingDateTime(
+              message.meeting.startsAt,
+            )}`
+          : `Соискатель назначил встречу на ${formatMeetingDateTime(
+              message.meeting.startsAt,
+            )}`
     }
   }
 
@@ -220,6 +256,12 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
         application={application}
         active={isOfferModalActive}
         onActiveChange={setIsOfferModalActive}
+      />
+
+      <ApplicationMeetingModal
+        application={application}
+        active={isMeetingModalActive}
+        onActiveChange={setIsMeetingModalActive}
       />
     </>
   )

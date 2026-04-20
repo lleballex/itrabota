@@ -13,6 +13,7 @@ import { Attachment } from "@/modules/attachments/entities/attachment.entity"
 import { City } from "@/modules/cities/entities/city.entity"
 import { Skill } from "@/modules/skills/entities/skills.entity"
 import { Application } from "@/modules/applications/entities/application.entity"
+import { Meeting } from "@/modules/meetings/entities/meeting.entity"
 
 import { User } from "./user.entity"
 import { WorkExperienceItem } from "./work-experence-item.entity"
@@ -67,4 +68,7 @@ export class Candidate extends BaseEntity {
 
   @OneToMany(() => Application, (application) => application.candidate)
   applications?: Application[]
+
+  @OneToMany(() => Meeting, (meeting) => meeting.candidate)
+  meetings?: Meeting[]
 }

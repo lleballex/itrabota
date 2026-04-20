@@ -3,6 +3,7 @@ import { TypeOrmModule } from "@nestjs/typeorm"
 
 import { UsersModule } from "@/modules/users/users.module"
 import { VacanciesModule } from "@/modules/vacancies/vacancies.module"
+import { MeetingsModule } from "@/modules/meetings/meetings.module"
 
 import { Application } from "./entities/application.entity"
 import { ApplicationMessage } from "./entities/application-message.entity"
@@ -18,6 +19,7 @@ import { RecruiterApplicationsController } from "./recruiter-applications.contro
     TypeOrmModule.forFeature([Application, ApplicationMessage]),
     UsersModule,
     forwardRef(() => VacanciesModule),
+    forwardRef(() => MeetingsModule),
   ],
   controllers: [
     CandidateApplicationsController,
@@ -29,6 +31,10 @@ import { RecruiterApplicationsController } from "./recruiter-applications.contro
     RecruiterApplicationsService,
     ApplicationMessagesService,
   ],
-  exports: [CandidateApplicationsService, RecruiterApplicationsService],
+  exports: [
+    ApplicationsService,
+    CandidateApplicationsService,
+    RecruiterApplicationsService,
+  ],
 })
 export class ApplicationsModule {}

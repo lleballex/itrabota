@@ -4,6 +4,8 @@ import { ReactNode } from "react"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import dayjs from "dayjs"
+import utc from "dayjs/plugin/utc"
+import timezone from "dayjs/plugin/timezone"
 import "dayjs/locale/ru"
 
 import Toasts from "@/components/special/Toasts"
@@ -14,6 +16,8 @@ interface Props {
   children?: ReactNode
 }
 
+dayjs.extend(utc)
+dayjs.extend(timezone)
 dayjs.locale("ru")
 
 const queryClient = new QueryClient()

@@ -2,6 +2,7 @@ import { Column, Entity, JoinColumn, OneToMany, OneToOne } from "typeorm"
 
 import { BaseEntity } from "@/database/entities/base.entity"
 import { Company } from "@/modules/companies/entities/company.entity"
+import { Meeting } from "@/modules/meetings/entities/meeting.entity"
 
 import { User } from "./user.entity"
 import { Vacancy } from "@/modules/vacancies/entities/vacancy.entity"
@@ -32,4 +33,7 @@ export class Recruiter extends BaseEntity {
 
   @OneToMany(() => Vacancy, (vacancy) => vacancy.recruiter)
   vacancies?: Vacancy[]
+
+  @OneToMany(() => Meeting, (meeting) => meeting.recruiter)
+  meetings?: Meeting[]
 }

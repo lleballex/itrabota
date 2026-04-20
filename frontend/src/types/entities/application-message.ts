@@ -1,5 +1,6 @@
 import { Application } from "./application"
 import { BaseEntity } from "./base-entity"
+import { Meeting } from "./meeting"
 import { UserRole } from "./user"
 
 export const ApplicationMessageType = {
@@ -11,6 +12,7 @@ export const ApplicationMessageType = {
   RecruiterOfferedJob: "recruiter_offered_job",
   CandidateRejected: "candidate_rejected",
   RecruiterRejected: "recruiter_rejected",
+  MeetingScheduled: "meeting_scheduled",
 } as const
 
 export type ApplicationMessageType =
@@ -21,4 +23,5 @@ export interface ApplicationMessage extends BaseEntity {
   type: ApplicationMessageType
   content: string | null
   application?: Application
+  meeting?: Meeting | null
 }

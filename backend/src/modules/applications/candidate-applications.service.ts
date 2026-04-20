@@ -9,6 +9,7 @@ import { ICurrentUser } from "@/modules/auth/interfaces/current-user.interface"
 import { UsersService } from "@/modules/users/users.service"
 import { VacanciesService } from "@/modules/vacancies/vacancies.service"
 import { UserRole } from "@/modules/users/types/user-role"
+import { MeetingsService } from "@/modules/meetings/meetings.service"
 
 import { ApplicationsService } from "./applications.service"
 import { GetCandidateApplicationsDto } from "./dto/get-candidate-applications.dto"
@@ -20,6 +21,11 @@ import {
 import { ApplicationMessageType } from "./entities/application-message.entity"
 import { RejectApplicationDto } from "./dto/reject-application.dto"
 import { ApplicationMessagesService } from "./application-messages.service"
+import { AcceptCandidateApplicationDto } from "./dto/accept-candidate-application.dto"
+import {
+  MEETING_DURATION_MINUTES,
+  MEETING_TIMEZONE,
+} from "@/modules/meetings/constants/meeting.constants"
 
 @Injectable()
 export class CandidateApplicationsService {
@@ -27,6 +33,7 @@ export class CandidateApplicationsService {
     private readonly dataSource: DataSource,
     private readonly applicationsService: ApplicationsService,
     private readonly messagesService: ApplicationMessagesService,
+    private readonly meetingsService: MeetingsService,
     private readonly usersService: UsersService,
     private readonly vacanciesService: VacanciesService,
   ) {}
@@ -110,7 +117,11 @@ export class CandidateApplicationsService {
     return this.applicationsService._findOne({ id })
   }
 
-  async acceptById(id: string, user_: ICurrentUser) {
+  async acceptById(
+    id: string,
+    dto: AcceptCandidateApplicationDto,
+    user_: ICurrentUser,
+  ) {
     await this.dataSource.transaction(async (manager) => {
       const user = await this.usersService.findFilledCandidateById(
         user_.id,
@@ -140,6 +151,39 @@ export class CandidateApplicationsService {
         )
       }
 
+      const shouldCreateMeeting = application.funnelStep?.shouldCreateCall
+
+      if (shouldCreateMeeting) {
+        if (!dto.meetingStartsAt) {
+          throw new ConflictException(
+            "meetingStartsAt is required for this application stage",
+          )
+        }
+
+        if (
+          !application.vacancy?.recruiter?.id ||
+          !application.funnelStep?.id
+        ) {
+          throw new ConflictException("Application stage cannot create meeting")
+        }
+
+        const hasMeetingForCurrentStep = application.meetings?.some(
+          (meeting) => meeting.funnelStep?.id === application.funnelStep?.id,
+        )
+
+        if (hasMeetingForCurrentStep) {
+          throw new ConflictException(
+            "Meeting has already been scheduled for this application stage",
+          )
+        }
+
+        await this.meetingsService.assertSlotAvailable(
+          application.vacancy.recruiter.id,
+          dto.meetingStartsAt,
+          manager,
+        )
+      }
+
       await this.messagesService.create(
         {
           application: { id: application.id },
@@ -148,6 +192,37 @@ export class CandidateApplicationsService {
         },
         manager,
       )
+
+      if (shouldCreateMeeting) {
+        const meetingStartsAt = new Date(dto.meetingStartsAt!)
+        const meetingScheduledMessage = await this.messagesService.create(
+          {
+            application: { id: application.id },
+            type: ApplicationMessageType.MeetingScheduled,
+            senderRole: UserRole.Candidate,
+          },
+          manager,
+        )
+
+        await this.meetingsService.create(
+          {
+            application: { id: application.id },
+            candidate: { id: application.candidate!.id },
+            recruiter: { id: application.vacancy!.recruiter!.id },
+            funnelStep: { id: application.funnelStep!.id },
+            applicationMessage: { id: meetingScheduledMessage.id },
+            startsAt: meetingStartsAt,
+            endsAt: new Date(
+              meetingStartsAt.getTime() + MEETING_DURATION_MINUTES * 60 * 1000,
+            ),
+            timezone: MEETING_TIMEZONE,
+            link: null,
+          },
+          manager,
+        )
+      }
     })
+
+    return this.applicationsService._findOne({ id })
   }
 }

@@ -2,6 +2,7 @@ import { ApplicationMessage } from "./application-message"
 import { BaseEntity } from "./base-entity"
 import { Candidate } from "./candidate"
 import { FunnelStep } from "./funnel-step"
+import { Meeting } from "./meeting"
 import { Vacancy } from "./vacancy"
 
 export const ApplicationStatus = {
@@ -38,4 +39,5 @@ export interface Application extends BaseEntity {
   vacancy?: Vacancy
   funnelStep?: FunnelStep | null
   messages?: ApplicationMessage[]
+  meetings?: Meeting[]
 }

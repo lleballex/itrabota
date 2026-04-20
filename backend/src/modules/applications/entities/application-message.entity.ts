@@ -1,7 +1,8 @@
-import { Column, Entity, JoinColumn, ManyToOne } from "typeorm"
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from "typeorm"
 
 import { BaseEntity } from "@/database/entities/base.entity"
 import { UserRole } from "@/modules/users/types/user-role"
+import { Meeting } from "@/modules/meetings/entities/meeting.entity"
 
 import { Application } from "./application.entity"
 
@@ -14,6 +15,7 @@ export const ApplicationMessageType = {
   RecruiterOfferedJob: "recruiter_offered_job",
   CandidateRejected: "candidate_rejected",
   RecruiterRejected: "recruiter_rejected",
+  MeetingScheduled: "meeting_scheduled",
 }
 
 export type ApplicationMessageType =
@@ -36,4 +38,7 @@ export class ApplicationMessage extends BaseEntity {
   })
   @JoinColumn()
   application?: Application
+
+  @OneToOne(() => Meeting, (meeting) => meeting.applicationMessage)
+  meeting?: Meeting | null
 }

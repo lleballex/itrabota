@@ -4,6 +4,7 @@ import { BaseEntity } from "@/database/entities/base.entity"
 import { Candidate } from "@/modules/users/entities/candidate.entity"
 import { Vacancy } from "@/modules/vacancies/entities/vacancy.entity"
 import { FunnelStep } from "@/modules/vacancies/entities/funnel-step.entity"
+import { Meeting } from "@/modules/meetings/entities/meeting.entity"
 
 import { ApplicationMessage } from "./application-message.entity"
 
@@ -58,4 +59,7 @@ export class Application extends BaseEntity {
 
   @OneToMany(() => ApplicationMessage, (message) => message.application)
   messages?: ApplicationMessage[]
+
+  @OneToMany(() => Meeting, (meeting) => meeting.application)
+  meetings?: Meeting[]
 }

@@ -41,6 +41,8 @@ export class ApplicationsService {
       .leftJoinAndSelect("application.candidate", "candidate")
       .leftJoinAndSelect("candidate.city", "candidateCity")
       .leftJoinAndSelect("candidate.avatar", "candidateAvatar")
+      .leftJoinAndSelect("application.meetings", "meeting")
+      .leftJoinAndSelect("meeting.funnelStep", "meetingFunnelStep")
       .orderBy("application.createdAt", "DESC")
 
     if (params?.vacancyId) {
@@ -71,9 +73,13 @@ export class ApplicationsService {
     const application = await this._createQB(undefined, manager)
       .setFindOptions({ where })
       .leftJoinAndSelect("application.messages", "message")
+      .leftJoinAndSelect("message.meeting", "messageMeeting")
+      .leftJoinAndSelect("application.meetings", "applicationMeeting")
+      .leftJoinAndSelect("applicationMeeting.funnelStep", "applicationMeetingFunnelStep")
       .leftJoinAndSelect("application.funnelStep", "funnelStep")
       .leftJoinAndSelect("vacancy.funnelSteps", "vacancyFunnelStep")
       .addOrderBy("vacancyFunnelStep.index", "ASC")
+      .addOrderBy("applicationMeeting.startsAt", "ASC")
       .addOrderBy("message.createdAt", "ASC")
       .getOne()
 

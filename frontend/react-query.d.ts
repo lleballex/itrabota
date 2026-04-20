@@ -8,6 +8,7 @@ type QueryKey =
   | "industries"
   | "applications"
   | "candidates"
+  | "meetingSlots"
 
 declare module "@tanstack/react-query" {
   interface Register {
