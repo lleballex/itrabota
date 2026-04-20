@@ -39,6 +39,7 @@ export class VacanciesService {
     return repo
       .createQueryBuilder("vacancy")
       .leftJoinAndSelect("vacancy.recruiter", "recruiter")
+      .leftJoinAndSelect("recruiter.user", "recruiterUser")
       .leftJoinAndSelect("recruiter.company", "company")
       .leftJoinAndSelect("company.industry", "industry")
       .leftJoinAndSelect("company.logo", "logo")

@@ -14,6 +14,6 @@ export const Auth = (role?: UserRole) => {
   } else if (role === UserRole.Candidate) {
     return applyDecorators(UseGuards(JwtAuthGuard, CandidatesGuard))
   } else {
-    throw new Error(`Unsupported role for Auth decorator: ${role}`)
+    throw new Error("Unsupported role for Auth decorator")
   }
 }

@@ -9,6 +9,7 @@ import { EntityManager, FindOptionsWhere, Repository } from "typeorm"
 import { Vacancy } from "@/modules/vacancies/entities/vacancy.entity"
 import { Candidate } from "@/modules/users/entities/candidate.entity"
 import { UserRole } from "@/modules/users/types/user-role"
+import { NotificationsService } from "@/modules/notifications/notifications.service"
 
 import { Application, ApplicationStatus } from "./entities/application.entity"
 import { ApplicationMessagesService } from "./application-messages.service"
@@ -25,6 +26,7 @@ export class ApplicationsService {
     private readonly applicationsRepo: Repository<Application>,
 
     private readonly messagesService: ApplicationMessagesService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   _createQB(params?: IApplicationsSearchParams, manager?: EntityManager) {
@@ -34,11 +36,13 @@ export class ApplicationsService {
       .createQueryBuilder("application")
       .leftJoinAndSelect("application.vacancy", "vacancy")
       .leftJoinAndSelect("vacancy.recruiter", "recruiter")
+      .leftJoinAndSelect("recruiter.user", "recruiterUser")
       .leftJoinAndSelect("vacancy.specialization", "specialization")
       .leftJoinAndSelect("recruiter.company", "company")
       .leftJoinAndSelect("company.industry", "industry")
       .leftJoinAndSelect("company.logo", "companyLogo")
       .leftJoinAndSelect("application.candidate", "candidate")
+      .leftJoinAndSelect("candidate.user", "candidateUser")
       .leftJoinAndSelect("candidate.city", "candidateCity")
       .leftJoinAndSelect("candidate.avatar", "candidateAvatar")
       .leftJoinAndSelect("application.meetings", "meeting")
@@ -75,7 +79,10 @@ export class ApplicationsService {
       .leftJoinAndSelect("application.messages", "message")
       .leftJoinAndSelect("message.meeting", "messageMeeting")
       .leftJoinAndSelect("application.meetings", "applicationMeeting")
-      .leftJoinAndSelect("applicationMeeting.funnelStep", "applicationMeetingFunnelStep")
+      .leftJoinAndSelect(
+        "applicationMeeting.funnelStep",
+        "applicationMeetingFunnelStep",
+      )
       .leftJoinAndSelect("application.funnelStep", "funnelStep")
       .leftJoinAndSelect("vacancy.funnelSteps", "vacancyFunnelStep")
       .addOrderBy("vacancyFunnelStep.index", "ASC")
@@ -104,11 +111,21 @@ export class ApplicationsService {
       }),
     )
 
-    await this.messagesService.create(
+    const systemMessage = await this.messagesService.create(
       {
         application: { id: application.id },
         type: data.systemMessageType,
         senderRole: data.senderRole,
+      },
+      manager,
+    )
+
+    await this.notificationsService.createForApplicationEvent(
+      {
+        recipientUserId: data.recipientUserId,
+        type: data.systemMessageType,
+        applicationId: application.id,
+        applicationMessageId: systemMessage.id,
       },
       manager,
     )
@@ -170,7 +187,7 @@ export class ApplicationsService {
 
     await applicationsRepo.save(application)
 
-    await this.messagesService.create(
+    const systemMessage = await this.messagesService.create(
       {
         application: { id: application.id },
         type:
@@ -178,6 +195,19 @@ export class ApplicationsService {
             ? ApplicationMessageType.CandidateRejected
             : ApplicationMessageType.RecruiterRejected,
         senderRole: data.role,
+      },
+      manager,
+    )
+
+    await this.notificationsService.createForApplicationEvent(
+      {
+        recipientUserId:
+          data.role === UserRole.Candidate
+            ? application.vacancy!.recruiter!.user!.id
+            : application.candidate!.user!.id,
+        type: systemMessage.type,
+        applicationId: application.id,
+        applicationMessageId: systemMessage.id,
       },
       manager,
     )

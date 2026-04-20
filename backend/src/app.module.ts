@@ -15,6 +15,7 @@ import { UsersModule } from "@/modules/users/users.module"
 import { VacanciesModule } from "@/modules/vacancies/vacancies.module"
 import { ApplicationsModule } from "@/modules/applications/applications.module"
 import { MeetingsModule } from "@/modules/meetings/meetings.module"
+import { NotificationsModule } from "@/modules/notifications/notifications.module"
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { MeetingsModule } from "@/modules/meetings/meetings.module"
     IndustriesModule,
     MeModule,
     MeetingsModule,
+    NotificationsModule,
     SkillsModule,
     SpecializationsModule,
     UsersModule,

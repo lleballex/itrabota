@@ -10,6 +10,8 @@ type QueryKey =
   | "candidates"
   | "meetings"
   | "meetingSlots"
+  | "notifications"
+  | "notificationsUnreadCount"
 
 declare module "@tanstack/react-query" {
   interface Register {

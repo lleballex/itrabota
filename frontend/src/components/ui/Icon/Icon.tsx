@@ -2,6 +2,7 @@ import classNames from "classnames"
 import {
   ArchiveIcon,
   ArchiveRestoreIcon,
+  BellIcon,
   CalendarDaysIcon,
   CheckIcon,
   ChevronDownIcon,
@@ -27,6 +28,9 @@ const ICONS = {
   },
   archiveRestore: {
     Component: ArchiveRestoreIcon,
+  },
+  bell: {
+    Component: BellIcon,
   },
   calendar: {
     Component: CalendarDaysIcon,

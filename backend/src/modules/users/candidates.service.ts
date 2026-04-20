@@ -27,6 +27,7 @@ export class CandidatesService {
 
     const qb = repo
       .createQueryBuilder("candidate")
+      .leftJoinAndSelect("candidate.user", "user")
       .leftJoinAndSelect("candidate.city", "city")
       .leftJoinAndSelect("candidate.avatar", "avatar")
       .leftJoinAndSelect("candidate.skills", "skills")

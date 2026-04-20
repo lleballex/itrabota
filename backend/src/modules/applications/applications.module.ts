@@ -4,6 +4,7 @@ import { TypeOrmModule } from "@nestjs/typeorm"
 import { UsersModule } from "@/modules/users/users.module"
 import { VacanciesModule } from "@/modules/vacancies/vacancies.module"
 import { MeetingsModule } from "@/modules/meetings/meetings.module"
+import { NotificationsModule } from "@/modules/notifications/notifications.module"
 
 import { Application } from "./entities/application.entity"
 import { ApplicationMessage } from "./entities/application-message.entity"
@@ -20,6 +21,7 @@ import { RecruiterApplicationsController } from "./recruiter-applications.contro
     UsersModule,
     forwardRef(() => VacanciesModule),
     forwardRef(() => MeetingsModule),
+    NotificationsModule,
   ],
   controllers: [
     CandidateApplicationsController,

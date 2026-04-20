@@ -26,6 +26,7 @@ import {
   MEETING_DURATION_MINUTES,
   MEETING_TIMEZONE,
 } from "@/modules/meetings/constants/meeting.constants"
+import { NotificationsService } from "@/modules/notifications/notifications.service"
 
 @Injectable()
 export class CandidateApplicationsService {
@@ -34,6 +35,7 @@ export class CandidateApplicationsService {
     private readonly applicationsService: ApplicationsService,
     private readonly messagesService: ApplicationMessagesService,
     private readonly meetingsService: MeetingsService,
+    private readonly notificationsService: NotificationsService,
     private readonly usersService: UsersService,
     private readonly vacanciesService: VacanciesService,
   ) {}
@@ -66,6 +68,7 @@ export class CandidateApplicationsService {
         {
           candidate: user.candidate,
           vacancy,
+          recipientUserId: vacancy.recruiter!.user!.id,
           type: ApplicationType.Response,
           systemMessageType: ApplicationMessageType.CandidateResponded,
           userMessage: dto.message,
@@ -184,11 +187,21 @@ export class CandidateApplicationsService {
         )
       }
 
-      await this.messagesService.create(
+      const candidateAcceptedMessage = await this.messagesService.create(
         {
           application: { id: application.id },
           type: ApplicationMessageType.CandidateAccepted,
           senderRole: UserRole.Candidate,
+        },
+        manager,
+      )
+
+      await this.notificationsService.createForApplicationEvent(
+        {
+          recipientUserId: application.vacancy!.recruiter!.user!.id,
+          type: candidateAcceptedMessage.type,
+          applicationId: application.id,
+          applicationMessageId: candidateAcceptedMessage.id,
         },
         manager,
       )
@@ -204,10 +217,10 @@ export class CandidateApplicationsService {
           manager,
         )
 
-        await this.meetingsService.create(
+        const meeting = await this.meetingsService.create(
           {
             application: { id: application.id },
-            candidate: { id: application.candidate!.id },
+            candidate: { id: application.candidate.id },
             recruiter: { id: application.vacancy!.recruiter!.id },
             funnelStep: { id: application.funnelStep!.id },
             applicationMessage: { id: meetingScheduledMessage.id },
@@ -217,6 +230,17 @@ export class CandidateApplicationsService {
             ),
             timezone: MEETING_TIMEZONE,
             link: null,
+          },
+          manager,
+        )
+
+        await this.notificationsService.createForApplicationEvent(
+          {
+            recipientUserId: application.vacancy!.recruiter!.user!.id,
+            type: meetingScheduledMessage.type,
+            applicationId: application.id,
+            applicationMessageId: meetingScheduledMessage.id,
+            meetingId: meeting.id,
           },
           manager,
         )

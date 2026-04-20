@@ -261,7 +261,45 @@
   - response-contract по-прежнему строится поверх entity+join;
   - orchestration-модель встречи всё ещё завязана на message-sequence и текущий этап процесса.
 
-### 3.9 Вложения и медиа
+### 3.9 Уведомления
+
+- Статус: `частично реализовано`
+- Оценка:
+  - На backend появился отдельный модуль `notifications` с хранением уведомлений в базе.
+  - Уведомления создаются по системным событиям процесса найма и привязаны к доменным данным, а не к готовому тексту.
+  - На frontend появились bell-popover в header, отдельные страницы уведомлений для обеих ролей и индикатор непрочитанных.
+- Что подтверждается кодом:
+  - entity `Notification` со связями на `User`, `Application`, `ApplicationMessage`, `Meeting`;
+  - `GET /api/notifications`;
+  - `GET /api/notifications/unread-count`;
+  - `POST /api/notifications/read`;
+  - создание уведомлений на события:
+    - `candidate_responded`;
+    - `recruiter_invited`;
+    - `candidate_accepted`;
+    - `candidate_rejected`;
+    - `recruiter_rejected`;
+    - `recruiter_offered_step`;
+    - `recruiter_offered_job`;
+    - `meeting_scheduled`;
+  - уведомления создаются только для второй стороны процесса, а не для инициатора события;
+  - frontend-роуты `/candidate/notifications` и `/recruiter/notifications`;
+  - popover уведомлений в header;
+  - unread badge в header;
+  - mark-as-read при открытии popover, при клике на уведомление и при попадании уведомления в viewport на отдельной странице;
+  - переход из уведомления в соответствующий процесс:
+    - рекрутеру в detail процесса;
+    - кандидату в карточку вакансии с табом процесса.
+- Почему не выглядит завершённым:
+  - realtime-доставки нет, обновление unread count идёт периодическим refetch без websocket/push-инфраструктуры;
+  - текст уведомления собирается только на frontend и пока не вынесен в отдельный формализованный contract layer;
+  - отсутствуют email- и push-каналы.
+- Признаки техдолга / нестабильности:
+  - notification payload по-прежнему опирается на entity+join response shape;
+  - нет отдельной pagination/list-модели для центра уведомлений;
+  - часть UX остаётся базовой: без fine-grained optimistic updates и без realtime sync.
+
+### 3.10 Вложения и медиа
 
 - Статус: `частично реализовано`
 - Оценка:
@@ -279,16 +317,18 @@
   - часть env-конфигурации ещё не доведена до production-ready baseline;
   - частично неформализованная валидация входящих файлов.
 
-### 3.10 Главная страница, shell и навигация
+### 3.11 Главная страница, shell и навигация
 
 - Статус: `частично реализовано`
 - Оценка:
-  - Layout, sidebar, header, popover пользователя, toasts и auth redirects присутствуют.
+  - Layout, sidebar, header, popover пользователя, popover уведомлений, toasts и auth redirects присутствуют.
   - Роутинг под роли кандидата и рекрутера оформлен.
 - Что подтверждается кодом:
   - route shell для авторизованной части приложения;
   - header с user-menu;
+  - header с bell-popover уведомлений и unread badge;
   - sidebar с role-based ссылками;
+  - отдельные menu-пункты уведомлений для кандидата и рекрутера;
   - toast notifications;
   - redirect на профиль при отсутствии заполненного профиля.
 - Почему не выглядит завершённым:

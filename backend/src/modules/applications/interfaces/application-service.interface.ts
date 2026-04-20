@@ -17,6 +17,7 @@ export interface IApplicationsSearchParams {
 export interface IApplicationCreateData {
   candidate: Candidate
   vacancy: Vacancy
+  recipientUserId: string
   type: ApplicationType
   senderRole: UserRole
   systemMessageType: ApplicationMessageType

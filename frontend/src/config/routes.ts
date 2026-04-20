@@ -12,6 +12,7 @@ export const Routes = {
     editVacancy: (id: string) => `/recruiter/vacancies/${id}/edit`,
     applications: "/recruiter/applications",
     application: (id: string) => `/recruiter/applications/${id}`,
+    notifications: "/recruiter/notifications",
     candidates: "/recruiter/candidates",
     candidate: (id: string) => `/recruiter/candidates/${id}`,
     calendar: "/recruiter/calendar",
@@ -28,6 +29,7 @@ export const Routes = {
       return url
     },
     applications: "/candidate/applications",
+    notifications: "/candidate/notifications",
     calendar: "/candidate/calendar",
   },
 }

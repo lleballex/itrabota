@@ -24,6 +24,7 @@ import { RejectApplicationDto } from "./dto/reject-application.dto"
 import { IRecruiterApplicationsSearchParams } from "./interfaces/recruiter-applications-service.interface"
 import { OfferRecruiterApplicationDto } from "./dto/offer-recruiter-application"
 import { ApplicationMessagesService } from "./application-messages.service"
+import { NotificationsService } from "@/modules/notifications/notifications.service"
 
 @Injectable()
 export class RecruiterApplicationsService {
@@ -31,6 +32,7 @@ export class RecruiterApplicationsService {
     private readonly dataSource: DataSource,
     private readonly applicationsService: ApplicationsService,
     private readonly messagesService: ApplicationMessagesService,
+    private readonly notificationsService: NotificationsService,
     private readonly usersService: UsersService,
     private readonly vacanciesService: VacanciesService,
     private readonly candidatesService: CandidatesService,
@@ -77,6 +79,7 @@ export class RecruiterApplicationsService {
         {
           candidate,
           vacancy,
+          recipientUserId: candidate.user!.id,
           type: ApplicationType.Invitation,
           systemMessageType: ApplicationMessageType.RecruiterInvited,
           userMessage: dto.message,
@@ -170,7 +173,7 @@ export class RecruiterApplicationsService {
         application.funnelStep = nextFunnelStep
         await applicationsRepo.save(application)
 
-        await this.messagesService.create(
+        const offeredStepMessage = await this.messagesService.create(
           {
             application: { id: application.id },
             type: ApplicationMessageType.RecruiterOfferedStep,
@@ -178,15 +181,35 @@ export class RecruiterApplicationsService {
           },
           manager,
         )
+
+        await this.notificationsService.createForApplicationEvent(
+          {
+            recipientUserId: application.candidate!.user!.id,
+            type: offeredStepMessage.type,
+            applicationId: application.id,
+            applicationMessageId: offeredStepMessage.id,
+          },
+          manager,
+        )
       } else {
         application.status = ApplicationStatus.Approved
         await applicationsRepo.save(application)
 
-        await this.messagesService.create(
+        const offeredJobMessage = await this.messagesService.create(
           {
             application: { id: application.id },
             type: ApplicationMessageType.RecruiterOfferedJob,
             senderRole: UserRole.Recruiter,
+          },
+          manager,
+        )
+
+        await this.notificationsService.createForApplicationEvent(
+          {
+            recipientUserId: application.candidate!.user!.id,
+            type: offeredJobMessage.type,
+            applicationId: application.id,
+            applicationMessageId: offeredJobMessage.id,
           },
           manager,
         )
