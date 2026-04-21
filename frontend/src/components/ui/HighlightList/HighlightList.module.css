@@ -1,3 +1,13 @@
+.container {
+  position: relative;
+  isolation: isolate;
+}
+
+.item {
+  position: relative;
+  z-index: 1;
+}
+
 .item:hover,
 .container:not(:has(.item:hover)) .item.active {
   anchor-name: var(--highlight-list-id);
@@ -16,9 +26,10 @@
   bottom: anchor(bottom);
   left: anchor(left);
   right: anchor(right);
-  z-index: -1;
+  z-index: 0;
   opacity: 0;
   scale: 0;
+  pointer-events: none;
   transition-behavior: allow-discrete;
 }
 
