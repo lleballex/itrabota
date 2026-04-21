@@ -21,8 +21,7 @@ export default function NotificationsPageContent({ role }: Props) {
   const queuedIdsRef = useRef(new Set<string>())
   const flushTimeoutRef = useRef<number | null>(null)
 
-  function invalidateNotifications() {
-    queryClient.invalidateQueries({ queryKey: ["notifications"] })
+  function invalidateUnreadCount() {
     queryClient.invalidateQueries({ queryKey: ["notificationsUnreadCount"] })
   }
 
@@ -38,7 +37,7 @@ export default function NotificationsPageContent({ role }: Props) {
     readNotifications(
       { ids },
       {
-        onSuccess: invalidateNotifications,
+        onSuccess: invalidateUnreadCount,
       },
     )
   }
@@ -75,18 +74,13 @@ export default function NotificationsPageContent({ role }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-h1">Уведомления</h1>
-        <p className="text-sm text-[#888]">
-          Новые уведомления отмечаются автоматически при просмотре.
-        </p>
-      </div>
+      <h1 className="text-h1">Уведомления</h1>
 
       <RemoteData
         data={notifications}
         onSuccess={(notifications) => {
           if (!notifications.length) {
-            return <p>Пока нет уведомлений</p>
+            return <p>Пока уведомлений нет </p>
           }
 
           const unreadNotifications = notifications.filter(isNotificationUnread)
@@ -97,8 +91,8 @@ export default function NotificationsPageContent({ role }: Props) {
           return (
             <div className="flex flex-col gap-6">
               {unreadNotifications.length > 0 && (
-                <section className="flex flex-col gap-3">
-                  <h2 className="text-h3">Новые</h2>
+                <section className="flex flex-col gap-2">
+                  <h2 className="text-h4">Новые</h2>
                   <NotificationsList
                     notifications={unreadNotifications}
                     role={role}
@@ -108,8 +102,8 @@ export default function NotificationsPageContent({ role }: Props) {
               )}
 
               {readItems.length > 0 && (
-                <section className="flex flex-col gap-3">
-                  <h2 className="text-h3">Просмотренные</h2>
+                <section className="flex flex-col gap-2">
+                  <h2 className="text-h4">Просмотренные</h2>
                   <NotificationsList
                     notifications={readItems}
                     role={role}

@@ -25,10 +25,7 @@ export default function MainLayoutHeaderNotifications({ user }: Props) {
   const popoverRef = useRef<HTMLDivElement>(null)
   const queryClient = useQueryClient()
 
-  const notifications = useNotifications(
-    { limit: 10 },
-    { isEnabled: isOpen },
-  )
+  const notifications = useNotifications({ limit: 10 }, { isEnabled: isOpen })
   const unreadCount = useUnreadNotificationsCount()
   const { mutate: readNotifications } = useReadNotifications()
   const loadedNotifications =
@@ -104,10 +101,10 @@ export default function MainLayoutHeaderNotifications({ user }: Props) {
   return (
     <Popover.Root position="right">
       <Popover.Trigger>
-        <Button className="relative !px-2" type="glass">
+        <Button className="relative w-(--height-control) !p-0" type="glass">
           <Icon icon="bell" />
           {unreadCount.status === "success" && unreadCount.data.count > 0 && (
-            <span className="absolute -right-1 -top-1 min-w-5 rounded-full bg-primary px-1 text-center text-xs font-bold text-fg-heading">
+            <span className="flex items-center justify-center absolute -right-0.5 -top-0.5 w-2.5 h-2.5 rounded-full bg-primary text-center text-xs font-bold text-fg-heading">
               {unreadCount.data.count}
             </span>
           )}
@@ -115,24 +112,18 @@ export default function MainLayoutHeaderNotifications({ user }: Props) {
       </Popover.Trigger>
       <Popover.Content
         ref={popoverRef}
-        className="flex w-[360px] max-w-[calc(100vw-var(--spacing-screen)*2)] flex-col gap-3"
+        className="flex gap-2 p-2 w-[360px] max-w-[calc(100vw-var(--spacing-screen)*2)] flex-col py-0"
       >
-        <div className="flex items-center justify-between gap-2 px-2 pt-1">
-          <p className="font-medium text-fg-heading">Уведомления</p>
-          <Link className="text-sm text-primary" href={notificationsRoute}>
-            Все уведомления
-          </Link>
-        </div>
-
         <RemoteData
           data={notifications}
           onSuccess={(notifications) =>
             notifications.length ? (
-              <div className="flex max-h-[420px] flex-col gap-2 overflow-auto">
-                {notifications.map((notification) => (
+              <div className="flex flex-col">
+                {notifications.map((notification, index) => (
                   <NotificationListItem
                     key={notification.id}
                     compact
+                    isLast={index === notifications.length - 1}
                     notification={notification}
                     role={user.role}
                     onClick={(notification) => {
@@ -144,8 +135,8 @@ export default function MainLayoutHeaderNotifications({ user }: Props) {
                 ))}
               </div>
             ) : (
-              <p className="px-2 pb-2 text-sm text-[#888]">
-                Пока нет уведомлений
+              <p className="text-sm text-center py-2 text-secondary-light">
+                Уведомлений нет
               </p>
             )
           }

@@ -14,12 +14,14 @@ interface Props {
 }
 
 interface ObservedItemProps {
+  isLast: boolean
   notification: Notification
   role: UserRole
   onRead?: (ids: string[]) => void
 }
 
 function ObservedNotificationListItem({
+  isLast,
   notification,
   role,
   onRead,
@@ -57,6 +59,7 @@ function ObservedNotificationListItem({
   return (
     <div ref={ref}>
       <NotificationListItem
+        isLast={isLast}
         notification={notification}
         role={role}
         onClick={(notification) => {
@@ -75,10 +78,11 @@ export default function NotificationsList({
   onRead,
 }: Props) {
   return (
-    <div className="flex flex-col gap-2">
-      {notifications.map((notification) => (
+    <div className="flex flex-col">
+      {notifications.map((notification, index) => (
         <ObservedNotificationListItem
           key={notification.id}
+          isLast={index === notifications.length - 1}
           notification={notification}
           role={role}
           onRead={onRead}
