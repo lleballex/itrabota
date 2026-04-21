@@ -1,6 +1,7 @@
 "use client"
 
 import dayjs from "dayjs"
+import { useEffect, useState } from "react"
 
 import Button from "@/components/ui/Button"
 import Modal from "@/components/ui/Modal"
@@ -47,77 +48,134 @@ const getProcessUrl = (meeting: Meeting, role: UserRole) => {
   }
 }
 
+const getVacancyUrl = (meeting: Meeting, role: UserRole) => {
+  const vacancyId = meeting.application?.vacancy?.id
+
+  if (!vacancyId) {
+    return
+  }
+
+  return role === UserRole.Recruiter
+    ? Routes.recruiter.vacancy(vacancyId)
+    : Routes.candidate.vacancy(vacancyId)
+}
+
 export default function MeetingCalendarEventModal({
   active,
   meeting,
   onActiveChange,
   role,
 }: Props) {
-  if (!meeting) {
+  const [displayedMeeting, setDisplayedMeeting] = useState<Meeting | null>(
+    meeting,
+  )
+
+  useEffect(() => {
+    if (meeting) {
+      setDisplayedMeeting(meeting)
+    }
+  }, [meeting])
+
+  if (!displayedMeeting) {
     return null
   }
 
-  const processUrl = getProcessUrl(meeting, role)
-  const counterpartyLabel =
-    role === UserRole.Candidate ? "Компания / рекрутер" : "Соискатель"
-  const counterpartyValue =
-    role === UserRole.Candidate
-      ? meeting.recruiter?.company?.name ||
-        getRecruiterName(meeting) ||
-        "Не указано"
-      : getCandidateName(meeting) || "Не указано"
+  const processUrl = getProcessUrl(displayedMeeting, role)
+  const vacancyUrl = getVacancyUrl(displayedMeeting, role)
+  const meetingDateTime = `${dayjs
+    .utc(displayedMeeting.startsAt)
+    .tz(displayedMeeting.timezone)
+    .format("D MMMM")} ${formatMeetingTimeRange(
+    displayedMeeting.startsAt,
+    displayedMeeting.endsAt,
+  )}`
+  const meetingLink =
+    displayedMeeting.link || "https://example.com/test-meeting"
+  const vacancyTitle = displayedMeeting.application?.vacancy?.title ?? "Встреча"
+  const candidateName = getCandidateName(displayedMeeting) || "Не указано"
+  const candidateUrl = displayedMeeting.candidate?.id
+    ? Routes.recruiter.candidate(displayedMeeting.candidate.id)
+    : null
+  const companyName =
+    displayedMeeting.recruiter?.company?.name ||
+    getRecruiterName(displayedMeeting) ||
+    "Не указано"
+
+  const closeModal = () => {
+    onActiveChange(false)
+  }
 
   return (
-    <Modal.Root active={active} onActiveChange={onActiveChange} width={560}>
+    <Modal.Root active={active} onActiveChange={onActiveChange} width={620}>
       <Modal.Header>Детали встречи</Modal.Header>
 
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-1">
-          <p className="text-h4">
-            {meeting.application?.vacancy?.title ?? "Встреча"}
-          </p>
-          <p className="text-sm text-fg">
-            {dayjs.utc(meeting.startsAt).tz(meeting.timezone).format("D MMMM YYYY")}
-            , {formatMeetingTimeRange(meeting.startsAt, meeting.endsAt)}
-          </p>
+          <p className="text-sm text-fg">Ссылка</p>
+          <a
+            className="break-all text-lg font-bold text-primary transition-all hover:opacity-70"
+            href={meetingLink}
+            rel="noreferrer"
+            target="_blank"
+          >
+            {meetingLink}
+          </a>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-2">
-          <div className="rounded-3xl border border-border bg-secondary px-3 py-2">
-            <p className="text-xs uppercase text-fg">Этап</p>
-            <p className="text-base text-fg-heading">
-              {meeting.funnelStep?.name ?? "Не указан"}
-            </p>
-          </div>
-
-          <div className="rounded-3xl border border-border bg-secondary px-3 py-2">
-            <p className="text-xs uppercase text-fg">{counterpartyLabel}</p>
-            <p className="text-base text-fg-heading">{counterpartyValue}</p>
-          </div>
+        <div className="flex flex-col gap-1">
+          <p className="text-sm text-fg">Дата и время</p>
+          <p className="text-lg font-bold text-fg-heading">{meetingDateTime}</p>
         </div>
 
-        <div className="rounded-3xl border border-border bg-secondary px-3 py-2">
-          <p className="text-xs uppercase text-fg">Ссылка на встречу</p>
-
-          {meeting.link ? (
-            <a
-              className="text-base font-bold text-primary transition-all hover:opacity-70"
-              href={meeting.link}
-              rel="noreferrer"
-              target="_blank"
+        <div className="flex flex-col gap-1">
+          <p className="text-sm text-fg">Вакансия</p>
+          {vacancyUrl ? (
+            <Button
+              className="justify-start text-[18px]!"
+              type="text"
+              link={{
+                url: vacancyUrl,
+              }}
             >
-              {meeting.link}
-            </a>
+              {vacancyTitle}
+            </Button>
           ) : (
-            <p className="text-base text-fg">
-              Ссылка появится после подключения автогенерации.
-            </p>
+            <p className="text-lg font-bold text-fg-heading">{vacancyTitle}</p>
           )}
         </div>
+
+        {role === UserRole.Recruiter ? (
+          <div className="flex flex-col gap-1">
+            <p className="text-sm text-fg">Соискатель</p>
+            {candidateUrl ? (
+              <Button
+                className="justify-start text-lg!"
+                type="text"
+                link={{
+                  url: candidateUrl,
+                }}
+              >
+                {candidateName}
+              </Button>
+            ) : (
+              <p className="text-lg font-bold text-fg-heading">
+                {candidateName}
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-1">
+            <p className="text-sm text-fg">Компания</p>
+            <p className="text-lg font-bold text-fg-heading">{companyName}</p>
+          </div>
+        )}
       </div>
 
       <Modal.Controls>
-        {processUrl ? (
+        <Button type="secondary" onClick={closeModal}>
+          Закрыть
+        </Button>
+        {processUrl && (
           <Button
             type="primary"
             link={{
@@ -126,15 +184,7 @@ export default function MeetingCalendarEventModal({
           >
             Перейти к процессу
           </Button>
-        ) : (
-          <Button type="secondary" onClick={() => onActiveChange(false)}>
-            Процесс недоступен
-          </Button>
         )}
-
-        <Button type="secondary" onClick={() => onActiveChange(false)}>
-          Закрыть
-        </Button>
       </Modal.Controls>
     </Modal.Root>
   )

@@ -48,7 +48,7 @@ export default function ModalRoot({
 
     return () => {
       dialog.removeEventListener("cancel", onClose)
-      dialog.removeEventListener("cl", onClose)
+      dialog.removeEventListener("close", onClose)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
