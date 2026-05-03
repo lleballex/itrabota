@@ -21,7 +21,7 @@ export default function ApplicationDetailed({
   const steps = useSteps({ vacancy, application })
 
   return (
-    <div className="flex items-start gap-6">
+    <div className="flex items-start gap-6 h-full min-h-0 overflow-hidden">
       <ApplicationChat
         role={me.role}
         application={application}
@@ -29,7 +29,7 @@ export default function ApplicationDetailed({
       />
 
       {/* TODO: move colors to config */}
-      <div className="flex flex-col gap-2 max-w-[300px] relative">
+      <div className="flex flex-col gap-2 max-w-[300px] shrink-0 relative overflow-y-auto">
         <span className="absolute top-1.5 bottom-1.5 left-[calc((var(--spacing)*1.5-1px)*0.5)] w-[1px] bg-[#333] z-[-1]" />
         {steps.map((step) => (
           <div className="flex items-center gap-1" key={step.name}>

@@ -1,7 +1,7 @@
 import classNames from "classnames"
 import dayjs from "dayjs"
 import Image from "next/image"
-import { useMemo, useState } from "react"
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 
 import { Application, ApplicationStatus } from "@/types/entities/application"
@@ -27,6 +27,14 @@ interface Props {
 
 export default function ApplicationChat({ application, vacancy, role }: Props) {
   const queryClient = useQueryClient()
+  const interlocutorRef = useRef<HTMLDivElement>(null)
+  const controlsRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
+  const [interlocutorHeight, setInterlocutorHeight] = useState(0)
+  const [controlsHeight, setControlsHeight] = useState(0)
+  const [messagesScrollShadow, setMessagesScrollShadow] = useState({
+    bottom: false,
+  })
   const [isRejectModalActive, setIsRejectModalActive] = useState(false)
   const [isOfferModalActive, setIsOfferModalActive] = useState(false)
   const [isMeetingModalActive, setIsMeetingModalActive] = useState(false)
@@ -81,19 +89,93 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
     [application],
   )
 
+  const hasControls =
+    application.status === ApplicationStatus.Pending &&
+    (role === UserRole.Recruiter || role === UserRole.Candidate)
+
+  useLayoutEffect(() => {
+    const interlocutor = interlocutorRef.current
+
+    if (!interlocutor) {
+      setInterlocutorHeight(0)
+      return
+    }
+
+    const updateInterlocutorHeight = () => {
+      setInterlocutorHeight(interlocutor.offsetHeight)
+    }
+
+    updateInterlocutorHeight()
+
+    const resizeObserver = new ResizeObserver(updateInterlocutorHeight)
+    resizeObserver.observe(interlocutor)
+
+    return () => resizeObserver.disconnect()
+  }, [man])
+
+  useLayoutEffect(() => {
+    const controls = controlsRef.current
+
+    if (!controls) {
+      setControlsHeight(0)
+      return
+    }
+
+    const updateControlsHeight = () => {
+      setControlsHeight(controls.offsetHeight)
+    }
+
+    updateControlsHeight()
+
+    const resizeObserver = new ResizeObserver(updateControlsHeight)
+    resizeObserver.observe(controls)
+
+    return () => resizeObserver.disconnect()
+  }, [hasControls, isWaitingForCandidateResponse, nextFunnelStep])
+
+  const updateMessagesScrollShadow = useCallback(() => {
+    const messagesContainer = messagesContainerRef.current
+
+    if (!messagesContainer) return
+
+    const maxScrollTop =
+      messagesContainer.scrollHeight - messagesContainer.clientHeight
+
+    setMessagesScrollShadow({
+      bottom: messagesContainer.scrollTop < maxScrollTop - 1,
+    })
+  }, [])
+
+  useLayoutEffect(() => {
+    const messagesContainer = messagesContainerRef.current
+
+    if (!messagesContainer) return
+
+    messagesContainer.scrollTop = messagesContainer.scrollHeight
+    updateMessagesScrollShadow()
+  }, [
+    application.messages,
+    controlsHeight,
+    interlocutorHeight,
+    updateMessagesScrollShadow,
+  ])
+
   const onAccept = () => {
     if (application.funnelStep?.shouldCreateCall && !hasMeetingForCurrentStep) {
       setIsMeetingModalActive(true)
       return
     }
 
-    acceptApplicationByCandidate({
-      applicationId: application.id,
-    }, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["applications"] })
+    acceptApplicationByCandidate(
+      {
+        applicationId: application.id,
       },
-    })
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["applications"] })
+        },
+      },
+    )
   }
 
   const getMessageContent = (message: ApplicationMessage) => {
@@ -155,9 +237,12 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
 
   return (
     <>
-      <div className="flex flex-col gap-2 grow">
+      <div className="relative flex flex-col gap-2 grow h-full min-h-0">
         {man && (
-          <div className="flex items-center gap-2">
+          <div
+            ref={interlocutorRef}
+            className="flex items-center gap-2 absolute top-0 left-0 right-0 z-10 pb-2 bg-linear-to-b from-bg from-[calc(100%-32px)] to-transparent"
+          >
             <Image
               className="w-7 h-7 rounded-full"
               src={getProfileAvatar({
@@ -181,68 +266,98 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
             </div>
           </div>
         )}
-        <div className="flex flex-col gap-1">
-          {application.messages?.map((message) => (
+        <div className="relative grow min-h-0">
+          <div
+            ref={messagesContainerRef}
+            className="h-full overflow-y-auto"
+            onScroll={updateMessagesScrollShadow}
+          >
             <div
+              className="flex flex-col gap-1 min-h-full justify-end"
+              style={{
+                paddingTop: interlocutorHeight,
+                paddingBottom: controlsHeight,
+              }}
+            >
+              {application.messages?.map((message) => (
+                <div
+                  className={classNames(
+                    "py-1 px-2 max-w-2/3 bg-secondary whitespace-pre-wrap rounded",
+                    {
+                      "self-end text-right": message.senderRole === role,
+                      "self-start": message.senderRole !== role,
+                    },
+                  )}
+                  key={message.id}
+                >
+                  <p>{getMessageContent(message)}</p>
+                  <p className="text-xs text-[#888]">
+                    {getMessageCreatedAt(message)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+          {!hasControls && (
+            <span
               className={classNames(
-                "py-1 px-2 max-w-2/3 bg-secondary whitespace-pre-wrap rounded",
+                "pointer-events-none absolute bottom-0 left-0 right-0 h-6 bg-linear-to-t from-bg to-transparent transition-opacity",
                 {
-                  "self-end text-right": message.senderRole === role,
-                  "self-start": message.senderRole !== role,
+                  "opacity-100": messagesScrollShadow.bottom,
+                  "opacity-0": !messagesScrollShadow.bottom,
                 },
               )}
-              key={message.id}
-            >
-              <p>{getMessageContent(message)}</p>
-              <p className="text-xs text-[#888]">
-                {getMessageCreatedAt(message)}
-              </p>
-            </div>
-          ))}
+            />
+          )}
         </div>
 
-        {role === UserRole.Recruiter &&
-          application.status === ApplicationStatus.Pending && (
-            <div className="flex self-center gap-2 sticky bottom-[var(--spacing-screen)]">
-              {!isWaitingForCandidateResponse && (
+        {hasControls && (
+          <div
+            ref={controlsRef}
+            className="absolute bottom-0 left-0 right-0 z-10 flex justify-center bg-linear-to-t from-bg from-[calc(100%-32px)] to-transparent pt-2"
+          >
+            {role === UserRole.Recruiter && (
+              <div className="flex gap-2">
+                {!isWaitingForCandidateResponse && (
+                  <Button
+                    type="glass"
+                    onClick={() => setIsOfferModalActive(true)}
+                  >
+                    Пригласить на {nextFunnelStep?.name}
+                  </Button>
+                )}
                 <Button
+                  className="!text-danger"
                   type="glass"
-                  onClick={() => setIsOfferModalActive(true)}
+                  onClick={() => setIsRejectModalActive(true)}
                 >
-                  Пригласить на {nextFunnelStep?.name}
+                  Отказать
                 </Button>
-              )}
-              <Button
-                className="!text-danger"
-                type="glass"
-                onClick={() => setIsRejectModalActive(true)}
-              >
-                Отказать
-              </Button>
-            </div>
-          )}
+              </div>
+            )}
 
-        {role === UserRole.Candidate &&
-          application.status === ApplicationStatus.Pending && (
-            <div className="flex self-center gap-2 sticky bottom-[var(--spacing-screen)]">
-              {isWaitingForCandidateResponse && (
+            {role === UserRole.Candidate && (
+              <div className="flex gap-2">
+                {isWaitingForCandidateResponse && (
+                  <Button
+                    type="glass"
+                    pending={acceptApplicationByCandidateStatus === "pending"}
+                    onClick={onAccept}
+                  >
+                    Принять
+                  </Button>
+                )}
                 <Button
+                  className="!text-danger"
                   type="glass"
-                  pending={acceptApplicationByCandidateStatus === "pending"}
-                  onClick={onAccept}
+                  onClick={() => setIsRejectModalActive(true)}
                 >
-                  Принять
+                  Отклонить процесс
                 </Button>
-              )}
-              <Button
-                className="!text-danger"
-                type="glass"
-                onClick={() => setIsRejectModalActive(true)}
-              >
-                Отклонить процесс
-              </Button>
-            </div>
-          )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <ApplicationRejectModal

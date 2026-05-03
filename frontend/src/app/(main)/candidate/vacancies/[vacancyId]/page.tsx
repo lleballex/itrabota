@@ -36,10 +36,10 @@ const LoadedContent = ({ vacancy, application, me, initialTab }: Props) => {
   }, [initialTab, application])
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 h-full min-h-0">
       {application && (
         <HighlightList.Root
-          className="flex flex-row border border-border p-1 rounded"
+          className="flex flex-row border border-border p-1 rounded shrink-0"
           highlightClassName="bg-primary"
         >
           <HighlightList.Item
@@ -87,11 +87,13 @@ const LoadedContent = ({ vacancy, application, me, initialTab }: Props) => {
       )}
 
       {activeTab === "application" && application && (
-        <ApplicationDetailed
-          application={application}
-          vacancy={vacancy}
-          me={me}
-        />
+        <div className="grow min-h-0">
+          <ApplicationDetailed
+            application={application}
+            vacancy={vacancy}
+            me={me}
+          />
+        </div>
       )}
     </div>
   )
