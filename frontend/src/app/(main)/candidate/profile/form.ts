@@ -4,6 +4,11 @@ import z from "zod"
 
 import { formSchemaFields } from "@/lib/form-schema-fields"
 import { User } from "@/types/entities/user"
+import {
+  VacancyEmploymentType,
+  VacancyFormat,
+  VacancySchedule,
+} from "@/types/entities/vacancy"
 
 const formSchema = z.object({
   avatar: formSchemaFields.file.nullable(),
@@ -13,10 +18,20 @@ const formSchema = z.object({
   bornAt: formSchemaFields.string, // TODO: date
   isHidden: formSchemaFields.boolean,
   cityId: formSchemaFields.relation.nullable(),
+  specializationId: formSchemaFields.relation.nullable(),
+  employmentType: z.enum(VacancyEmploymentType).nullable(),
+  format: z.enum(VacancyFormat).nullable(),
+  schedule: z.enum(VacancySchedule).nullable(),
+  salaryFrom: formSchemaFields.number
+    .pipe(z.number().int().positive())
+    .nullable(),
+  salaryTo: formSchemaFields.number
+    .pipe(z.number().int().positive())
+    .nullable(),
   email: formSchemaFields.email,
   phoneNumber: formSchemaFields.string.nullable(), // TODO: maybe phone
   tgUsername: formSchemaFields.string.nullable(),
-  // skillIds: formSchemaFields.
+  skillIds: z.array(formSchemaFields.relation),
   description: formSchemaFields.string.nullable(),
   workExperience: z.array(
     z.object({
@@ -46,21 +61,25 @@ export const getFormDefaultValues = (
   bornAt: user?.candidate?.bornAt,
   isHidden: user?.candidate?.isHidden ?? false,
   cityId: user?.candidate?.city?.id ?? null,
+  specializationId: user?.candidate?.specialization?.id ?? null,
+  employmentType: user?.candidate?.employmentType ?? null,
+  format: user?.candidate?.format ?? null,
+  schedule: user?.candidate?.schedule ?? null,
+  salaryFrom: user?.candidate?.salaryFrom ?? null,
+  salaryTo: user?.candidate?.salaryTo ?? null,
   email: user?.email,
   phoneNumber: user?.candidate?.phoneNumber ?? null,
   tgUsername: user?.candidate?.tgUsername ?? null,
-  // skillIds: formSchemaFields.
+  skillIds: user?.candidate?.skills?.map((skill) => skill.id) ?? [],
   description: user?.candidate?.description ?? null,
   workExperience: user?.candidate?.workExperience ?? [],
 })
 
-export const formDefaultWorkExperienceItem: DeepPartial<
-  FormOutputValues["workExperience"][0]
-> = {
+export const formDefaultWorkExperienceItem: FormOutputValues["workExperience"][0] = {
   id: undefined,
-  position: undefined,
-  companyName: undefined,
-  startedAt: undefined,
-  endedAt: undefined,
+  position: "",
+  companyName: "",
+  startedAt: "",
+  endedAt: null,
   description: null,
 }

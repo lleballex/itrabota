@@ -107,6 +107,7 @@
 - Response DTO:
 - явного response DTO нет
 - по факту возвращается результат `usersService.findOneById(...)`
+- для кандидата ответ включает `candidate.specialization` и `candidate.skills`, если они есть
 - Возможные ошибки:
 - ошибки авторизации
 - `NotFoundException`, если пользователь не найден
@@ -173,6 +174,7 @@
 - Params: нет
 - Query: нет
 - Body DTO: `CreateMeCandidateDto`
+- body поддерживает `specializationId`, `skillIds`, `employmentType`, `format`, `schedule`, `salaryFrom`, `salaryTo`
 - Response DTO:
 - явного response DTO нет
 - по факту возвращается обновлённый пользователь через `usersService.findOneById(...)`
@@ -183,7 +185,7 @@
 - `500 Internal Server Error`
 - Пагинация / фильтрация / сортировка: не применимо
 - Примечания:
-- операция составная, выполняется без транзакции
+- операция составная, выполняется в транзакции
 - порядок опыта работы отдельным контрактом не описан
 
 ### PATCH `/api/me/candidate`
@@ -196,6 +198,7 @@
 - Params: нет
 - Query: нет
 - Body DTO: `UpdateMeCandidateDto`
+- body поддерживает `specializationId`, `skillIds`, `employmentType`, `format`, `schedule`, `salaryFrom`, `salaryTo`
 - Response DTO:
 - явного response DTO нет
 - по факту возвращается обновлённый пользователь через `usersService.findOneById(...)`
@@ -206,7 +209,7 @@
 - `500 Internal Server Error`
 - Пагинация / фильтрация / сортировка: не применимо
 - Примечания:
-- операция составная, выполняется без транзакции
+- операция составная, выполняется в транзакции
 - обновление опыта работы реализовано как upsert/remove по входному массиву
 
 ## 3. Vacancies
@@ -250,6 +253,7 @@
 - Response DTO:
 - явного response DTO нет
 - по факту возвращается массив `Vacancy[]`
+- для кандидата каждая вакансия дополняется вычисляемым полем `matchPercent: number`
 - Возможные ошибки:
 - ошибки авторизации / роли
 - ошибки валидации query DTO
@@ -258,10 +262,21 @@
 - Пагинация / фильтрация / сортировка:
 - пагинации нет
 - фильтрация по `query`
+- фильтрация по `employmentTypes`
+- фильтрация по `formats`
+- фильтрация по `schedules`
+- фильтрация по `workExperiences`
+- фильтрация по `specializationIds`
+- фильтрация по `cityIds`
+- фильтрация по `skillIds`
+- фильтрация по `salaryFrom`
+- фильтрация по `salaryTo`
+- `matchForMe=true` включает фильтр по минимальному соответствию и игнорирует расширенные drawer-фильтры, кроме `query`
 - дополнительно всегда фильтруется `status = active`
-- сортировка по `vacancy.createdAt DESC`
+- сортировка по `vacancy.createdAt DESC`, а при `matchForMe=true` — по `matchPercent DESC`, затем `vacancy.createdAt DESC`
 - Примечания:
 - архивные вакансии кандидат здесь не получает
+- `matchPercent` считается на backend по навыкам, специализации, опыту, зарплате, формату, городу, типу занятости и графику
 
 ### POST `/api/vacancies`
 

@@ -5,12 +5,21 @@ import {
   IsBoolean,
   IsDateString,
   IsEmail,
+  IsEnum,
+  IsInt,
   IsNotEmpty,
   IsOptional,
+  IsPositive,
   IsString,
   IsUUID,
   ValidateNested,
 } from "class-validator"
+
+import {
+  VacancyEmploymentType,
+  VacancyFormat,
+  VacancySchedule,
+} from "@/modules/vacancies/entities/vacancy.entity"
 
 class CreateOrUpdateWorkExperienceItemDto {
   @IsUUID("4")
@@ -85,6 +94,32 @@ export class UpdateMeCandidateDto {
   @IsUUID("4")
   @IsOptional()
   cityId?: string | null
+
+  @IsUUID("4")
+  @IsOptional()
+  specializationId?: string | null
+
+  @IsEnum(VacancyEmploymentType)
+  @IsOptional()
+  employmentType?: VacancyEmploymentType | null
+
+  @IsEnum(VacancyFormat)
+  @IsOptional()
+  format?: VacancyFormat | null
+
+  @IsEnum(VacancySchedule)
+  @IsOptional()
+  schedule?: VacancySchedule | null
+
+  @IsInt()
+  @IsPositive()
+  @IsOptional()
+  salaryFrom?: number | null
+
+  @IsInt()
+  @IsPositive()
+  @IsOptional()
+  salaryTo?: number | null
 
   @Type(() => CreateAttachmentDto)
   @ValidateNested()

@@ -16,6 +16,8 @@ const formSteps = [
   },
 ]
 
+type FormStepField = (typeof formSteps)[number]["fields"][number]
+
 export const useFormSteps = () => {
   const [activeStepIdx, setActiveStepIdx] = useState(0)
 
@@ -32,7 +34,7 @@ export const useFormSteps = () => {
 
 export const getFormStepByField = (key: string) => {
   for (const step of formSteps) {
-    if (step.fields.includes(key as any)) {
+    if (step.fields.includes(key as FormStepField)) {
       return {
         step,
         stepIdx: formSteps.indexOf(step),

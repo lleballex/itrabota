@@ -17,6 +17,7 @@ import {
   PenIcon,
   PlusIcon,
   SearchIcon,
+  Settings2Icon,
   TrashIcon,
   UsersIcon,
   XIcon,
@@ -76,6 +77,9 @@ const ICONS = {
   },
   search: {
     Component: SearchIcon,
+  },
+  settings: {
+    Component: Settings2Icon,
   },
   trash: {
     Component: TrashIcon,

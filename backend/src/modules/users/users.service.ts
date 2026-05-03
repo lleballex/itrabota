@@ -30,6 +30,8 @@ export class UsersService {
       .leftJoinAndSelect("company.industry", "industry")
       .leftJoinAndSelect("user.candidate", "candidate")
       .leftJoinAndSelect("candidate.city", "city")
+      .leftJoinAndSelect("candidate.specialization", "candidateSpecialization")
+      .leftJoinAndSelect("candidate.skills", "candidateSkills")
       .leftJoinAndSelect("candidate.workExperience", "workExperienceItem")
       .leftJoinAndSelect("candidate.avatar", "avatar")
 

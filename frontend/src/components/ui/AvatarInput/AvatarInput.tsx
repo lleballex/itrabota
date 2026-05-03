@@ -26,7 +26,7 @@ type Value =
       name: string
       mimeType: string
       size: number
-      content: string
+      content?: string
     }
   | {
       id: string
@@ -63,11 +63,13 @@ export default function AvatarInput({
     // TODO: improve. for company logo display other placeholder
     if (!value) {
       return userPlaceholderImg
-    } else if ("content" in value) {
+    } else if ("content" in value && value.content) {
       return `data:${value.mimeType};base64,${value.content}`
-    } else {
-      return getAttachmentUrl(value)
+    } else if (value.id) {
+      return getAttachmentUrl({ ...value, id: value.id })
     }
+
+    return userPlaceholderImg
   }, [value])
 
   const onClick = () => {

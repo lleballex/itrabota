@@ -105,6 +105,7 @@ export class Vacancy extends BaseEntity {
   workExperience!: VacancyWorkExperience
 
   // responsesCount?: number // TODO
+  matchPercent?: number
 
   @ManyToMany(() => Skill)
   @JoinTable()

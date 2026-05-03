@@ -40,7 +40,9 @@ const Content = () => {
           <Select<IVacancyStatus | null>
             className="min-w-1/5"
             value={searchStatus}
-            onChange={setSearchStatus}
+            onChange={(value) =>
+              setSearchStatus(Array.isArray(value) ? null : value)
+            }
             items={[
               {
                 value: null,

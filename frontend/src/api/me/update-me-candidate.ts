@@ -1,5 +1,10 @@
 import { axios } from "@/api/lib/axios"
 import { createUseMutation } from "@/api/lib/create-use-mutation"
+import {
+  VacancyEmploymentType,
+  VacancyFormat,
+  VacancySchedule,
+} from "@/types/entities/vacancy"
 
 interface Data {
   firstName?: string
@@ -12,11 +17,17 @@ interface Data {
   description?: string | null
   isHidden?: boolean
   cityId?: string | null
+  specializationId?: string | null
+  employmentType?: VacancyEmploymentType | null
+  format?: VacancyFormat | null
+  schedule?: VacancySchedule | null
+  salaryFrom?: number | null
+  salaryTo?: number | null
   avatar?: {
     name: string
     mimeType: string
     size: number
-    content: string
+    content?: string
   } | null
   skillIds?: string[]
   workExperience?: {

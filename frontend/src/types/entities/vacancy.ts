@@ -20,6 +20,7 @@ export interface Vacancy extends BaseEntity {
   schedule: VacancySchedule
   workExperience: VacancyWorkExperience
   responsesCount?: number
+  matchPercent?: number
   skills?: Skill[]
   specialization?: Specialization
   city?: City

@@ -14,16 +14,29 @@ import HighlightList from "@/components/ui/HighlightList"
 
 import styles from "./Select.module.css"
 
+type SelectValue<V> = V | V[] | null
+
+interface SelectItem<V> {
+  value: V
+  content: ReactNode
+}
+
 interface Props<V> {
   className?: string
   label?: string
   error?: FormError
-  value?: V | null
+  value?: SelectValue<V>
   items: {
     value: V
     content: ReactNode
   }[]
-  onChange?: (val: V | null) => void
+  multiple?: boolean
+  placeholder?: ReactNode
+  renderValue?: (params: {
+    isMultiple: boolean
+    selectedItems: SelectItem<V>[]
+  }) => ReactNode
+  onChange?: (val: SelectValue<V>) => void
 }
 
 // TODO: add correct outline
@@ -36,22 +49,72 @@ export default function Select<V>({
   value: baseValue,
   error,
   items,
+  multiple = false,
+  placeholder,
+  renderValue,
   onChange: baseOnChange,
 }: Props<V>) {
   const popoverContentRef = useRef<HTMLDivElement>(null)
 
-  const { value, onChange } = useFieldValue({
+  const { value, onChange } = useFieldValue<SelectValue<V>>({
     baseValue,
     baseOnChange,
-    transformBaseValue: (val) => val ?? null,
+    transformBaseValue: (val) => {
+      if (multiple) {
+        return Array.isArray(val) ? val : []
+      }
+
+      if (Array.isArray(val)) {
+        return val[0] ?? null
+      }
+
+      return val ?? null
+    },
   })
 
-  const valueContent = useMemo(() => {
-    const item = items.find((i) => i.value === value)
-    return item?.content ?? null
-  }, [value, items])
+  const selectedItems = useMemo(() => {
+    if (multiple) {
+      if (!Array.isArray(value)) return []
 
-  const toggleValue = (val: V | null) => {
+      return items.filter((item) => value.includes(item.value))
+    }
+
+    return items.filter((item) => item.value === value)
+  }, [items, multiple, value])
+
+  const valueContent = useMemo(() => {
+    if (renderValue) {
+      return renderValue({ isMultiple: multiple, selectedItems })
+    }
+
+    if (!selectedItems.length) {
+      return placeholder ?? null
+    }
+
+    if (!multiple) {
+      return selectedItems[0]?.content ?? placeholder ?? null
+    }
+
+    if (selectedItems.every((item) => typeof item.content === "string")) {
+      return selectedItems.map((item) => item.content as string).join(", ")
+    }
+
+    return `${selectedItems.length} выбрано`
+  }, [multiple, placeholder, renderValue, selectedItems])
+
+  const toggleValue = (val: V) => {
+    if (multiple) {
+      const currentValue = Array.isArray(value) ? value : []
+
+      if (currentValue.includes(val)) {
+        onChange(currentValue.filter((item) => item !== val))
+      } else {
+        onChange([...currentValue, val])
+      }
+
+      return
+    }
+
     if (value === val) {
       onChange(null)
     } else {
@@ -72,7 +135,7 @@ export default function Select<V>({
           >
             {label && <FieldLabel>{label}</FieldLabel>}
             {valueContent && (
-              <span className="grow text-left">{valueContent}</span>
+              <span className="grow text-left truncate">{valueContent}</span>
             )}
             <Icon
               className={classNames(
@@ -92,7 +155,11 @@ export default function Select<V>({
             {items.map((item) => (
               <HighlightList.Item
                 key={String(item.value)}
-                active={value === item.value}
+                active={
+                  multiple
+                    ? Array.isArray(value) && value.includes(item.value)
+                    : value === item.value
+                }
               >
                 <Button
                   className="py-1 px-2"

@@ -1,6 +1,13 @@
 import { createUseQuery } from "@/api/lib/create-use-query"
 import { axios } from "@/api/lib/axios"
-import { Vacancy, VacancyStatus } from "@/types/entities/vacancy"
+import {
+  Vacancy,
+  VacancyEmploymentType,
+  VacancyFormat,
+  VacancySchedule,
+  VacancyStatus,
+  VacancyWorkExperience,
+} from "@/types/entities/vacancy"
 import { UserRole } from "@/types/entities/user"
 
 interface RecruiterParams {
@@ -12,6 +19,16 @@ interface RecruiterParams {
 interface CandidateParams {
   role: typeof UserRole.Candidate
   query?: string
+  matchForMe?: boolean
+  employmentTypes?: VacancyEmploymentType[]
+  formats?: VacancyFormat[]
+  schedules?: VacancySchedule[]
+  workExperiences?: VacancyWorkExperience[]
+  specializationIds?: string[]
+  cityIds?: string[]
+  skillIds?: string[]
+  salaryFrom?: number
+  salaryTo?: number
 }
 
 export const useVacancies = createUseQuery(

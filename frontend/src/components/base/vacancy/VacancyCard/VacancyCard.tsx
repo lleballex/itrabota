@@ -17,6 +17,7 @@ import { getVacancySalary } from "@/lib/get-vacancy-salary"
 import { pluralize } from "@/lib/pluralize"
 import { getCompanyLogo } from "@/lib/get-company-logo"
 import { UserRole } from "@/types/entities/user"
+import MatchPercent from "@/components/base/MatchPercent"
 
 interface Props {
   className?: string
@@ -60,6 +61,10 @@ export default function VacancyCard({
                 {role === UserRole.Recruiter && (
                   <VacancyStatus status={vacancy.status} />
                 )}
+                {role === UserRole.Candidate &&
+                  vacancy.matchPercent !== undefined && (
+                    <MatchPercent percent={vacancy.matchPercent} />
+                  )}
               </>
             )}
           </div>

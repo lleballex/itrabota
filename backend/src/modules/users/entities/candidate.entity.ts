@@ -4,6 +4,7 @@ import {
   JoinColumn,
   JoinTable,
   ManyToMany,
+  ManyToOne,
   OneToMany,
   OneToOne,
 } from "typeorm"
@@ -14,6 +15,12 @@ import { City } from "@/modules/cities/entities/city.entity"
 import { Skill } from "@/modules/skills/entities/skills.entity"
 import { Application } from "@/modules/applications/entities/application.entity"
 import { Meeting } from "@/modules/meetings/entities/meeting.entity"
+import { Specialization } from "@/modules/specializations/entities/specialization.entity"
+import {
+  VacancyEmploymentType,
+  VacancyFormat,
+  VacancySchedule,
+} from "@/modules/vacancies/entities/vacancy.entity"
 
 import { User } from "./user.entity"
 import { WorkExperienceItem } from "./work-experence-item.entity"
@@ -47,6 +54,25 @@ export class Candidate extends BaseEntity {
   @OneToOne(() => City, { nullable: true, onDelete: "SET NULL" })
   @JoinColumn()
   city?: City | null
+
+  @ManyToOne(() => Specialization, { nullable: true, onDelete: "SET NULL" })
+  @JoinColumn()
+  specialization?: Specialization | null
+
+  @Column("enum", { enum: VacancyEmploymentType, nullable: true })
+  employmentType?: VacancyEmploymentType | null
+
+  @Column("enum", { enum: VacancyFormat, nullable: true })
+  format?: VacancyFormat | null
+
+  @Column("enum", { enum: VacancySchedule, nullable: true })
+  schedule?: VacancySchedule | null
+
+  @Column("int", { nullable: true })
+  salaryFrom?: number | null
+
+  @Column("int", { nullable: true })
+  salaryTo?: number | null
 
   @ManyToMany(() => Skill)
   @JoinTable()

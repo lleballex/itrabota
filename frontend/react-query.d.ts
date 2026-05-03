@@ -4,6 +4,7 @@ type QueryKey =
   | "me"
   | "vacancies"
   | "specializations"
+  | "skills"
   | "cities"
   | "industries"
   | "applications"

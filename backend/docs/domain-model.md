@@ -84,9 +84,15 @@
 - `phoneNumber: string | null`
 - `tgUsername: string | null`
 - `description: string | null`
+- `employmentType: VacancyEmploymentType | null`
+- `format: VacancyFormat | null`
+- `schedule: VacancySchedule | null`
+- `salaryFrom: number | null`
+- `salaryTo: number | null`
 
 Связи:
 - `city?: City | null` — one-to-one по факту использования сущности города как ссылки
+- `specialization?: Specialization | null` — many-to-one
 - `skills?: Skill[]` — many-to-many
 - `workExperience?: WorkExperienceItem[]` — one-to-many
 - `avatar?: Attachment | null` — one-to-one
@@ -97,14 +103,16 @@
 - `firstName`, `lastName`, `bornAt` обязательны;
 - `user` обязателен;
 - удаление `User` каскадно удаляет `Candidate`;
-- город и аватар могут отсутствовать;
+- город, специализация и аватар могут отсутствовать;
 - список навыков и опыт работы могут отсутствовать;
+- предпочтения по занятости, формату, графику и зарплате могут отсутствовать;
 - отклики кандидата привязаны к профилю кандидата, а не напрямую к `User`.
 - `phoneNumber` и `tgUsername` необязательны;
 - по бизнес-правилу одному пользователю должен соответствовать только один профиль кандидата.
 
 Неочевидно и требует уточнения:
 - дополнительные бизнес-ограничения на дату рождения сейчас не реализованы;
+- ограничения `salaryFrom <= salaryTo` для ожиданий кандидата сейчас нет;
 - `description` — это текст кандидата о себе для рекрутеров.
 
 ### Recruiter
@@ -184,6 +192,7 @@
 - `format: VacancyFormat`
 - `schedule: VacancySchedule`
 - `workExperience: VacancyWorkExperience`
+- `matchPercent?: number` — вычисляемое поле ответа для списка вакансий кандидата, не колонка базы
 
 Связи:
 - `skills?: Skill[]` — many-to-many

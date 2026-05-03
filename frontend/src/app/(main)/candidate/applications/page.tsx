@@ -48,7 +48,7 @@ const Content = () => {
           <Select<ApplicationStatus | null>
             className="min-w-1/5"
             value={status}
-            onChange={setStatus}
+            onChange={(value) => setStatus(Array.isArray(value) ? null : value)}
             items={[
               { value: null, content: "Все статусы" },
               ...(Object.values(ApplicationStatus) as ApplicationStatus[]).map(

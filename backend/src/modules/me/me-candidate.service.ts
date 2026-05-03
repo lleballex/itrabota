@@ -113,6 +113,9 @@ export class MeCandidateService {
       email,
       avatar: avatarDto,
       workExperience: workExperienceDto,
+      specializationId,
+      cityId,
+      skillIds,
       ...dto
     } = dto_
 
@@ -129,10 +132,13 @@ export class MeCandidateService {
       const candidate = await this.candidatesService.create(
         {
           ...dto,
-          city: isNullish(dto.cityId) ? dto.cityId : { id: dto.cityId },
-          skills: isNullish(dto.skillIds)
-            ? dto.skillIds
-            : dto.skillIds.map((id) => ({ id })),
+          city: isNullish(cityId) ? cityId : { id: cityId },
+          specialization: isNullish(specializationId)
+            ? specializationId
+            : { id: specializationId },
+          skills: isNullish(skillIds)
+            ? skillIds
+            : skillIds.map((id) => ({ id })),
           avatar: { id: avatar?.id },
           user: { id: user.id },
         },
@@ -154,6 +160,9 @@ export class MeCandidateService {
       email,
       avatar: avatarDto,
       workExperience: workExperienceDto,
+      specializationId,
+      cityId,
+      skillIds,
       ...dto
     } = dto_
 
@@ -175,10 +184,13 @@ export class MeCandidateService {
         user.candidate.id,
         {
           ...dto,
-          city: isNullish(dto.cityId) ? dto.cityId : { id: dto.cityId },
-          skills: isNullish(dto.skillIds)
-            ? dto.skillIds
-            : dto.skillIds.map((id) => ({ id })),
+          city: isNullish(cityId) ? cityId : { id: cityId },
+          specialization: isNullish(specializationId)
+            ? specializationId
+            : { id: specializationId },
+          skills: isNullish(skillIds)
+            ? skillIds
+            : skillIds.map((id) => ({ id })),
           avatar: { id: avatar?.id },
         },
         manager,

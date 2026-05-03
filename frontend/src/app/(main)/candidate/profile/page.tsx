@@ -22,6 +22,7 @@ import CandidateProfileJob from "./_components/CandidateProfileJob"
 import CandidateProfileWorkExperience from "./_components/CandidateProfileWorkExperience"
 import CandidateProfileAvatar from "./_components/CandidateProfileAvatar"
 import CandidateProfileVisibility from "./_components/CandidateProfileVisibility"
+import CandidateProfileJobExpectations from "./_components/CandidateProfileJobExpectations"
 
 interface Props {
   me: User
@@ -39,9 +40,11 @@ const Content = ({ me }: Props) => {
   const { mutate: update, status: updateStatus } = useUpdateMeCandidate()
 
   const onSubmit = form.handleSubmit((data) => {
+    const avatar = data.avatar?.content ? data.avatar : data.avatar ? undefined : null
+
     if (me.candidate) {
       update(
-        { ...data, avatar: data.avatar as any },
+        { ...data, avatar },
         {
           onSuccess: () => {
             addToast({
@@ -54,7 +57,7 @@ const Content = ({ me }: Props) => {
       )
     } else {
       create(
-        { ...data, avatar: data.avatar as any },
+        { ...data, avatar },
         {
           onSuccess: () => {
             addToast({
@@ -79,6 +82,8 @@ const Content = ({ me }: Props) => {
         <CandidateProfileContacts />
         <ProfileForm.BlockSeparator />
         <CandidateProfileJob />
+        <ProfileForm.BlockSeparator />
+        <CandidateProfileJobExpectations />
         <ProfileForm.BlockSeparator />
         <CandidateProfileVisibility />
         <ProfileForm.BlockSeparator />

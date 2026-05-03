@@ -13,6 +13,11 @@ async function bootstrap() {
   const configService = app.get(ConfigService<AppConfig, true>)
 
   app.setGlobalPrefix("api")
+  const expressApp = app
+    .getHttpAdapter()
+    .getInstance() as unknown as express.Express
+
+  expressApp.set("query parser", "extended")
 
   app.enableCors({
     origin: configService.get("CORS_ORIGINS", { infer: true }).split(","),

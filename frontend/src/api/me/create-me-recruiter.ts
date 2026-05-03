@@ -14,7 +14,7 @@ interface Data {
       name: string
       mimeType: string
       size: number
-      content: string
+      content?: string
     } | null
   }
 }

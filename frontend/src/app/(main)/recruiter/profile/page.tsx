@@ -33,9 +33,8 @@ const Content = ({ me }: Props) => {
   const { mutate: update, status: updateStatus } = useUpdateMeRecruiter()
 
   const onSubmit = form.handleSubmit((data) => {
-    // TODO: fix this
     const companyLogo = data.company.logo?.content
-      ? (data.company.logo as any)
+      ? data.company.logo
       : data.company.logo
       ? undefined
       : null
