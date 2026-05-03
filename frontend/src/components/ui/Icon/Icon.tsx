@@ -12,6 +12,7 @@ import {
   FilesIcon,
   FileTextIcon,
   HouseIcon,
+  InfoIcon,
   LoaderCircleIcon,
   MessageSquare,
   PenIcon,
@@ -62,6 +63,9 @@ const ICONS = {
   },
   house: {
     Component: HouseIcon,
+  },
+  info: {
+    Component: InfoIcon,
   },
   loader: {
     Component: LoaderCircleIcon,

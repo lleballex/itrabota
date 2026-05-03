@@ -39,7 +39,7 @@ const Content = () => {
 
         <div className="flex gap-2">
           <Input
-            className="min-w-1/2"
+            className="w-full max-w-[600px]"
             prefix={<Icon icon="search" />}
             value={query}
             onChange={setQuery}
@@ -65,18 +65,30 @@ const Content = () => {
           className="flex flex-row border border-border p-1 rounded"
           highlightClassName="bg-primary"
         >
-          {Object.values(ApplicationType).map((type_) => (
-            <HighlightList.Item
-              key={type_}
-              className="w-full py-1 transition-all hover:text-fg-heading"
-              activeClassName="text-fg-heading"
-              active={type_ === type}
+          <HighlightList.Item
+            className="w-full py-1 transition-all hover:text-fg-heading"
+            activeClassName="text-fg-heading"
+            active={type === ApplicationType.Response}
+          >
+            <Button
+              type="base"
+              onClick={() => setType(ApplicationType.Response)}
             >
-              <Button type="base" onClick={() => setType(type_)}>
-                {ApplicationTypes[type_]}
-              </Button>
-            </HighlightList.Item>
-          ))}
+              Отклики
+            </Button>
+          </HighlightList.Item>
+          <HighlightList.Item
+            className="w-full py-1 transition-all hover:text-fg-heading"
+            activeClassName="text-fg-heading"
+            active={type === ApplicationType.Invitation}
+          >
+            <Button
+              type="base"
+              onClick={() => setType(ApplicationType.Invitation)}
+            >
+              Приглашения
+            </Button>
+          </HighlightList.Item>
         </HighlightList.Root>
       </div>
 

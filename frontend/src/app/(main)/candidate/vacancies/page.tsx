@@ -17,6 +17,7 @@ import Select from "@/components/ui/Select"
 import Checkbox from "@/components/ui/Checkbox"
 import Button from "@/components/ui/Button"
 import Drawer from "@/components/ui/Drawer"
+import Tooltip from "@/components/ui/Tooltip"
 import { Skill } from "@/types/entities/skill"
 import {
   VacancyEmploymentType,
@@ -190,7 +191,7 @@ const Content = ({ me: _me }: { me: User }) => {
               prefix={<Icon icon="search" />}
               value={filters.query}
               onChange={(value) => updateFilters("query", value)}
-              placeholder="Поиск"
+              placeholder="Поиск по вакансиям"
             />
 
             <Checkbox
@@ -198,7 +199,19 @@ const Content = ({ me: _me }: { me: User }) => {
               value={filters.matchForMe}
               onChange={updateMatchForMe}
             >
-              <span>Подобрать для меня</span>
+              <span className="flex items-center gap-1">
+                Подобрать для меня
+                <Tooltip content="Покажем вакансии, которые лучше всего совпадают с данными, которые вы указали в резюме">
+                  <button
+                    className="flex items-center justify-center rounded-full text-fg/70 transition hover:text-fg"
+                    type="button"
+                    aria-label="Что значит подобрать для меня"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    <Icon className="text-[16px]" icon="info" />
+                  </button>
+                </Tooltip>
+              </span>
             </Checkbox>
           </div>
 
@@ -304,10 +317,7 @@ const Content = ({ me: _me }: { me: User }) => {
             multiple
             value={filters.schedules}
             onChange={(value) =>
-              updateDrawerFilter(
-                "schedules",
-                Array.isArray(value) ? value : [],
-              )
+              updateDrawerFilter("schedules", Array.isArray(value) ? value : [])
             }
             label="График работы"
             renderValue={({ selectedItems }) =>
