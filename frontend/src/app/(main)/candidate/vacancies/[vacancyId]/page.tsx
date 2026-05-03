@@ -36,7 +36,7 @@ const LoadedContent = ({ vacancy, application, me, initialTab }: Props) => {
   }, [initialTab, application])
 
   return (
-    <div className="flex flex-col gap-6 h-full min-h-0">
+    <div className="flex flex-col gap-6 h-[calc(100dvh-var(--spacing-screen)*2-var(--height-control)-var(--spacing)*5)] min-h-0">
       {application && (
         <HighlightList.Root
           className="flex flex-row border border-border p-1 rounded shrink-0"

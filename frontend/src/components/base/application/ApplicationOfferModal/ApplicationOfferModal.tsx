@@ -52,7 +52,7 @@ export default function ApplicationOfferModal({
   return (
     <Modal.Root active={isActive} onActiveChange={onActiveChange} width={650}>
       <form className="contents" onSubmit={onSubmit}>
-        <Modal.Header>Пригласить на следующий этап</Modal.Header>
+        <Modal.Header>Приглашение на следующий этап</Modal.Header>
 
         <Controller
           control={form.control}

@@ -64,11 +64,12 @@ export default function ApplicationRejectModal({
   return (
     <Modal.Root active={isActive} onActiveChange={onIsActiveChange} width={650}>
       <form className="contents" onSubmit={onSubmit}>
-        <Modal.Header>
+        <Modal.Header>Завершение процесса найма</Modal.Header>
+        <p>
           {role === UserRole.Recruiter
-            ? "Отклонить соискателя"
-            : "Завершить процесс найма"}
-        </Modal.Header>
+            ? "Вы собираетесь завершить процесс найма и отказать соискателю. Он больше не сможет откликаться на данную вакансию"
+            : "Вы собираетесь завершить процесс найма, не дойдя до конца. У вас больше не будет возможности откликнуться на данную вакансию"}
+        </p>
         <Controller
           control={form.control}
           name="message"
@@ -76,7 +77,7 @@ export default function ApplicationRejectModal({
             <Textarea
               {...field}
               error={fieldState.error}
-              label="Причина отклонения*"
+              label="Причина завершения*"
             />
           )}
         />
@@ -86,7 +87,7 @@ export default function ApplicationRejectModal({
             htmlType="submit"
             pending={rejectApplicationStatus === "pending"}
           >
-            Отклонить
+            Завершить
           </Button>
           <Button type="secondary" onClick={() => onIsActiveChange(false)}>
             Отменить

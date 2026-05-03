@@ -200,16 +200,16 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
           : "Рекрутер пригласил вас на следующий этап"
       case ApplicationMessageType.RecruiterOfferedJob:
         return role === UserRole.Recruiter
-          ? "Вы пригласили кандидата трудоустроиться"
-          : "Рекрутер пригласил вас трудоустроиться"
+          ? "Вы приняли кандидата"
+          : "Рекрутер принял вас на работу"
       case ApplicationMessageType.CandidateRejected:
         return role === UserRole.Candidate
-          ? "Вы отклонили процесс найма"
-          : "Кандидат отклонил процесс найма"
+          ? "Вы завершили процесс найма"
+          : "Кандидат завершил процесс найма"
       case ApplicationMessageType.RecruiterRejected:
         return role === UserRole.Recruiter
-          ? "Вы отклонили соискателя"
-          : "Рекрутер отклонил процесс найма"
+          ? "Вы завершили процесс найма"
+          : "Рекрутер завершил процесс найма"
       case ApplicationMessageType.MeetingScheduled:
         if (!message.meeting) {
           return role === UserRole.Candidate
@@ -323,7 +323,9 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
                     type="glass"
                     onClick={() => setIsOfferModalActive(true)}
                   >
-                    Пригласить на {nextFunnelStep?.name}
+                    {nextFunnelStep
+                      ? `Пригласить на ${nextFunnelStep?.name}`
+                      : "Принять на работу"}
                   </Button>
                 )}
                 <Button
@@ -331,7 +333,7 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
                   type="glass"
                   onClick={() => setIsRejectModalActive(true)}
                 >
-                  Отказать
+                  {isWaitingForCandidateResponse ? "Завершить" : "Отказать"}
                 </Button>
               </div>
             )}
@@ -352,7 +354,7 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
                   type="glass"
                   onClick={() => setIsRejectModalActive(true)}
                 >
-                  Отклонить процесс
+                  {isWaitingForCandidateResponse ? "Отклонить" : "Завершить"}
                 </Button>
               </div>
             )}
