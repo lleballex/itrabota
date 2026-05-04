@@ -88,6 +88,11 @@ export class ApplicationsService {
       .addOrderBy("vacancyFunnelStep.index", "ASC")
       .addOrderBy("applicationMeeting.startsAt", "ASC")
       .addOrderBy("message.createdAt", "ASC")
+      .addOrderBy(
+        `CASE WHEN message.type = '${ApplicationMessageType.UserMessage}' THEN 1 ELSE 0 END`,
+        "ASC",
+      )
+      .addOrderBy("message.id", "ASC")
       .getOne()
 
     if (!application) {
