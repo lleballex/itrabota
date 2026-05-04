@@ -4,7 +4,7 @@ import classNames from "classnames"
 import dayjs, { Dayjs } from "dayjs"
 import { useMemo } from "react"
 
-import Button from "@/components/ui/Button"
+import Icon from "@/components/ui/Icon"
 
 interface Props {
   activeMonth: Dayjs
@@ -37,30 +37,36 @@ export default function Calendar({
   }, [activeMonth])
 
   return (
-    <div className="flex w-fit flex-col gap-2">
+    <div className="flex w-fit flex-col gap-1.5 text-fg">
       <div className="flex items-center justify-between gap-2">
-        <Button
-          className="min-w-0 px-2"
-          type="secondary"
+        <button
+          className="flex h-5 w-7 cursor-pointer items-center justify-center p-0 text-fg-secondary transition-all hover:text-primary"
+          type="button"
+          aria-label="Предыдущий месяц"
           onClick={() => onActiveMonthChange(activeMonth.subtract(1, "month"))}
         >
-          <span aria-hidden="true">{"<"}</span>
-        </Button>
-        <p className="min-w-[140px] text-center text-base font-bold">
+          <Icon icon="chevronLeft" />
+        </button>
+
+        <p className="flex h-5 items-center justify-center text-sm font-medium leading-none">
           {activeMonth.format("MMMM YYYY")}
         </p>
-        <Button
-          className="min-w-0 px-2"
-          type="secondary"
+
+        <button
+          className="flex h-5 w-[3.25rem] cursor-pointer items-center justify-center p-0 text-fg-secondary transition-all hover:text-primary"
+          type="button"
+          aria-label="Следующий месяц"
           onClick={() => onActiveMonthChange(activeMonth.add(1, "month"))}
         >
-          <span aria-hidden="true">{">"}</span>
-        </Button>
+          <Icon icon="chevronRight" />
+        </button>
       </div>
 
       <div className="grid grid-cols-7 gap-1 text-center text-xs text-fg-secondary">
         {weekDays.map((day) => (
-          <p key={day}>{day}</p>
+          <p className="w-5 font-normal" key={day}>
+            {day}
+          </p>
         ))}
       </div>
 
@@ -69,21 +75,23 @@ export default function Calendar({
           const isCurrentMonth = day.isSame(activeMonth, "month")
           const dayString = day.format("YYYY-MM-DD")
           const isSelected = selectedDate === dayString
+          const isToday = day.isSame(dayjs(), "day")
           const disabled = isDateDisabled?.(dayString) ?? false
 
           return (
             <button
               key={day.toISOString()}
               className={classNames(
-                "flex h-6 w-6 items-center justify-center rounded border text-sm transition-all",
-                isSelected
-                  ? "border-primary bg-primary text-fg-heading"
-                  : "border-border bg-secondary",
+                "flex h-5 w-5 items-center justify-center rounded-[6px] border border-transparent bg-transparent text-sm transition-all",
                 {
-                  "opacity-40": !isCurrentMonth,
-                  "cursor-not-allowed opacity-25": disabled,
-                  "cursor-pointer hover:border-primary hover:text-fg-heading":
-                    !disabled,
+                  "!border-primary !bg-primary/15 text-primary": isSelected,
+                  "hover:border-primary/40 hover:bg-primary/10 hover:text-fg-heading":
+                    !isSelected,
+                  "opacity-40": !isCurrentMonth && !isSelected,
+                  "border-primary/50 text-primary": isToday && !isSelected,
+                  "cursor-pointer": !disabled,
+                  "cursor-not-allowed opacity-25 hover:border-transparent hover:bg-transparent":
+                    disabled && !isSelected,
                 },
               )}
               disabled={disabled}
