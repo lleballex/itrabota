@@ -1,13 +1,13 @@
 "use client"
 
-import { Controller, FieldPath, useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 
 import Button from "@/components/ui/Button"
 import Input from "@/components/ui/Input"
 import Select from "@/components/ui/Select"
-import { Routes } from "@/config/routes"
+import { Routes, getVacanciesRouteByRole } from "@/config/routes"
 import { UserRole } from "@/types/entities/user"
 import { useRegister } from "@/api/auth/register"
 
@@ -36,7 +36,7 @@ export default function RegisterPage() {
   const onSubmit = form.handleSubmit((data) => {
     mutate(data, {
       onSuccess: () => {
-        router.push(Routes.home)
+        router.replace(getVacanciesRouteByRole(data.role))
       },
       onError: (error) => handleFormApiError({ error, form }),
     })

@@ -1,3 +1,6 @@
+import { UserRole } from "@/types/entities/user"
+import type { User } from "@/types/entities/user"
+
 export const Routes = {
   home: "/",
 
@@ -32,4 +35,27 @@ export const Routes = {
     notifications: "/candidate/notifications",
     calendar: "/candidate/calendar",
   },
+}
+
+export const getVacanciesRouteByRole = (role: UserRole) =>
+  ({
+    [UserRole.Recruiter]: Routes.recruiter.vacancies,
+    [UserRole.Candidate]: Routes.candidate.vacancies,
+  })[role]
+
+export const getProfileRouteByRole = (role: UserRole) =>
+  ({
+    [UserRole.Recruiter]: Routes.recruiter.profile,
+    [UserRole.Candidate]: Routes.candidate.profile,
+  })[role]
+
+export const getEntryRouteForUser = (user: User) => {
+  const profile = {
+    [UserRole.Recruiter]: user.recruiter,
+    [UserRole.Candidate]: user.candidate,
+  }[user.role]
+
+  return profile
+    ? getVacanciesRouteByRole(user.role)
+    : getProfileRouteByRole(user.role)
 }

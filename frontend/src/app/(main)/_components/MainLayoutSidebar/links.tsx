@@ -11,11 +11,6 @@ interface SidebarLink {
 }
 
 const recruiterLinks: SidebarLink[] = [
-  // {
-  //   url: Routes.recruiter.dashboard,
-  //   title: "Дашборд",
-  //   icon: <Icon icon="house" />,
-  // },
   {
     url: Routes.recruiter.vacancies,
     title: "Вакансии",
@@ -27,9 +22,9 @@ const recruiterLinks: SidebarLink[] = [
     icon: <Icon icon="messageSquare" />,
   },
   {
-    url: Routes.recruiter.notifications,
-    title: "Уведомления",
-    icon: <Icon icon="bell" />,
+    url: Routes.recruiter.candidates,
+    title: "Соискатели",
+    icon: <Icon icon="users" />,
   },
   {
     url: Routes.recruiter.calendar,
@@ -37,9 +32,9 @@ const recruiterLinks: SidebarLink[] = [
     icon: <Icon icon="calendar" />,
   },
   {
-    url: Routes.recruiter.candidates,
-    title: "Соискатели",
-    icon: <Icon icon="users" />,
+    url: Routes.recruiter.notifications,
+    title: "Уведомления",
+    icon: <Icon icon="bell" />,
   },
 ]
 

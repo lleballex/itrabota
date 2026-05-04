@@ -17,7 +17,9 @@ import VacancyStatus from "@/components/base/vacancy/VacancyStatus"
 
 const Content = () => {
   const [searchQuery, setSearchQuery] = useState<string | null>(null)
-  const [searchStatus, setSearchStatus] = useState<IVacancyStatus | null>(null)
+  const [searchStatus, setSearchStatus] = useState<IVacancyStatus | null>(
+    IVacancyStatus.Active,
+  )
 
   const vacancies = useVacancies({
     role: UserRole.Recruiter,
@@ -31,11 +33,11 @@ const Content = () => {
         <h1 className="text-h1">Вакансии</h1>
         <div className="flex gap-2">
           <Input
-            className="min-w-1/2"
+            className="w-full max-w-[600px]"
             prefix={<Icon icon="search" />}
             value={searchQuery}
             onChange={setSearchQuery}
-            placeholder="Поиск"
+            placeholder="Поиск по вакансиям"
           />
           <Select<IVacancyStatus | null>
             className="min-w-1/5"
@@ -52,7 +54,7 @@ const Content = () => {
                 (status) => ({
                   value: status,
                   content: <VacancyStatus status={status} />,
-                })
+                }),
               ),
             ]}
           />

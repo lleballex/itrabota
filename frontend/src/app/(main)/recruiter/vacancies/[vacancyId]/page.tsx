@@ -21,7 +21,7 @@ interface Props {
 
 const LoadedContent = ({ vacancy }: Props) => {
   const [activeTab, setActiveTab] = useState<"vacancy" | "applications">(
-    "applications",
+    "vacancy",
   )
 
   return (

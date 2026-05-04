@@ -27,7 +27,9 @@ export default function RecruiterApplicationsPage() {
 const Content = () => {
   const [type, setType] = useState<ApplicationType>(ApplicationType.Response)
   const [query, setQuery] = useState<string | null>(null)
-  const [status, setStatus] = useState<ApplicationStatus | null>(null)
+  const [status, setStatus] = useState<ApplicationStatus | null>(
+    ApplicationStatus.Pending,
+  )
 
   const applications = useApplications({
     role: UserRole.Recruiter,
@@ -43,7 +45,7 @@ const Content = () => {
 
         <div className="flex gap-2">
           <Input
-            className="min-w-1/2"
+            className="w-full max-w-[600px]"
             prefix={<Icon icon="search" />}
             value={query}
             onChange={setQuery}
