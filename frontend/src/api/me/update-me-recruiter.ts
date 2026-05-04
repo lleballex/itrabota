@@ -19,6 +19,7 @@ interface Data {
   }
 }
 
-export const useUpdateMeRecruiter = createUseMutation((data: Data) =>
-  axios.patch("/me/recruiter", data)
+export const useUpdateMeRecruiter = createUseMutation(
+  (data: Data) => axios.patch("/me/recruiter", data),
+  { invalidateQueries: ["me", "applications", "vacancies", "notifications"] },
 )

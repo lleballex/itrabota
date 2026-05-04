@@ -1,8 +1,6 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import Link from "next/link"
-import { useQueryClient } from "@tanstack/react-query"
 
 import { useNotifications } from "@/api/notifications/get-notifications"
 import { useUnreadNotificationsCount } from "@/api/notifications/get-unread-notifications-count"
@@ -13,8 +11,7 @@ import Icon from "@/components/ui/Icon"
 import Popover from "@/components/ui/Popover"
 import RemoteData from "@/components/ui/RemoteData"
 import { isNotificationUnread } from "@/lib/notifications"
-import { Routes } from "@/config/routes"
-import { User, UserRole } from "@/types/entities/user"
+import { User } from "@/types/entities/user"
 
 interface Props {
   user: User
@@ -23,7 +20,6 @@ interface Props {
 export default function MainLayoutHeaderNotifications({ user }: Props) {
   const [isOpen, setIsOpen] = useState(false)
   const popoverRef = useRef<HTMLDivElement>(null)
-  const queryClient = useQueryClient()
 
   const notifications = useNotifications({ limit: 10 }, { isEnabled: isOpen })
   const unreadCount = useUnreadNotificationsCount()
@@ -31,27 +27,12 @@ export default function MainLayoutHeaderNotifications({ user }: Props) {
   const loadedNotifications =
     notifications.status === "success" ? notifications.data : null
 
-  const notificationsRoute = {
-    [UserRole.Recruiter]: Routes.recruiter.notifications,
-    [UserRole.Candidate]: Routes.candidate.notifications,
-  }[user.role]
-
   function markNotificationsAsRead(ids: string[]) {
     if (!ids.length) {
       return
     }
 
-    readNotifications(
-      { ids },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["notifications"] })
-          queryClient.invalidateQueries({
-            queryKey: ["notificationsUnreadCount"],
-          })
-        },
-      },
-    )
+    readNotifications({ ids })
   }
 
   useEffect(() => {
@@ -85,18 +66,8 @@ export default function MainLayoutHeaderNotifications({ user }: Props) {
       return
     }
 
-    readNotifications(
-      { ids },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["notifications"] })
-          queryClient.invalidateQueries({
-            queryKey: ["notificationsUnreadCount"],
-          })
-        },
-      },
-    )
-  }, [isOpen, loadedNotifications, queryClient, readNotifications])
+    readNotifications({ ids })
+  }, [isOpen, loadedNotifications, readNotifications])
 
   return (
     <Popover.Root position="right">

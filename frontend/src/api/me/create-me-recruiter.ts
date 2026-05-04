@@ -19,6 +19,7 @@ interface Data {
   }
 }
 
-export const useCreateMeRecruiter = createUseMutation((data: Data) =>
-  axios.post("/me/recruiter", data)
+export const useCreateMeRecruiter = createUseMutation(
+  (data: Data) => axios.post("/me/recruiter", data),
+  { invalidateQueries: ["me", "applications", "vacancies", "notifications"] },
 )

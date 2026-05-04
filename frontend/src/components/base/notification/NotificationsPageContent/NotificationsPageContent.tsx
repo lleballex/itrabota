@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import { useQueryClient } from "@tanstack/react-query"
 
 import { useNotifications } from "@/api/notifications/get-notifications"
 import { useReadNotifications } from "@/api/notifications/read-notifications"
@@ -15,15 +14,10 @@ interface Props {
 }
 
 export default function NotificationsPageContent({ role }: Props) {
-  const queryClient = useQueryClient()
   const notifications = useNotifications({})
   const { mutate: readNotifications } = useReadNotifications()
   const queuedIdsRef = useRef(new Set<string>())
   const flushTimeoutRef = useRef<number | null>(null)
-
-  function invalidateUnreadCount() {
-    queryClient.invalidateQueries({ queryKey: ["notificationsUnreadCount"] })
-  }
 
   function flushReadQueue() {
     const ids = Array.from(queuedIdsRef.current)
@@ -34,12 +28,7 @@ export default function NotificationsPageContent({ role }: Props) {
 
     queuedIdsRef.current.clear()
 
-    readNotifications(
-      { ids },
-      {
-        onSuccess: invalidateUnreadCount,
-      },
-    )
+    readNotifications({ ids })
   }
 
   function enqueueRead(ids: string[]) {

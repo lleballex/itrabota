@@ -12,4 +12,10 @@ export const useAcceptApplicationByCandidate = createUseMutation(
     axios
       .post<Application>(`/applications/candidate/${applicationId}/accept`, data)
       .then((res) => res.data),
+  {
+    invalidateQueries: (_res, args) =>
+      args.meetingStartsAt
+        ? ["applications", "meetings", "meetingSlots"]
+        : ["applications"],
+  },
 )

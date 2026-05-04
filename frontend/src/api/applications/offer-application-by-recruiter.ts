@@ -9,4 +9,5 @@ interface Data {
 export const useOfferApplicationByRecruiter = createUseMutation(
   ({ applicationId, ...data }: Data) =>
     axios.post(`/applications/recruiter/${applicationId}/offer`, data),
+  { invalidateQueries: ["applications"] },
 )

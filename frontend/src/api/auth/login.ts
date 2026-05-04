@@ -6,6 +6,7 @@ interface Data {
   password: string
 }
 
-export const useLogin = createUseMutation((data: Data) =>
-  axios.post("/auth/login", data)
+export const useLogin = createUseMutation(
+  (data: Data) => axios.post("/auth/login", data),
+  { invalidateQueries: ["me"] },
 )

@@ -2,7 +2,6 @@ import classNames from "classnames"
 import dayjs from "dayjs"
 import Image from "next/image"
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
-import { useQueryClient } from "@tanstack/react-query"
 
 import { Application, ApplicationStatus } from "@/types/entities/application"
 import {
@@ -26,7 +25,6 @@ interface Props {
 }
 
 export default function ApplicationChat({ application, vacancy, role }: Props) {
-  const queryClient = useQueryClient()
   const interlocutorRef = useRef<HTMLDivElement>(null)
   const controlsRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
@@ -166,16 +164,9 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
       return
     }
 
-    acceptApplicationByCandidate(
-      {
-        applicationId: application.id,
-      },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["applications"] })
-        },
-      },
-    )
+    acceptApplicationByCandidate({
+      applicationId: application.id,
+    })
   }
 
   const getMessageContent = (message: ApplicationMessage) => {

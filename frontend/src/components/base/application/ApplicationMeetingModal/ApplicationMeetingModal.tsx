@@ -3,7 +3,6 @@
 import classNames from "classnames"
 import dayjs from "dayjs"
 import { useEffect, useMemo, useState } from "react"
-import { useQueryClient } from "@tanstack/react-query"
 
 import { useMeetingSlots } from "@/api/meetings/get-meeting-slots"
 import { useAcceptApplicationByCandidate } from "@/api/applications/accept-application-by-candidate"
@@ -24,7 +23,6 @@ export default function ApplicationMeetingModal({
   active,
   onActiveChange,
 }: Props) {
-  const queryClient = useQueryClient()
   const [activeMonth, setActiveMonth] = useState(() => dayjs().startOf("month"))
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null)
@@ -80,7 +78,6 @@ export default function ApplicationMeetingModal({
       },
       {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["applications"] })
           setFormError(null)
           setSelectedSlot(null)
           setSelectedDate(null)

@@ -17,11 +17,14 @@ interface CreateRecruiterApplicationData {
 
 type Data = CreateCandidateApplicationData | CreateRecruiterApplicationData
 
-export const useCreateApplication = createUseMutation(({ role, ...data }: Data) => {
-  const url = {
-    [UserRole.Candidate]: "/applications/candidate",
-    [UserRole.Recruiter]: "/applications/recruiter",
-  }[role]
+export const useCreateApplication = createUseMutation(
+  ({ role, ...data }: Data) => {
+    const url = {
+      [UserRole.Candidate]: "/applications/candidate",
+      [UserRole.Recruiter]: "/applications/recruiter",
+    }[role]
 
-  return axios.post(url, data)
-})
+    return axios.post(url, data)
+  },
+  { invalidateQueries: ["applications", "vacancies"] },
+)

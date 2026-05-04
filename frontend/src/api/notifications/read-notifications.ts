@@ -11,4 +11,5 @@ export const useReadNotifications = createUseMutation(
 
     return res.data
   },
+  { invalidateQueries: ["notifications", "notificationsUnreadCount"] },
 )

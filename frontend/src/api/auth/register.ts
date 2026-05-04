@@ -7,6 +7,7 @@ interface Data {
   password: string
 }
 
-export const useRegister = createUseMutation((data: Data) =>
-  axios.post("/auth/register", data)
+export const useRegister = createUseMutation(
+  (data: Data) => axios.post("/auth/register", data),
+  { invalidateQueries: ["me"] },
 )

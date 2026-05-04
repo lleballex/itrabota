@@ -33,6 +33,7 @@ interface Data {
   }[]
 }
 
-export const useUpdateVacancy = createUseMutation(({ id, ...data }: Data) =>
-  axios.patch(`/vacancies/${id}`, data)
+export const useUpdateVacancy = createUseMutation(
+  ({ id, ...data }: Data) => axios.patch(`/vacancies/${id}`, data),
+  { invalidateQueries: ["vacancies", "applications"] },
 )

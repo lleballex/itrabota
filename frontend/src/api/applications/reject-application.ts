@@ -23,4 +23,5 @@ export const useRejectApplication = createUseMutation(
 
     return res.data
   },
+  { invalidateQueries: ["applications"] },
 )

@@ -31,6 +31,7 @@ interface Data {
   }[]
 }
 
-export const useCreateVacancy = createUseMutation((data: Data) =>
-  axios.post("/vacancies", data)
+export const useCreateVacancy = createUseMutation(
+  (data: Data) => axios.post("/vacancies", data),
+  { invalidateQueries: ["vacancies"] },
 )
