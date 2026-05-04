@@ -15,7 +15,7 @@ export default function VacancyStatus({ className, status }: Props) {
     <div className={classNames(className, "flex items-center gap-1")}>
       <span
         className={classNames("w-1 h-1 rounded-full", {
-          "bg-danger": status === TVacancyStatus.Active,
+          "bg-success": status === TVacancyStatus.Active,
           "bg-secondary": status === TVacancyStatus.Archived,
         })}
       />

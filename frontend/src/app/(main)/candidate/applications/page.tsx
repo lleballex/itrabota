@@ -13,11 +13,10 @@ import RemoteData from "@/components/ui/RemoteData"
 import { useApplications } from "@/api/applications/get-applications"
 import {
   ApplicationStatus,
-  ApplicationStatuses,
   ApplicationType,
-  ApplicationTypes,
 } from "@/types/entities/application"
 import ApplicationCard from "@/components/base/application/ApplicationCard"
+import ApplicationStatusMarker from "@/components/base/application/ApplicationStatus"
 import { Routes } from "@/config/routes"
 
 const Content = () => {
@@ -54,7 +53,7 @@ const Content = () => {
               ...(Object.values(ApplicationStatus) as ApplicationStatus[]).map(
                 (item) => ({
                   value: item,
-                  content: ApplicationStatuses[item],
+                  content: <ApplicationStatusMarker status={item} />,
                 }),
               ),
             ]}
