@@ -1,9 +1,11 @@
 import { Controller, useFormContext } from "react-hook-form"
+import dayjs from "dayjs"
 
 import ProfileForm from "@/components/base/profile/ProfileForm"
 import Input from "@/components/ui/Input"
 import { useCities } from "@/api/cities/get-cities"
 import Select from "@/components/ui/Select"
+import DateInput from "@/components/ui/DateInput"
 
 import { FormInputValues, FormOutputValues } from "../../form"
 
@@ -57,11 +59,12 @@ export default function CandidateProfileMain() {
           control={form.control}
           name="bornAt"
           render={({ field, fieldState }) => (
-            <Input
+            <DateInput
               {...field}
               className="w-full"
               error={fieldState.error}
               label="Дата рождения*"
+              maxDate={dayjs().format("YYYY-MM-DD")}
             />
           )}
         />
