@@ -228,6 +228,46 @@ export class ApplicationsService {
     )
   }
 
+  async rejectPendingForArchivedVacancy(
+    vacancy: Vacancy,
+    manager: EntityManager,
+  ) {
+    const applicationsRepo = manager.getRepository(Application)
+    const applications = await this._createQB(
+      { vacancyId: vacancy.id },
+      manager,
+    )
+      .andWhere("application.status = :status", {
+        status: ApplicationStatus.Pending,
+      })
+      .getMany()
+
+    for (const application of applications) {
+      application.status = ApplicationStatus.Rejected
+
+      await applicationsRepo.save(application)
+
+      const systemMessage = await this.messagesService.create(
+        {
+          application: { id: application.id },
+          type: ApplicationMessageType.VacancyArchived,
+          senderRole: UserRole.Recruiter,
+        },
+        manager,
+      )
+
+      await this.notificationsService.createForApplicationEvent(
+        {
+          recipientUserId: application.candidate!.user!.id,
+          type: systemMessage.type,
+          applicationId: application.id,
+          applicationMessageId: systemMessage.id,
+        },
+        manager,
+      )
+    }
+  }
+
   getNextFunnelStep(application: Application) {
     const funnelSteps = application.vacancy?.funnelSteps ?? []
 

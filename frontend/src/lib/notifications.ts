@@ -11,6 +11,10 @@ export function getNotificationUrl(
   notification: Notification,
   role: UserRole,
 ) {
+  if (notification.type === NotificationType.VacancyArchived) {
+    return null
+  }
+
   if (role === UserRole.Recruiter) {
     return Routes.recruiter.application(notification.application!.id)
   }
@@ -135,6 +139,18 @@ export function getNotificationContent(notification: Notification) {
       return vacancyTitle
         ? `Рекрутер отклонил процесс по вакансии «${vacancyTitle}»`
         : "Рекрутер отклонил процесс найма"
+    case NotificationType.VacancyArchived:
+      if (companyName && vacancyTitle) {
+        return `Компания ${companyName} архивировала вакансию «${vacancyTitle}», отклик завершен`
+      }
+
+      if (companyName) {
+        return `Компания ${companyName} архивировала вакансию, отклик завершен`
+      }
+
+      return vacancyTitle
+        ? `Вакансия «${vacancyTitle}» архивирована, отклик завершен`
+        : "Вакансия архивирована, отклик завершен"
     case NotificationType.MeetingScheduled:
       if (candidateName && notification.meeting?.startsAt) {
         return `${candidateName} назначил встречу на ${formatMeetingDateTime(

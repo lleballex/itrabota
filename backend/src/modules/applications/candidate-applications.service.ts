@@ -2,12 +2,14 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  NotFoundException,
 } from "@nestjs/common"
 import { DataSource } from "typeorm"
 
 import { ICurrentUser } from "@/modules/auth/interfaces/current-user.interface"
 import { UsersService } from "@/modules/users/users.service"
 import { VacanciesService } from "@/modules/vacancies/vacancies.service"
+import { VacancyStatus } from "@/modules/vacancies/entities/vacancy.entity"
 import { UserRole } from "@/modules/users/types/user-role"
 import { MeetingsService } from "@/modules/meetings/meetings.service"
 
@@ -48,6 +50,9 @@ export class CandidateApplicationsService {
       .andWhere("candidate.id = :candidateId", {
         candidateId: user.candidate.id,
       })
+      .andWhere("vacancy.status = :vacancyStatus", {
+        vacancyStatus: VacancyStatus.Active,
+      })
 
     return qb.getMany()
   }
@@ -58,6 +63,10 @@ export class CandidateApplicationsService {
         dto.vacancyId,
         manager,
       )
+
+      if (vacancy.status === VacancyStatus.Archived) {
+        throw new ConflictException("Archived vacancy cannot receive responses")
+      }
 
       const user = await this.usersService.findFilledCandidateById(
         user_.id,
@@ -83,6 +92,11 @@ export class CandidateApplicationsService {
 
   async findOneByVacancyId(vacancyId: string, user_: ICurrentUser) {
     const vacancy = await this.vacanciesService.findOneById(vacancyId)
+
+    if (vacancy.status === VacancyStatus.Archived) {
+      throw new NotFoundException("Vacancy not found")
+    }
+
     const user = await this.usersService.findFilledCandidateById(user_.id)
     const application = await this.applicationsService._findOne({
       vacancy: { id: vacancy.id },

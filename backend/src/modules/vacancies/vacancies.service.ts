@@ -16,6 +16,8 @@ import { ICurrentUser } from "@/modules/auth/interfaces/current-user.interface"
 import { UsersService } from "@/modules/users/users.service"
 import { Candidate } from "@/modules/users/entities/candidate.entity"
 import { WorkExperienceItem } from "@/modules/users/entities/work-experence-item.entity"
+import { UserRole } from "@/modules/users/types/user-role"
+import { ApplicationsService } from "@/modules/applications/applications.service"
 
 import {
   Vacancy,
@@ -71,6 +73,7 @@ export class VacanciesService {
     private readonly dataSource: DataSource,
     private readonly funnelStepsService: FunnelStepsService,
     private readonly usersService: UsersService,
+    private readonly applicationsService: ApplicationsService,
   ) {}
 
   private createQB(manager?: EntityManager) {
@@ -483,6 +486,30 @@ export class VacanciesService {
     return this.findOne({ id }, manager)
   }
 
+  async findOneForCurrentUser(id: string, user_: ICurrentUser) {
+    const vacancy = await this.findOneById(id)
+
+    if (user_.role === UserRole.Candidate) {
+      if (vacancy.status === VacancyStatus.Archived) {
+        throw new NotFoundException("Vacancy not found")
+      }
+
+      return vacancy
+    }
+
+    if (user_.role === UserRole.Recruiter) {
+      const user = await this.usersService.findFilledRecruiterById(user_.id)
+
+      if (vacancy.recruiter?.id !== user.recruiter.id) {
+        throw new ForbiddenException("You are not the author of the vacancy")
+      }
+
+      return vacancy
+    }
+
+    throw new ForbiddenException("You are not allowed to view this vacancy")
+  }
+
   async findAllForRecruiter(
     dto: GetRecruiterVacanciesDto,
     user_: ICurrentUser,
@@ -554,6 +581,48 @@ export class VacanciesService {
     })
 
     return this.findOneById(vacancyId)
+  }
+
+  private async updateStatus(
+    id: string,
+    status: VacancyStatus,
+    user_: ICurrentUser,
+  ) {
+    await this.dataSource.transaction(async (manager) => {
+      const vacancy = await this.findOneById(id, manager)
+      const user = await this.usersService.findFilledRecruiterById(
+        user_.id,
+        manager,
+      )
+
+      if (vacancy.recruiter?.id !== user.recruiter.id) {
+        throw new ForbiddenException("You are not the author of the vacancy")
+      }
+
+      if (vacancy.status === status) return
+
+      if (status === VacancyStatus.Archived) {
+        await this.applicationsService.rejectPendingForArchivedVacancy(
+          vacancy,
+          manager,
+        )
+      }
+
+      await manager.getRepository(Vacancy).save({
+        id,
+        status,
+      })
+    })
+
+    return this.findOneById(id)
+  }
+
+  archive(id: string, user: ICurrentUser) {
+    return this.updateStatus(id, VacancyStatus.Archived, user)
+  }
+
+  restore(id: string, user: ICurrentUser) {
+    return this.updateStatus(id, VacancyStatus.Active, user)
   }
 
   async update(id: string, dto_: UpdateVacancyDto, user_: ICurrentUser) {

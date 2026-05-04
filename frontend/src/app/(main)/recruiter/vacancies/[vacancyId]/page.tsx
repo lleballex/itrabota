@@ -14,6 +14,9 @@ import Icon from "@/components/ui/Icon"
 import { Vacancy, VacancyStatus } from "@/types/entities/vacancy"
 import HighlightList from "@/components/ui/HighlightList"
 import RecruiterVacancyApplications from "./_components/RecruiterVacancyApplications"
+import VacancyArchiveConfirmModal, {
+  VacancyArchiveAction,
+} from "./_components/VacancyArchiveConfirmModal"
 
 interface Props {
   vacancy: Vacancy
@@ -23,6 +26,8 @@ const LoadedContent = ({ vacancy }: Props) => {
   const [activeTab, setActiveTab] = useState<"vacancy" | "applications">(
     "vacancy",
   )
+  const [archiveAction, setArchiveAction] =
+    useState<VacancyArchiveAction | null>(null)
 
   return (
     <div className="flex flex-col gap-6 h-full">
@@ -63,12 +68,18 @@ const LoadedContent = ({ vacancy }: Props) => {
                 Изменить
               </Button>
               {vacancy.status === VacancyStatus.Active && (
-                <Button type="glass">
+                <Button
+                  type="glass"
+                  onClick={() => setArchiveAction("archive")}
+                >
                   <Icon icon="archive" />В архив
                 </Button>
               )}
               {vacancy.status === VacancyStatus.Archived && (
-                <Button type="glass">
+                <Button
+                  type="glass"
+                  onClick={() => setArchiveAction("restore")}
+                >
                   <Icon icon="archiveRestore" />
                   Вернуть из архива
                 </Button>
@@ -81,6 +92,17 @@ const LoadedContent = ({ vacancy }: Props) => {
       {activeTab === "applications" && (
         <RecruiterVacancyApplications vacancy={vacancy} />
       )}
+
+      <VacancyArchiveConfirmModal
+        vacancy={vacancy}
+        action={archiveAction}
+        active={archiveAction !== null}
+        onActiveChange={(active) => {
+          if (!active) {
+            setArchiveAction(null)
+          }
+        }}
+      />
     </div>
   )
 }

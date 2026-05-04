@@ -52,48 +52,31 @@ export default function NotificationListItem({
   onClick,
 }: Props) {
   const isUnread = isNotificationUnread(notification)
-
-  if (compact) {
-    return (
-      <Link
-        className={classNames(className, "group flex flex-col")}
-        href={getNotificationUrl(notification, role)}
-        onClick={() => onClick?.(notification)}
-      >
-        <div
-          className={classNames("flex flex-col gap-0.5 border-border py-2", {
-            "border-b": !isLast,
+  const url = getNotificationUrl(notification, role)
+  const content = compact ? (
+    <div
+      className={classNames("flex flex-col gap-0.5 border-border py-2", {
+        "border-b": !isLast,
+      })}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <p
+          className={classNames("text-sm group-hover:font-bold", {
+            "text-fg-heading font-bold": isUnread,
           })}
         >
-          <div className="flex items-start justify-between gap-2">
-            <p
-              className={classNames("text-sm group-hover:font-bold", {
-                "text-fg-heading font-bold": isUnread,
-              })}
-            >
-              {getNotificationContent(notification)}
-            </p>
-            {isUnread && (
-              <span className="mt-1 h-2.5 min-w-2.5 rounded-full bg-primary" />
-            )}
-          </div>
-          <p className="text-xs text-[#888]">
-            {getNotificationCreatedAt(notification.createdAt)}
-          </p>
-        </div>
-      </Link>
-    )
-  }
-
-  return (
-    <Link
-      className={classNames(
-        className,
-        "group relative flex gap-4 pt-3 after:absolute after:top-0 after:right-[calc(var(--spacing-content)*-1)] after:bottom-0 after:left-[calc(var(--spacing-content)*-1)] after:-z-1 after:bg-[rgba(20,20,20)] after:opacity-0 after:transition-all hover:after:opacity-100",
-      )}
-      href={getNotificationUrl(notification, role)}
-      onClick={() => onClick?.(notification)}
-    >
+          {getNotificationContent(notification)}
+        </p>
+        {isUnread && (
+          <span className="mt-1 h-2.5 min-w-2.5 rounded-full bg-primary" />
+        )}
+      </div>
+      <p className="text-xs text-[#888]">
+        {getNotificationCreatedAt(notification.createdAt)}
+      </p>
+    </div>
+  ) : (
+    <>
       <Image
         className="h-8 w-8 shrink-0 rounded-full"
         src={getNotificationAvatar(notification, role)}
@@ -128,6 +111,36 @@ export default function NotificationListItem({
           <span className="mt-1 h-1.25 w-1.25 rounded-full bg-primary" />
         )}
       </div>
+    </>
+  )
+
+  const rootClassName = compact
+    ? classNames(className, "group flex flex-col")
+    : classNames(
+        className,
+        "group relative flex gap-4 pt-3 after:absolute after:top-0 after:right-[calc(var(--spacing-content)*-1)] after:bottom-0 after:left-[calc(var(--spacing-content)*-1)] after:-z-1 after:bg-[rgba(20,20,20)] after:opacity-0 after:transition-all hover:after:opacity-100",
+      )
+
+  if (!url) {
+    return (
+      <div
+        className={rootClassName}
+        role="button"
+        tabIndex={0}
+        onClick={() => onClick?.(notification)}
+      >
+        {content}
+      </div>
+    )
+  }
+
+  return (
+    <Link
+      className={rootClassName}
+      href={url}
+      onClick={() => onClick?.(notification)}
+    >
+      {content}
     </Link>
   )
 }

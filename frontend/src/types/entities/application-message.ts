@@ -12,6 +12,7 @@ export const ApplicationMessageType = {
   RecruiterOfferedJob: "recruiter_offered_job",
   CandidateRejected: "candidate_rejected",
   RecruiterRejected: "recruiter_rejected",
+  VacancyArchived: "vacancy_archived",
   MeetingScheduled: "meeting_scheduled",
 } as const
 

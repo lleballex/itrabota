@@ -54,8 +54,21 @@ export class VacanciesController {
   }
 
   @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.vacanciesService.findOneById(id)
+  @Auth()
+  findOne(@Param("id") id: string, @CurrentUser() user: ICurrentUser) {
+    return this.vacanciesService.findOneForCurrentUser(id, user)
+  }
+
+  @Post(":id/archive")
+  @Auth(UserRole.Recruiter)
+  archive(@Param("id") id: string, @CurrentUser() user: ICurrentUser) {
+    return this.vacanciesService.archive(id, user)
+  }
+
+  @Post(":id/restore")
+  @Auth(UserRole.Recruiter)
+  restore(@Param("id") id: string, @CurrentUser() user: ICurrentUser) {
+    return this.vacanciesService.restore(id, user)
   }
 
   @Patch(":id")

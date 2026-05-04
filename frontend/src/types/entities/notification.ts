@@ -12,6 +12,7 @@ export const NotificationType = {
   RecruiterOfferedJob: ApplicationMessageType.RecruiterOfferedJob,
   CandidateRejected: ApplicationMessageType.CandidateRejected,
   RecruiterRejected: ApplicationMessageType.RecruiterRejected,
+  VacancyArchived: ApplicationMessageType.VacancyArchived,
   MeetingScheduled: ApplicationMessageType.MeetingScheduled,
 } as const
 

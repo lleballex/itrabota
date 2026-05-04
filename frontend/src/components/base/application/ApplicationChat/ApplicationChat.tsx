@@ -201,6 +201,10 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
         return role === UserRole.Recruiter
           ? "Вы завершили процесс найма"
           : "Рекрутер завершил процесс найма"
+      case ApplicationMessageType.VacancyArchived:
+        return role === UserRole.Recruiter
+          ? "Вы архивировали вакансию, процесс найма завершен"
+          : "Вакансия архивирована, процесс найма завершен"
       case ApplicationMessageType.MeetingScheduled:
         if (!message.meeting) {
           return role === UserRole.Candidate
