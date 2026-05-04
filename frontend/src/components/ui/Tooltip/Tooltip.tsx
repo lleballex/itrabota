@@ -10,6 +10,7 @@ import {
 } from "react"
 
 import Popover from "@/components/ui/Popover"
+import classNames from "classnames"
 
 interface TriggerProps {
   className?: string
@@ -22,6 +23,7 @@ interface TriggerProps {
 
 interface Props {
   className?: string
+  contentClassName?: string
   content: ReactNode
   children: ReactElement<TriggerProps>
   position?: "center" | "left" | "right"
@@ -29,6 +31,7 @@ interface Props {
 
 export default function Tooltip({
   className,
+  contentClassName,
   content,
   children,
   position = "center",
@@ -76,13 +79,14 @@ export default function Tooltip({
 
   return (
     <Popover.Root className={className} position={position}>
-      <Popover.Trigger>
-        {trigger}
-      </Popover.Trigger>
+      <Popover.Trigger>{trigger}</Popover.Trigger>
 
       <Popover.Content
         ref={contentRef}
-        className="max-w-[260px] px-2 py-1.5 text-sm leading-snug"
+        className={classNames(
+          "max-w-[260px] px-2 py-1.5 text-sm leading-snug",
+          contentClassName,
+        )}
       >
         {content}
       </Popover.Content>

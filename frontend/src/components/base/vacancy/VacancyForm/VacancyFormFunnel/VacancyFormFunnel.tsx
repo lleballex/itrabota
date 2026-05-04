@@ -1,3 +1,4 @@
+import { Fragment } from "react"
 import { Controller, useFieldArray, useFormContext } from "react-hook-form"
 
 import Button from "@/components/ui/Button"
@@ -6,6 +7,7 @@ import Input from "@/components/ui/Input"
 import Textarea from "@/components/ui/Textarea"
 import Separator from "@/components/ui/Separator"
 import Checkbox from "@/components/ui/Checkbox"
+import Tooltip from "@/components/ui/Tooltip"
 
 import {
   formDefaultFunnelStep,
@@ -47,8 +49,8 @@ export default function VacancyFormFunnel() {
   return (
     <>
       {formFunnelSteps.map((step, stepIdx) => (
-        <>
-          <div className="flex flex-col gap-2.5" key={step.id}>
+        <Fragment key={step.id}>
+          <div className="flex flex-col gap-2.5">
             <div className="flex items-center gap-2">
               <Button
                 type="base"
@@ -88,7 +90,22 @@ export default function VacancyFormFunnel() {
                   className="self-start"
                   error={fieldState.error}
                 >
-                  Автоматически назначать видеовстречу для этого этапа
+                  <span className="flex items-center gap-1">
+                    Автоматически назначать видеовстречу для этого этапа
+                    <Tooltip
+                      content="На этом этапе соискателю будет предложено выбрать свободное время для встречи в вашем расписании. Видеовстреча автоматически создастся в Яндекс Телемосте. Ссылка сохранится в отклике и в вашем календаре."
+                      contentClassName="!max-w-[340px]"
+                    >
+                      <button
+                        className="flex items-center justify-center rounded-full text-fg/70 transition hover:text-fg"
+                        type="button"
+                        aria-label="Как работает автоматическое назначение видеовстречи"
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        <Icon className="text-[16px]" icon="info" />
+                      </button>
+                    </Tooltip>
+                  </span>
                 </Checkbox>
               )}
             />
@@ -123,7 +140,7 @@ export default function VacancyFormFunnel() {
           {stepIdx < formFunnelSteps.length - 1 && (
             <Separator type="horizontal" />
           )}
-        </>
+        </Fragment>
       ))}
 
       <Button
