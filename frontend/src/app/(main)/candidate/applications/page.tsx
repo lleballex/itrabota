@@ -22,7 +22,9 @@ import { Routes } from "@/config/routes"
 const Content = () => {
   const [type, setType] = useState<ApplicationType>(ApplicationType.Response)
   const [query, setQuery] = useState<string | null>(null)
-  const [status, setStatus] = useState<ApplicationStatus | null>(null)
+  const [status, setStatus] = useState<ApplicationStatus | null>(
+    ApplicationStatus.Pending,
+  )
 
   const applications = useApplications({
     role: UserRole.Candidate,
