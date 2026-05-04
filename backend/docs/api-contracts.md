@@ -234,7 +234,7 @@
 - `500 Internal Server Error`
 - Пагинация / фильтрация / сортировка:
 - пагинации нет
-- фильтрация по `query`
+- регистронезависимая фильтрация по `query`
 - фильтрация по `status`
 - сортировка по `vacancy.createdAt DESC`
 - Примечания:
@@ -261,7 +261,7 @@
 - `500 Internal Server Error`
 - Пагинация / фильтрация / сортировка:
 - пагинации нет
-- фильтрация по `query`
+- регистронезависимая фильтрация по `query`
 - фильтрация по `employmentTypes`
 - фильтрация по `formats`
 - фильтрация по `schedules`
@@ -368,7 +368,7 @@
 - Params: нет
 - Query DTO: `GetApplicationsDto`
 - Поддерживаемые query-поля:
-- `query` — поиск по `vacancy.title`
+- `query` — регистронезависимый поиск по `vacancy.title` и по полной строке ФИО кандидата в формате `candidate.lastName candidate.firstName candidate.patronymic`
 - `status` — фильтр по `ApplicationStatus`
 - `type` — фильтр по `ApplicationType`
 - Body DTO: нет
@@ -388,6 +388,8 @@
   `message.createdAt ASC`, при равном `createdAt` системные сообщения идут перед пользовательскими, затем `message.id ASC`
 - Примечания:
 - контракт ответа зависит от текущих join-ов в `ApplicationsService.createQB(...)`
+- поиск по ФИО имеет пользовательский смысл только для recruiter-side сценария, где в карточках отображается кандидат
+- регистронезависимый поиск явно нормализует кириллические заглавные буквы, чтобы не зависеть от collation базы данных
 
 ### GET `/api/applications/candidate`
 
@@ -399,7 +401,7 @@
 - Params: нет
 - Query DTO: `GetApplicationsDto`
 - Поддерживаемые query-поля:
-- `query` — поиск по `vacancy.title`
+- `query` — регистронезависимый поиск по `vacancy.title`
 - `status` — фильтр по `ApplicationStatus`
 - `type` — фильтр по `ApplicationType`
 - Body DTO: нет
@@ -419,6 +421,7 @@
   `message.createdAt ASC`, при равном `createdAt` системные сообщения идут перед пользовательскими, затем `message.id ASC`
 - Примечания:
 - контракт ответа зависит от текущих join-ов в `ApplicationsService.createQB(...)`
+- общий query-builder также может матчить ФИО кандидата, но для candidate-side списка это не является пользовательским сценарием
 
 ### GET `/api/applications/recruiter/:id`
 

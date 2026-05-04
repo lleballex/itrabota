@@ -18,6 +18,10 @@ import { Candidate } from "@/modules/users/entities/candidate.entity"
 import { WorkExperienceItem } from "@/modules/users/entities/work-experence-item.entity"
 import { UserRole } from "@/modules/users/types/user-role"
 import { ApplicationsService } from "@/modules/applications/applications.service"
+import {
+  createCaseInsensitiveSearchExpression,
+  normalizeSearchQuery,
+} from "@/common/lib/search"
 
 import {
   Vacancy,
@@ -156,10 +160,15 @@ export class VacanciesService {
     qb: SelectQueryBuilder<Vacancy>,
     filters: VacancyFilters,
   ) {
-    if (filters.query) {
-      qb.andWhere("vacancy.title ILIKE :query", {
-        query: `%${filters.query}%`,
-      })
+    const query = normalizeSearchQuery(filters.query)
+
+    if (query) {
+      qb.andWhere(
+        `${createCaseInsensitiveSearchExpression("vacancy.title")} LIKE :query`,
+        {
+          query: `%${query}%`,
+        },
+      )
     }
 
     if (filters.employmentTypes?.length) {

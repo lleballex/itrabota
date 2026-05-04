@@ -9,6 +9,10 @@ import {
 } from "typeorm"
 
 import { ICurrentUser } from "@/modules/auth/interfaces/current-user.interface"
+import {
+  createCaseInsensitiveSearchExpression,
+  normalizeSearchQuery,
+} from "@/common/lib/search"
 
 import { UsersService } from "./users.service"
 import { Candidate } from "./entities/candidate.entity"
@@ -34,20 +38,30 @@ export class CandidatesService {
       .leftJoinAndSelect("candidate.workExperience", "workExperienceItem")
       .orderBy("candidate.createdAt", "DESC")
 
-    if (params?.query) {
+    const query = normalizeSearchQuery(params?.query)
+
+    if (query) {
+      const firstNameSearch = createCaseInsensitiveSearchExpression(
+        "candidate.firstName",
+      )
+      const lastNameSearch =
+        createCaseInsensitiveSearchExpression("candidate.lastName")
+      const patronymicSearch = createCaseInsensitiveSearchExpression(
+        "candidate.patronymic",
+      )
+      const fullNameSearch = createCaseInsensitiveSearchExpression(
+        "concat_ws(' ', candidate.lastName, candidate.firstName, candidate.patronymic)",
+      )
+
       qb.andWhere(
-        new Brackets((query) => {
-          query
-            .where("candidate.firstName ILIKE :query", {
-              query: `%${params.query}%`,
-            })
-            .orWhere("candidate.lastName ILIKE :query", {
-              query: `%${params.query}%`,
-            })
-            .orWhere("candidate.patronymic ILIKE :query", {
-              query: `%${params.query}%`,
-            })
+        new Brackets((searchQb) => {
+          searchQb
+            .where(`${firstNameSearch} LIKE :query`)
+            .orWhere(`${lastNameSearch} LIKE :query`)
+            .orWhere(`${patronymicSearch} LIKE :query`)
+            .orWhere(`${fullNameSearch} LIKE :query`)
         }),
+        { query: `%${query}%` },
       )
     }
 

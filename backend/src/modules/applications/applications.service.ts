@@ -4,12 +4,16 @@ import {
   NotFoundException,
 } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
-import { EntityManager, FindOptionsWhere, Repository } from "typeorm"
+import { Brackets, EntityManager, FindOptionsWhere, Repository } from "typeorm"
 
 import { Vacancy } from "@/modules/vacancies/entities/vacancy.entity"
 import { Candidate } from "@/modules/users/entities/candidate.entity"
 import { UserRole } from "@/modules/users/types/user-role"
 import { NotificationsService } from "@/modules/notifications/notifications.service"
+import {
+  createCaseInsensitiveSearchExpression,
+  normalizeSearchQuery,
+} from "@/common/lib/search"
 
 import { Application, ApplicationStatus } from "./entities/application.entity"
 import { ApplicationMessagesService } from "./application-messages.service"
@@ -55,8 +59,23 @@ export class ApplicationsService {
       })
     }
 
-    if (params?.query) {
-      qb.andWhere("vacancy.title ILIKE :query", { query: `%${params.query}%` })
+    const query = normalizeSearchQuery(params?.query)
+
+    if (query) {
+      const vacancyTitleSearch =
+        createCaseInsensitiveSearchExpression("vacancy.title")
+      const candidateFullNameSearch = createCaseInsensitiveSearchExpression(
+        "concat_ws(' ', candidate.lastName, candidate.firstName, candidate.patronymic)",
+      )
+
+      qb.andWhere(
+        new Brackets((qb) => {
+          qb.where(`${vacancyTitleSearch} LIKE :query`).orWhere(
+            `${candidateFullNameSearch} LIKE :query`,
+          )
+        }),
+        { query: `%${query}%` },
+      )
     }
 
     if (params?.type) {
