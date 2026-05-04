@@ -12,6 +12,8 @@ interface ToastsStore {
   removeToast: (id: string) => void
 }
 
+let toastId = 0
+
 export const useToastsStore = create<ToastsStore>((set) => ({
   toasts: [],
 
@@ -19,7 +21,7 @@ export const useToastsStore = create<ToastsStore>((set) => ({
     set((state) => ({
       toasts: [
         ...state.toasts,
-        { ...toast, id: String(state.toasts.length + 1) },
+        { ...toast, id: `${Date.now()}-${toastId++}` },
       ],
     })),
 
