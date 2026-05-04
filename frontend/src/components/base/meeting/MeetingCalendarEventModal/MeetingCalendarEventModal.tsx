@@ -146,7 +146,7 @@ export default function MeetingCalendarEventModal({
 
         {role === UserRole.Recruiter ? (
           <div className="flex flex-col gap-1">
-            <p className="text-sm text-fg">Соискатель</p>
+            <p className="text-sm text-fg">Кандидат</p>
             {candidateUrl ? (
               <Button
                 className="justify-start text-lg!"

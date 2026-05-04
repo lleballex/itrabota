@@ -214,14 +214,14 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
         if (!message.meeting) {
           return role === UserRole.Candidate
             ? "Вы назначили встречу"
-            : "Соискатель назначил встречу"
+            : "Кандидат назначил встречу"
         }
 
         return role === UserRole.Candidate
           ? `Вы назначили встречу на ${formatMeetingDateTime(
               message.meeting.startsAt,
             )}`
-          : `Соискатель назначил встречу на ${formatMeetingDateTime(
+          : `Кандидат назначил встречу на ${formatMeetingDateTime(
               message.meeting.startsAt,
             )}`
     }

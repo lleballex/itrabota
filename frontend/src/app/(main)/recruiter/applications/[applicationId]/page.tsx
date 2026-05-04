@@ -45,7 +45,7 @@ const LoadedContent = ({
           active={activeTab === "candidate"}
         >
           <Button type="base" onClick={() => setActiveTab("candidate")}>
-            Соискатель
+            Кандидат
           </Button>
         </HighlightList.Item>
         <HighlightList.Item

@@ -74,7 +74,7 @@ export default function CandidateDetailed({ candidate, role }: Props) {
 
         {candidate.description && (
           <div className="flex flex-col gap-1.5">
-            <p className="text-h5">О кандидате</p>
+            <p className="text-h5">О соискателе</p>
             <p>{candidate.description}</p>
           </div>
         )}
