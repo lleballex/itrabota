@@ -355,6 +355,7 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
 
       <ApplicationRejectModal
         application={application}
+        vacancy={vacancy}
         role={role}
         active={isRejectModalActive}
         onActiveChange={setIsRejectModalActive}
@@ -362,6 +363,7 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
 
       <ApplicationOfferModal
         application={application}
+        vacancy={vacancy}
         active={isOfferModalActive}
         onActiveChange={setIsOfferModalActive}
       />

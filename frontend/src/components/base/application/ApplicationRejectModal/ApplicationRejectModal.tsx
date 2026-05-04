@@ -1,21 +1,26 @@
+import { useEffect, useMemo } from "react"
+import { Controller, useForm } from "react-hook-form"
+
+import { useRejectApplication } from "@/api/applications/reject-application"
 import Button from "@/components/ui/Button"
 import Modal from "@/components/ui/Modal"
-import { Application } from "@/types/entities/application"
-import { Controller, useForm } from "react-hook-form"
-import { useRejectApplication } from "@/api/applications/reject-application"
+import Textarea from "@/components/ui/Textarea"
 import { handleFormApiError } from "@/lib/handle-form-api-error"
 import { useToastsStore } from "@/stores/toasts"
+import { Application } from "@/types/entities/application"
 import { UserRole } from "@/types/entities/user"
+import { Vacancy } from "@/types/entities/vacancy"
+
 import {
   formDefaultValues,
   FormInputValues,
   FormOutputValues,
   formResolver,
 } from "./form"
-import Textarea from "@/components/ui/Textarea"
 
 interface Props {
   application: Application
+  vacancy?: Vacancy
   role: UserRole
   active: boolean
   onActiveChange: (val: boolean) => void
@@ -23,6 +28,7 @@ interface Props {
 
 export default function ApplicationRejectModal({
   application,
+  vacancy,
   role,
   active: isActive,
   onActiveChange: onIsActiveChange,
@@ -33,6 +39,26 @@ export default function ApplicationRejectModal({
     resolver: formResolver,
     defaultValues: formDefaultValues,
   })
+
+  const currentFunnelStep = useMemo(() => {
+    if (!application.funnelStep) return null
+
+    return (
+      vacancy?.funnelSteps?.find((step) => step.id === application.funnelStep?.id) ??
+      application.funnelStep
+    )
+  }, [application.funnelStep, vacancy?.funnelSteps])
+
+  useEffect(() => {
+    if (!isActive) return
+
+    form.reset({
+      message:
+        role === UserRole.Recruiter
+          ? currentFunnelStep?.rejectMessage ?? undefined
+          : undefined,
+    })
+  }, [currentFunnelStep, form, isActive, role])
 
   const { mutate: rejectApplication, status: rejectApplicationStatus } =
     useRejectApplication()

@@ -1,10 +1,13 @@
+import { useEffect, useMemo } from "react"
 import { Controller, useForm } from "react-hook-form"
 
+import { useOfferApplicationByRecruiter } from "@/api/applications/offer-application-by-recruiter"
 import Button from "@/components/ui/Button"
 import Modal from "@/components/ui/Modal"
 import Textarea from "@/components/ui/Textarea"
 import { handleFormApiError } from "@/lib/handle-form-api-error"
 import { Application } from "@/types/entities/application"
+import { Vacancy } from "@/types/entities/vacancy"
 
 import {
   formDefaultValues,
@@ -12,16 +15,17 @@ import {
   FormOutputValues,
   formResolver,
 } from "./form"
-import { useOfferApplicationByRecruiter } from "@/api/applications/offer-application-by-recruiter"
 
 interface Props {
   application: Application
+  vacancy?: Vacancy
   active: boolean
   onActiveChange: (val: boolean) => void
 }
 
 export default function ApplicationOfferModal({
   application,
+  vacancy,
   active: isActive,
   onActiveChange,
 }: Props) {
@@ -29,6 +33,23 @@ export default function ApplicationOfferModal({
     resolver: formResolver,
     defaultValues: formDefaultValues,
   })
+
+  const currentFunnelStep = useMemo(() => {
+    if (!application.funnelStep) return null
+
+    return (
+      vacancy?.funnelSteps?.find((step) => step.id === application.funnelStep?.id) ??
+      application.funnelStep
+    )
+  }, [application.funnelStep, vacancy?.funnelSteps])
+
+  useEffect(() => {
+    if (!isActive) return
+
+    form.reset({
+      message: currentFunnelStep?.approveMessage ?? undefined,
+    })
+  }, [currentFunnelStep, form, isActive])
 
   const { mutate: offerApplication, status: offerApplicationStatus } =
     useOfferApplicationByRecruiter()
