@@ -14,10 +14,13 @@ import {
   HouseIcon,
   InfoIcon,
   LoaderCircleIcon,
+  MailIcon,
   MessageSquare,
   PenIcon,
+  PhoneIcon,
   PlusIcon,
   SearchIcon,
+  SendIcon,
   Settings2Icon,
   TrashIcon,
   UsersIcon,
@@ -70,17 +73,26 @@ const ICONS = {
   loader: {
     Component: LoaderCircleIcon,
   },
+  mail: {
+    Component: MailIcon,
+  },
   messageSquare: {
     Component: MessageSquare,
   },
   pen: {
     Component: PenIcon,
   },
+  phone: {
+    Component: PhoneIcon,
+  },
   plus: {
     Component: PlusIcon,
   },
   search: {
     Component: SearchIcon,
+  },
+  telegram: {
+    Component: SendIcon,
   },
   settings: {
     Component: Settings2Icon,

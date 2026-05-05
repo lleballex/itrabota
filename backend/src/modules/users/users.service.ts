@@ -12,6 +12,7 @@ import { UserRole } from "@/modules/users/types/user-role"
 import { WithConcreted } from "@/common/types/with-concreted.type"
 
 import { User } from "./entities/user.entity"
+import { calculateTotalWorkExperienceMonths } from "./lib/calculate-total-work-experience-months"
 
 @Injectable()
 export class UsersService {
@@ -57,6 +58,11 @@ export class UsersService {
 
     if (!user) {
       throw new NotFoundException("User not found") // TODO: unified exception
+    }
+
+    if (user.candidate) {
+      user.candidate.totalWorkExperienceMonths =
+        calculateTotalWorkExperienceMonths(user.candidate.workExperience)
     }
 
     return user

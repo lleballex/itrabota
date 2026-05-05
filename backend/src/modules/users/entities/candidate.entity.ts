@@ -81,6 +81,8 @@ export class Candidate extends BaseEntity {
   @OneToMany(() => WorkExperienceItem, (item) => item.candidate)
   workExperience?: WorkExperienceItem[]
 
+  totalWorkExperienceMonths?: number
+
   @OneToOne(() => Attachment, { nullable: true, onDelete: "SET NULL" })
   @JoinColumn()
   avatar?: Attachment | null

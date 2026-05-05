@@ -17,6 +17,7 @@ import {
 import { UsersService } from "./users.service"
 import { Candidate } from "./entities/candidate.entity"
 import { ICandidatesSearchParams } from "./interfaces/candidates-service.interface"
+import { calculateTotalWorkExperienceMonths } from "./lib/calculate-total-work-experience-months"
 
 @Injectable()
 export class CandidatesService {
@@ -33,6 +34,7 @@ export class CandidatesService {
       .createQueryBuilder("candidate")
       .leftJoinAndSelect("candidate.user", "user")
       .leftJoinAndSelect("candidate.city", "city")
+      .leftJoinAndSelect("candidate.specialization", "specialization")
       .leftJoinAndSelect("candidate.avatar", "avatar")
       .leftJoinAndSelect("candidate.skills", "skills")
       .leftJoinAndSelect("candidate.workExperience", "workExperienceItem")
@@ -68,6 +70,14 @@ export class CandidatesService {
     return qb
   }
 
+  private attachTotalWorkExperienceMonths<T extends Candidate>(candidate: T) {
+    candidate.totalWorkExperienceMonths = calculateTotalWorkExperienceMonths(
+      candidate.workExperience,
+    )
+
+    return candidate
+  }
+
   private async findOne(
     where: FindOptionsWhere<Candidate>,
     manager?: EntityManager,
@@ -80,7 +90,7 @@ export class CandidatesService {
       throw new NotFoundException("Candidate not found") // TODO: unified exception
     }
 
-    return candidate
+    return this.attachTotalWorkExperienceMonths(candidate)
   }
 
   async findOneById(id: string, manager?: EntityManager) {
@@ -95,7 +105,11 @@ export class CandidatesService {
 
     const qb = this.createQB(params).andWhere("candidate.isHidden = false")
 
-    return qb.getMany()
+    const candidates = await qb.getMany()
+
+    return candidates.map((candidate) =>
+      this.attachTotalWorkExperienceMonths(candidate),
+    )
   }
 
   async findOneForRecruiterById(id: string, user_: ICurrentUser) {

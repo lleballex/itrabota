@@ -29,6 +29,7 @@ export interface Candidate extends BaseEntity {
   specialization?: Specialization | null
   skills?: Skill[]
   workExperience?: WorkExperienceItem[]
+  totalWorkExperienceMonths?: number
   avatar?: Attachment | null
   user?: User
 }
