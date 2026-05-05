@@ -12,6 +12,7 @@ import Button from "@/components/ui/Button"
 import VacancyDetailed from "@/components/base/vacancy/VacancyDetailed"
 import ApplicationDetailed from "@/components/base/application/ApplicationDetailed"
 import { Application } from "@/types/entities/application"
+import CandidateDetailed from "@/components/base/candidate/CandidateDetailed"
 
 const LoadedContent = ({
   application,
@@ -25,7 +26,13 @@ const LoadedContent = ({
   >("application")
 
   return (
-    <div className="flex flex-col gap-6 h-[calc(100dvh-var(--spacing-screen)*2-var(--height-control)-var(--spacing)*5)] min-h-0">
+    <div
+      className={
+        activeTab === "application"
+          ? "flex flex-col gap-6 h-[calc(100dvh-var(--spacing-screen)*2-var(--height-control)-var(--spacing)*5)] min-h-0"
+          : "flex flex-col gap-6"
+      }
+    >
       <HighlightList.Root
         className="flex flex-row border border-border p-1 rounded shrink-0"
         highlightClassName="bg-primary"
@@ -63,7 +70,13 @@ const LoadedContent = ({
         <VacancyDetailed vacancy={application.vacancy} />
       )}
 
-      {activeTab === "candidate" && "*candidate*"}
+      {activeTab === "candidate" && application.candidate && (
+        <CandidateDetailed
+          candidate={application.candidate}
+          role={UserRole.Recruiter}
+          withInviteAction={false}
+        />
+      )}
 
       {activeTab === "application" && application.vacancy && (
         <div className="grow min-h-0">

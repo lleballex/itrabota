@@ -25,6 +25,7 @@ import InviteCandidateModal from "./InviteCandidateModal"
 interface Props {
   candidate: Candidate
   role: UserRole
+  withInviteAction?: boolean
 }
 
 interface ContactItem {
@@ -33,7 +34,11 @@ interface ContactItem {
   href: string
 }
 
-export default function CandidateDetailed({ candidate, role }: Props) {
+export default function CandidateDetailed({
+  candidate,
+  role,
+  withInviteAction = role === UserRole.Recruiter,
+}: Props) {
   const [isInviteModalActive, setIsInviteModalActive] = useState(false)
   const age = Math.max(dayjs().diff(candidate.bornAt, "year"), 0)
   const headerItems: string[] = [
@@ -208,7 +213,7 @@ export default function CandidateDetailed({ candidate, role }: Props) {
           </div>
         )}
 
-        {role === UserRole.Recruiter && (
+        {withInviteAction && (
           <div className="flex self-center items-center gap-2 sticky bottom-[var(--spacing-screen)]">
             <Button type="glass" onClick={() => setIsInviteModalActive(true)}>
               Пригласить на вакансию
@@ -217,11 +222,13 @@ export default function CandidateDetailed({ candidate, role }: Props) {
         )}
       </div>
 
-      <InviteCandidateModal
-        candidate={candidate}
-        active={isInviteModalActive}
-        onActiveChange={setIsInviteModalActive}
-      />
+      {withInviteAction && (
+        <InviteCandidateModal
+          candidate={candidate}
+          active={isInviteModalActive}
+          onActiveChange={setIsInviteModalActive}
+        />
+      )}
     </>
   )
 }

@@ -14,6 +14,7 @@ import {
   createCaseInsensitiveSearchExpression,
   normalizeSearchQuery,
 } from "@/common/lib/search"
+import { calculateTotalWorkExperienceMonths } from "@/modules/users/lib/calculate-total-work-experience-months"
 
 import { Application, ApplicationStatus } from "./entities/application.entity"
 import { ApplicationMessagesService } from "./application-messages.service"
@@ -48,6 +49,9 @@ export class ApplicationsService {
       .leftJoinAndSelect("application.candidate", "candidate")
       .leftJoinAndSelect("candidate.user", "candidateUser")
       .leftJoinAndSelect("candidate.city", "candidateCity")
+      .leftJoinAndSelect("candidate.specialization", "candidateSpecialization")
+      .leftJoinAndSelect("candidate.skills", "candidateSkill")
+      .leftJoinAndSelect("candidate.workExperience", "candidateWorkExperience")
       .leftJoinAndSelect("candidate.avatar", "candidateAvatar")
       .leftJoinAndSelect("application.meetings", "meeting")
       .leftJoinAndSelect("meeting.funnelStep", "meetingFunnelStep")
@@ -116,6 +120,11 @@ export class ApplicationsService {
 
     if (!application) {
       throw new NotFoundException("Application not found")
+    }
+
+    if (application.candidate) {
+      application.candidate.totalWorkExperienceMonths =
+        calculateTotalWorkExperienceMonths(application.candidate.workExperience)
     }
 
     return application
