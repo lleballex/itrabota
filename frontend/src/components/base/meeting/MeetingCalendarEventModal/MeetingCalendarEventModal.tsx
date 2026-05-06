@@ -109,11 +109,11 @@ export default function MeetingCalendarEventModal({
     <Modal.Root active={active} onActiveChange={onActiveChange} width={620}>
       <Modal.Header>Детали встречи</Modal.Header>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2">
         <div className="flex flex-col gap-1">
           <p className="text-sm text-fg">Ссылка</p>
           <a
-            className="break-all text-lg font-bold text-primary transition-all hover:opacity-70"
+            className="break-all underline text-primary transition-all hover:opacity-70"
             href={meetingLink}
             rel="noreferrer"
             target="_blank"
@@ -124,23 +124,22 @@ export default function MeetingCalendarEventModal({
 
         <div className="flex flex-col gap-1">
           <p className="text-sm text-fg">Дата и время</p>
-          <p className="text-lg font-bold text-fg-heading">{meetingDateTime}</p>
+          <p>{meetingDateTime}</p>
         </div>
 
         <div className="flex flex-col gap-1">
           <p className="text-sm text-fg">Вакансия</p>
           {vacancyUrl ? (
-            <Button
-              className="justify-start text-[18px]!"
-              type="text"
-              link={{
-                url: vacancyUrl,
-              }}
+            <a
+              className="break-all underline text-primary transition-all hover:opacity-70"
+              href={vacancyUrl}
+              rel="noreferrer"
+              target="_blank"
             >
               {vacancyTitle}
-            </Button>
+            </a>
           ) : (
-            <p className="text-lg font-bold text-fg-heading">{vacancyTitle}</p>
+            <p>{vacancyTitle}</p>
           )}
         </div>
 
@@ -148,19 +147,16 @@ export default function MeetingCalendarEventModal({
           <div className="flex flex-col gap-1">
             <p className="text-sm text-fg">Кандидат</p>
             {candidateUrl ? (
-              <Button
-                className="justify-start text-lg!"
-                type="text"
-                link={{
-                  url: candidateUrl,
-                }}
+              <a
+                className="break-all underline text-primary transition-all hover:opacity-70"
+                href={candidateUrl}
+                rel="noreferrer"
+                target="_blank"
               >
                 {candidateName}
-              </Button>
+              </a>
             ) : (
-              <p className="text-lg font-bold text-fg-heading">
-                {candidateName}
-              </p>
+              <p>{candidateName}</p>
             )}
           </div>
         ) : (
