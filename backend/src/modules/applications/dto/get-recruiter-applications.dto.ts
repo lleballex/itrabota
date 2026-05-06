@@ -11,6 +11,11 @@ export class GetRecruiterApplicationsDto {
   @IsOptional()
   query?: string
 
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  candidateId?: string
+
   @IsEnum(ApplicationStatus)
   @IsOptional()
   status?: ApplicationStatus

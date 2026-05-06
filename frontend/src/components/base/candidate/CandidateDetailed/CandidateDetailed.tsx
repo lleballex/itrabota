@@ -2,7 +2,7 @@
 
 import dayjs from "dayjs"
 import Image from "next/image"
-import { Fragment, useState } from "react"
+import { Fragment, ReactNode, useState } from "react"
 
 import { Candidate } from "@/types/entities/candidate"
 import { getProfileAvatar } from "@/lib/get-profile-avatar"
@@ -26,6 +26,7 @@ interface Props {
   candidate: Candidate
   role: UserRole
   withInviteAction?: boolean
+  footerChildren?: ReactNode
 }
 
 interface ContactItem {
@@ -38,6 +39,7 @@ export default function CandidateDetailed({
   candidate,
   role,
   withInviteAction = role === UserRole.Recruiter,
+  footerChildren,
 }: Props) {
   const [isInviteModalActive, setIsInviteModalActive] = useState(false)
   const age = Math.max(dayjs().diff(candidate.bornAt, "year"), 0)
@@ -212,6 +214,8 @@ export default function CandidateDetailed({
             ))}
           </div>
         )}
+
+        {footerChildren}
 
         {withInviteAction && (
           <div className="flex self-center items-center gap-2 sticky bottom-[var(--spacing-screen)]">

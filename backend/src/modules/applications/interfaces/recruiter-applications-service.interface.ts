@@ -5,6 +5,7 @@ import {
 
 export interface IRecruiterApplicationsSearchParams {
   vacancyId?: string
+  candidateId?: string
   query?: string
   type?: ApplicationType
   status?: ApplicationStatus

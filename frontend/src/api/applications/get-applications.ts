@@ -10,6 +10,7 @@ import {
 interface RecruiterParams {
   role: typeof UserRole.Recruiter
   query?: string
+  candidateId?: string
   status?: ApplicationStatus
   type?: ApplicationType
 }

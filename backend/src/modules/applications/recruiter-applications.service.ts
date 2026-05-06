@@ -47,6 +47,21 @@ export class RecruiterApplicationsService {
         recruiterId: user.recruiter.id,
       })
 
+    if (dto.candidateId) {
+      qb.andWhere("candidate.id = :candidateId", {
+        candidateId: dto.candidateId,
+      })
+        .leftJoinAndSelect("application.funnelStep", "funnelStep")
+        .leftJoinAndSelect("application.messages", "message")
+        .leftJoinAndSelect("message.meeting", "messageMeeting")
+        .addOrderBy("message.createdAt", "ASC")
+        .addOrderBy(
+          `CASE WHEN message.type = '${ApplicationMessageType.UserMessage}' THEN 1 ELSE 0 END`,
+          "ASC",
+        )
+        .addOrderBy("message.id", "ASC")
+    }
+
     return qb.getMany()
   }
 
