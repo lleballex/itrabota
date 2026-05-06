@@ -4,7 +4,7 @@ import dayjs from "dayjs"
 import ProfileForm from "@/components/base/profile/ProfileForm"
 import Input from "@/components/ui/Input"
 import { useCities } from "@/api/cities/get-cities"
-import Select from "@/components/ui/Select"
+import SearchSelect from "@/components/ui/SearchSelect"
 import DateInput from "@/components/ui/DateInput"
 
 import { FormInputValues, FormOutputValues } from "../../form"
@@ -72,7 +72,7 @@ export default function CandidateProfileMain() {
           control={form.control}
           name="cityId"
           render={({ field, fieldState }) => (
-            <Select
+            <SearchSelect
               {...field}
               className="w-full"
               error={fieldState.error}
@@ -82,6 +82,7 @@ export default function CandidateProfileMain() {
                   ? cities.data.map((city) => ({
                       value: city.id,
                       content: city.name,
+                      searchValue: city.name,
                     }))
                   : []
               }

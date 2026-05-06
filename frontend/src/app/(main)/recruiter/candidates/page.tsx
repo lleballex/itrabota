@@ -14,6 +14,7 @@ import Icon from "@/components/ui/Icon"
 import Input from "@/components/ui/Input"
 import RemoteData from "@/components/ui/RemoteData"
 import Select from "@/components/ui/Select"
+import SearchSelect from "@/components/ui/SearchSelect"
 import { Routes } from "@/config/routes"
 import { Skill } from "@/types/entities/skill"
 import { UserRole } from "@/types/entities/user"
@@ -60,10 +61,9 @@ const DEFAULT_FILTERS: CandidateFilters = {
 
 const getMultiSelectValue = <V,>(
   selectedItems: { value: V; content: ReactNode }[],
-  fallback: string,
 ) => {
   if (!selectedItems.length) {
-    return fallback
+    return null
   }
 
   if (selectedItems.every((item) => typeof item.content === "string")) {
@@ -233,7 +233,7 @@ const Content = () => {
             }
             label="Формат работы"
             renderValue={({ selectedItems }) =>
-              getMultiSelectValue(selectedItems, "Все форматы")
+              getMultiSelectValue(selectedItems)
             }
             items={Object.entries(VacancyFormats).map(([value, content]) => ({
               value: value as VacancyFormat,
@@ -252,7 +252,7 @@ const Content = () => {
             }
             label="Тип занятости"
             renderValue={({ selectedItems }) =>
-              getMultiSelectValue(selectedItems, "Любой тип")
+              getMultiSelectValue(selectedItems)
             }
             items={Object.entries(VacancyEmploymentTypes).map(
               ([value, content]) => ({
@@ -270,7 +270,7 @@ const Content = () => {
             }
             label="График работы"
             renderValue={({ selectedItems }) =>
-              getMultiSelectValue(selectedItems, "Любой график")
+              getMultiSelectValue(selectedItems)
             }
             items={Object.entries(VacancySchedules).map(([value, content]) => ({
               value: value as VacancySchedule,
@@ -278,7 +278,7 @@ const Content = () => {
             }))}
           />
 
-          <Select
+          <SearchSelect
             multiple
             value={filters.specializationIds}
             onChange={(value) =>
@@ -288,52 +288,46 @@ const Content = () => {
               )
             }
             label="Направление"
-            renderValue={({ selectedItems }) =>
-              getMultiSelectValue(selectedItems, "Любое направление")
-            }
             items={
               specializations.status === "success"
                 ? specializations.data.map((specialization) => ({
                     value: specialization.id,
                     content: specialization.name,
+                    searchValue: specialization.name,
                   }))
                 : []
             }
           />
 
-          <Select
+          <SearchSelect
             multiple
             value={filters.cityIds}
             onChange={(value) =>
               updateDrawerFilter("cityIds", Array.isArray(value) ? value : [])
             }
             label="Город"
-            renderValue={({ selectedItems }) =>
-              getMultiSelectValue(selectedItems, "Любой город")
-            }
             items={
               cities.status === "success"
                 ? cities.data.map((city) => ({
                     value: city.id,
                     content: city.name,
+                    searchValue: city.name,
                   }))
                 : []
             }
           />
 
-          <Select
+          <SearchSelect
             multiple
             value={filters.skillIds}
             onChange={(value) =>
               updateDrawerFilter("skillIds", Array.isArray(value) ? value : [])
             }
             label="Навыки"
-            renderValue={({ selectedItems }) =>
-              getMultiSelectValue(selectedItems, "Любые навыки")
-            }
             items={availableSkills.map((skill) => ({
               value: skill.id,
               content: skill.name,
+              searchValue: skill.name,
             }))}
           />
 

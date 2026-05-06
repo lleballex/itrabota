@@ -3,7 +3,7 @@ import { Controller, useFormContext } from "react-hook-form"
 import { useSkills } from "@/api/skills/get-skills"
 import { useSpecializations } from "@/api/specializations/get-specializations"
 import ProfileForm from "@/components/base/profile/ProfileForm"
-import Select from "@/components/ui/Select"
+import SearchSelect from "@/components/ui/SearchSelect"
 
 import { FormInputValues, FormOutputValues } from "../../form"
 import Textarea from "@/components/ui/Textarea"
@@ -20,7 +20,7 @@ export default function CandidateProfileJob() {
           control={form.control}
           name="specializationId"
           render={({ field, fieldState }) => (
-            <Select
+            <SearchSelect
               {...field}
               className="w-full"
               error={fieldState.error}
@@ -30,6 +30,7 @@ export default function CandidateProfileJob() {
                   ? specializations.data.map((specialization) => ({
                       value: specialization.id,
                       content: specialization.name,
+                      searchValue: specialization.name,
                     }))
                   : []
               }
@@ -40,7 +41,7 @@ export default function CandidateProfileJob() {
           control={form.control}
           name="skillIds"
           render={({ field, fieldState }) => (
-            <Select
+            <SearchSelect
               {...field}
               multiple
               className="w-full"
@@ -51,6 +52,7 @@ export default function CandidateProfileJob() {
                   ? skills.data.map((skill) => ({
                       value: skill.id,
                       content: skill.name,
+                      searchValue: skill.name,
                     }))
                   : []
               }

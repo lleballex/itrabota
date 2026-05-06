@@ -2,6 +2,7 @@ import { Controller, useFormContext } from "react-hook-form"
 
 import Input from "@/components/ui/Input"
 import Select from "@/components/ui/Select"
+import SearchSelect from "@/components/ui/SearchSelect"
 import {
   VacancyEmploymentTypes,
   VacancyFormats,
@@ -43,7 +44,7 @@ export default function VacancyFormMain() {
             control={form.control}
             name="specializationId"
             render={({ field, fieldState }) => (
-              <Select
+              <SearchSelect
                 {...field}
                 className="w-full"
                 error={fieldState.error}
@@ -53,6 +54,7 @@ export default function VacancyFormMain() {
                     ? specializations.data.map((specialization) => ({
                         value: specialization.id,
                         content: specialization.name,
+                        searchValue: specialization.name,
                       }))
                     : []
                 }
@@ -137,7 +139,7 @@ export default function VacancyFormMain() {
             control={form.control}
             name="cityId"
             render={({ field, fieldState }) => (
-              <Select
+              <SearchSelect
                 {...field}
                 className="w-full"
                 error={fieldState.error}
@@ -147,6 +149,7 @@ export default function VacancyFormMain() {
                     ? cities.data.map((city) => ({
                         value: city.id,
                         content: city.name,
+                        searchValue: city.name,
                       }))
                     : []
                 }

@@ -1,0 +1,7 @@
+.trigger:has(+ .content:popover-open) .triggerIndicator {
+  rotate: 180deg;
+}
+
+.content {
+  width: anchor-size(width);
+}
