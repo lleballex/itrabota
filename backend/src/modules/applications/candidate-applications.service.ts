@@ -46,7 +46,7 @@ export class CandidateApplicationsService {
     const user = await this.usersService.findFilledCandidateById(user_.id)
 
     const qb = this.applicationsService
-      ._createQB(dto)
+      ._createQB({ ...dto, searchMode: "candidate" })
       .andWhere("candidate.id = :candidateId", {
         candidateId: user.candidate.id,
       })

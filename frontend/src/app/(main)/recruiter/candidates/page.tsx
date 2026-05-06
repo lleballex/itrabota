@@ -185,7 +185,7 @@ const Content = () => {
             prefix={<Icon icon="search" />}
             value={filters.query}
             onChange={(value) => updateFilters("query", value)}
-            placeholder="Поиск"
+            placeholder="Поиск по соискателям"
           />
 
           <Button

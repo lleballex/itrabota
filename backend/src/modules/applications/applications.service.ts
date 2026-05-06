@@ -4,16 +4,13 @@ import {
   NotFoundException,
 } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
-import { Brackets, EntityManager, FindOptionsWhere, Repository } from "typeorm"
+import { EntityManager, FindOptionsWhere, Repository } from "typeorm"
 
 import { Vacancy } from "@/modules/vacancies/entities/vacancy.entity"
 import { Candidate } from "@/modules/users/entities/candidate.entity"
 import { UserRole } from "@/modules/users/types/user-role"
 import { NotificationsService } from "@/modules/notifications/notifications.service"
-import {
-  createCaseInsensitiveSearchExpression,
-  normalizeSearchQuery,
-} from "@/common/lib/search"
+import { applyTokenizedCaseInsensitiveSearch } from "@/common/lib/search"
 import { calculateTotalWorkExperienceMonths } from "@/modules/users/lib/calculate-total-work-experience-months"
 
 import { Application, ApplicationStatus } from "./entities/application.entity"
@@ -63,24 +60,26 @@ export class ApplicationsService {
       })
     }
 
-    const query = normalizeSearchQuery(params?.query)
+    const searchExpressions = ["vacancy.title"]
 
-    if (query) {
-      const vacancyTitleSearch =
-        createCaseInsensitiveSearchExpression("vacancy.title")
-      const candidateFullNameSearch = createCaseInsensitiveSearchExpression(
+    if (params?.searchMode === "candidate") {
+      searchExpressions.push("company.name")
+    } else if (params?.searchMode === "recruiter") {
+      searchExpressions.push(
+        "candidate.firstName",
+        "candidate.lastName",
+        "candidate.patronymic",
         "concat_ws(' ', candidate.lastName, candidate.firstName, candidate.patronymic)",
-      )
-
-      qb.andWhere(
-        new Brackets((qb) => {
-          qb.where(`${vacancyTitleSearch} LIKE :query`).orWhere(
-            `${candidateFullNameSearch} LIKE :query`,
-          )
-        }),
-        { query: `%${query}%` },
+        "concat_ws(' ', candidate.firstName, candidate.lastName, candidate.patronymic)",
       )
     }
+
+    applyTokenizedCaseInsensitiveSearch(
+      qb,
+      params?.query,
+      searchExpressions,
+      "applicationSearch",
+    )
 
     if (params?.type) {
       qb.andWhere("application.type = :type", { type: params?.type })

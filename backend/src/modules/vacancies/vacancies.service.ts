@@ -20,10 +20,7 @@ import { WorkExperienceItem } from "@/modules/users/entities/work-experence-item
 import { UserRole } from "@/modules/users/types/user-role"
 import { ApplicationsService } from "@/modules/applications/applications.service"
 import { CandidatesService } from "@/modules/users/candidates.service"
-import {
-  createCaseInsensitiveSearchExpression,
-  normalizeSearchQuery,
-} from "@/common/lib/search"
+import { applyTokenizedCaseInsensitiveSearch } from "@/common/lib/search"
 import { isNullish } from "@/common/lib/is-nullish"
 
 import {
@@ -152,16 +149,24 @@ export class VacanciesService {
     qb: SelectQueryBuilder<Vacancy>,
     filters: VacancyFilters,
   ) {
-    const query = normalizeSearchQuery(filters.query)
-
-    if (query) {
-      qb.andWhere(
-        `${createCaseInsensitiveSearchExpression("vacancy.title")} LIKE :query`,
-        {
-          query: `%${query}%`,
-        },
-      )
-    }
+    applyTokenizedCaseInsensitiveSearch(
+      qb,
+      filters.query,
+      [
+        "vacancy.title",
+        "company.name",
+        "skills.name",
+        "industry.name",
+        "specialization.name",
+        "city.name",
+        "vacancy.description",
+        "vacancy.requirements",
+        "vacancy.niceToHave",
+        "vacancy.responsibilities",
+        "vacancy.conditions",
+      ],
+      "vacancySearch",
+    )
 
     if (filters.employmentTypes?.length) {
       qb.andWhere('vacancy."employmentType" IN (:...employmentTypes)', {

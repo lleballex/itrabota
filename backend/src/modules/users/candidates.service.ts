@@ -5,7 +5,6 @@ import {
 } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import {
-  Brackets,
   DataSource,
   DeepPartial,
   EntityManager,
@@ -15,10 +14,7 @@ import {
 } from "typeorm"
 
 import { ICurrentUser } from "@/modules/auth/interfaces/current-user.interface"
-import {
-  createCaseInsensitiveSearchExpression,
-  normalizeSearchQuery,
-} from "@/common/lib/search"
+import { applyTokenizedCaseInsensitiveSearch } from "@/common/lib/search"
 
 import { UsersService } from "./users.service"
 import { Candidate } from "./entities/candidate.entity"
@@ -63,32 +59,24 @@ export class CandidatesService {
       .leftJoinAndSelect("candidate.workExperience", "workExperienceItem")
       .orderBy("candidate.createdAt", "DESC")
 
-    const query = normalizeSearchQuery(params?.query)
-
-    if (query) {
-      const firstNameSearch = createCaseInsensitiveSearchExpression(
+    applyTokenizedCaseInsensitiveSearch(
+      qb,
+      params?.query,
+      [
         "candidate.firstName",
-      )
-      const lastNameSearch =
-        createCaseInsensitiveSearchExpression("candidate.lastName")
-      const patronymicSearch = createCaseInsensitiveSearchExpression(
+        "candidate.lastName",
         "candidate.patronymic",
-      )
-      const fullNameSearch = createCaseInsensitiveSearchExpression(
         "concat_ws(' ', candidate.lastName, candidate.firstName, candidate.patronymic)",
-      )
-
-      qb.andWhere(
-        new Brackets((searchQb) => {
-          searchQb
-            .where(`${firstNameSearch} LIKE :query`)
-            .orWhere(`${lastNameSearch} LIKE :query`)
-            .orWhere(`${patronymicSearch} LIKE :query`)
-            .orWhere(`${fullNameSearch} LIKE :query`)
-        }),
-        { query: `%${query}%` },
-      )
-    }
+        "concat_ws(' ', candidate.firstName, candidate.lastName, candidate.patronymic)",
+        "city.name",
+        "skills.name",
+        "specialization.name",
+        "user.email",
+        "candidate.phoneNumber",
+        "candidate.tgUsername",
+      ],
+      "candidateSearch",
+    )
 
     if (params?.employmentTypes?.length) {
       qb.andWhere('candidate."employmentType" IN (:...employmentTypes)', {

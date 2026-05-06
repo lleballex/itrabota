@@ -12,6 +12,7 @@ export interface IApplicationsSearchParams {
   query?: string
   type?: ApplicationType
   status?: ApplicationStatus
+  searchMode?: "candidate" | "recruiter"
 }
 
 export interface IApplicationCreateData {
