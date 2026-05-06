@@ -23,9 +23,10 @@ import { useUpdateVacancy } from "@/api/vacancies/update-vacancy"
 
 interface Props {
   vacancy?: Vacancy
+  hasApplications?: boolean
 }
 
-export default function VacancyForm({ vacancy }: Props) {
+export default function VacancyForm({ vacancy, hasApplications }: Props) {
   const router = useRouter()
 
   const { addToast } = useToastsStore()
@@ -60,11 +61,21 @@ export default function VacancyForm({ vacancy }: Props) {
 
   const { mutate: create, status: createStatus } = useCreateVacancy()
   const { mutate: update, status: updateStatus } = useUpdateVacancy()
+  const isFunnelEditingDisabled = Boolean(vacancy && hasApplications)
 
   const onSubmit = form.handleSubmit((data) => {
     if (vacancy) {
+      const dataToUpdate: Partial<FormOutputValues> = { ...data }
+
+      if (isFunnelEditingDisabled) {
+        delete dataToUpdate.funnelSteps
+      }
+
       update(
-        { id: vacancy.id, ...data },
+        {
+          id: vacancy.id,
+          ...dataToUpdate,
+        },
         {
           onSuccess: () => {
             addToast({
@@ -103,7 +114,9 @@ export default function VacancyForm({ vacancy }: Props) {
           <p className="text-lg">{step.label}</p>
         </div>
 
-        <step.Component />
+        <step.Component
+          isFunnelEditingDisabled={isFunnelEditingDisabled}
+        />
 
         <div className="flex items-center self-center gap-2 mt-auto sticky bottom-[var(--spacing-screen)]">
           {prevStep && (

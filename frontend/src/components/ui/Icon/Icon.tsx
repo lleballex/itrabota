@@ -9,6 +9,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   ChevronUpIcon,
+  CircleAlert,
   FilesIcon,
   FileTextIcon,
   HouseIcon,
@@ -54,6 +55,9 @@ const ICONS = {
   },
   chevronUp: {
     Component: ChevronUpIcon,
+  },
+  circleAlert: {
+    Component: CircleAlert,
   },
   cross: {
     Component: XIcon,

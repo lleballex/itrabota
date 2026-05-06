@@ -13,6 +13,7 @@ interface Props {
   label?: string
   error?: FormError
   value?: string | null
+  disabled?: boolean
   onChange?: (val: string | null) => void
 }
 
@@ -21,6 +22,7 @@ export default function Textarea({
   label,
   error,
   value: baseValue,
+  disabled,
   onChange: baseOnChange,
 }: Props) {
   const editorRef = useRef<HTMLDivElement>(null)
@@ -54,7 +56,10 @@ export default function Textarea({
       <div
         className={classNames(
           "field flex-col gap-0.5 items-stretch py-2 h-auto",
-          { "border-danger": error }
+          {
+            "border-danger": error,
+            "opacity-60": disabled,
+          }
         )}
       >
         {label && <FieldLabel>{label}</FieldLabel>}
@@ -62,7 +67,7 @@ export default function Textarea({
           className="outline-none"
           ref={editorRef}
           onInput={onChange}
-          contentEditable
+          contentEditable={!disabled}
         />
       </div>
     </FieldContainer>

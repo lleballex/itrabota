@@ -21,6 +21,7 @@ interface Props {
   error?: FormError
   prefix?: ReactNode
   suffix?: ReactNode
+  disabled?: boolean
   onChange?: (val: string | null) => void
 }
 
@@ -33,6 +34,7 @@ export default function Input({
   error,
   prefix,
   suffix,
+  disabled,
   onChange: baseOnChange,
 }: Props) {
   const id = useId()
@@ -53,6 +55,7 @@ export default function Input({
       <div
         className={classNames("field", {
           "border-danger": error,
+          "opacity-60": disabled,
         })}
       >
         {prefix}
@@ -63,6 +66,7 @@ export default function Input({
           type={type}
           placeholder={placeholder}
           value={value ?? ""}
+          disabled={disabled}
           onChange={onChange}
         />
         {suffix}

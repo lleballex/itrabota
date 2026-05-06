@@ -10,6 +10,7 @@ interface Props {
   className?: string
   error?: FormError
   value?: boolean
+  disabled?: boolean
   onChange?: (val: boolean) => void
   children?: ReactNode
 }
@@ -18,6 +19,7 @@ export default function Checkbox({
   className,
   error,
   value: baseValue,
+  disabled,
   onChange: baseOnChange,
   children,
 }: Props) {
@@ -30,8 +32,15 @@ export default function Checkbox({
   return (
     <FieldContainer className={className} error={error}>
       <div
-        className="flex items-center gap-1 cursor-pointer"
-        onClick={() => onChange(!value)}
+        className={classNames("flex items-center gap-1", {
+          "cursor-pointer": !disabled,
+          "cursor-not-allowed opacity-60": disabled,
+        })}
+        onClick={() => {
+          if (!disabled) {
+            onChange(!value)
+          }
+        }}
       >
         <div
           className={classNames(

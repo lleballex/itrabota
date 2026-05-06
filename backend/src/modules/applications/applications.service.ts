@@ -302,6 +302,18 @@ export class ApplicationsService {
     }
   }
 
+  async hasForVacancy(vacancyId: string, manager?: EntityManager) {
+    const repo = manager?.getRepository(Application) ?? this.applicationsRepo
+
+    const count = await repo.count({
+      where: {
+        vacancy: { id: vacancyId },
+      },
+    })
+
+    return count > 0
+  }
+
   getNextFunnelStep(application: Application) {
     const funnelSteps = application.vacancy?.funnelSteps ?? []
 

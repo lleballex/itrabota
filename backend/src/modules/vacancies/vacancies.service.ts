@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   ForbiddenException,
   InternalServerErrorException,
   Injectable,
@@ -665,6 +666,19 @@ export class VacanciesService {
       }
 
       const vacanciesRepo = manager.getRepository(Vacancy)
+
+      if (funnelStepsDto) {
+        const hasApplications = await this.applicationsService.hasForVacancy(
+          id,
+          manager,
+        )
+
+        if (hasApplications) {
+          throw new ConflictException(
+            "Нельзя редактировать воронку вакансии, по которой уже есть отклики",
+          )
+        }
+      }
 
       const updatedVacancy = vacanciesRepo.create({
         ...dto,

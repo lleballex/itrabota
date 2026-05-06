@@ -14,6 +14,7 @@ interface TrueButtonProps extends BaseProps {
   popoverTarget?: string
   htmlType?: "button" | "submit"
   pending?: boolean
+  disabled?: boolean
   onClick?: () => void
   link?: never
 }
@@ -22,6 +23,7 @@ interface LinkProps extends BaseProps {
   popoverTarget?: never
   htmlType?: never
   pending?: never
+  disabled?: never
   onClick?: never
   link: {
     url: string
@@ -36,6 +38,7 @@ export default function Button({
   popoverTarget,
   htmlType,
   pending: isPending,
+  disabled,
   onClick,
   link,
 }: TrueButtonProps | LinkProps) {
@@ -66,10 +69,13 @@ export default function Button({
 
   return (
     <button
-      className={classNames(className, style, "cursor-pointer")}
+      className={classNames(className, style, {
+        "cursor-pointer": !disabled && !isPending,
+        "cursor-not-allowed opacity-60": disabled,
+      })}
       type={htmlType ?? "button"}
       popoverTarget={popoverTarget}
-      disabled={isPending}
+      disabled={isPending || disabled}
       onClick={onClick}
     >
       {children}

@@ -14,8 +14,11 @@ import {
   FormInputValues,
   FormOutputValues,
 } from "../form"
+import type { VacancyFormStepProps } from "../form-steps"
 
-export default function VacancyFormFunnel() {
+export default function VacancyFormFunnel({
+  isFunnelEditingDisabled: isEditingDisabled,
+}: VacancyFormStepProps) {
   const form = useFormContext<FormInputValues, unknown, FormOutputValues>()
 
   const {
@@ -30,7 +33,7 @@ export default function VacancyFormFunnel() {
 
   const addFormFunnelStep = () => {
     addFormFunnelStep_(
-      formDefaultFunnelStep as FormOutputValues["funnelSteps"][0]
+      formDefaultFunnelStep as FormOutputValues["funnelSteps"][0],
     )
   }
 
@@ -48,18 +51,28 @@ export default function VacancyFormFunnel() {
 
   return (
     <>
+      {isEditingDisabled && (
+        <div className="flex items-center gap-1.5 rounded border border-border bg-secondary px-3 py-2 text-warning">
+          <Icon icon="circleAlert" />
+          Воронку найма нельзя редактировать, так как по вакансии уже имеются
+          отклики
+        </div>
+      )}
+
       {formFunnelSteps.map((step, stepIdx) => (
         <Fragment key={step.id}>
           <div className="flex flex-col gap-2.5">
             <div className="flex items-center gap-2">
               <Button
                 type="base"
+                disabled={isEditingDisabled}
                 onClick={() => moveFormFunnelStepBackward(stepIdx)}
               >
                 <Icon icon="chevronUp" />
               </Button>
               <Button
                 type="base"
+                disabled={isEditingDisabled}
                 onClick={() => moveFormFunnelStepForward(stepIdx)}
               >
                 <Icon icon="chevronDown" />
@@ -72,11 +85,16 @@ export default function VacancyFormFunnel() {
                     {...field}
                     className="w-full"
                     error={fieldState.error}
+                    disabled={isEditingDisabled}
                     label="Название этапа*"
                   />
                 )}
               />
-              <Button type="base" onClick={() => removeFormFunnelStep(stepIdx)}>
+              <Button
+                type="base"
+                disabled={isEditingDisabled}
+                onClick={() => removeFormFunnelStep(stepIdx)}
+              >
                 <Icon className="text-danger" icon="trash" />
               </Button>
             </div>
@@ -89,6 +107,7 @@ export default function VacancyFormFunnel() {
                   {...field}
                   className="self-start"
                   error={fieldState.error}
+                  disabled={isEditingDisabled}
                 >
                   <span className="flex items-center gap-1">
                     Автоматически назначать видеовстречу для этого этапа
@@ -118,6 +137,7 @@ export default function VacancyFormFunnel() {
                   {...field}
                   className="w-full"
                   error={fieldState.error}
+                  disabled={isEditingDisabled}
                   label="Шаблон приглашения на следующий этап"
                 />
               )}
@@ -131,6 +151,7 @@ export default function VacancyFormFunnel() {
                   {...field}
                   className="w-full"
                   error={fieldState.error}
+                  disabled={isEditingDisabled}
                   label="Шаблон отказа"
                 />
               )}
@@ -146,6 +167,7 @@ export default function VacancyFormFunnel() {
       <Button
         className="self-center"
         type="secondary"
+        disabled={isEditingDisabled}
         onClick={addFormFunnelStep}
       >
         <Icon icon="plus" />

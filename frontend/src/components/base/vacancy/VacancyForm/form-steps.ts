@@ -1,7 +1,12 @@
 import { useState } from "react"
+import type { ComponentType } from "react"
 
 import VacancyFormMain, { vacancyFormMainFields } from "./VacancyFormMain"
 import VacancyFormFunnel, { vacancyFormFunnelFields } from "./VacancyFormFunnel"
+
+export interface VacancyFormStepProps {
+  isFunnelEditingDisabled?: boolean
+}
 
 const formSteps = [
   {
@@ -14,7 +19,11 @@ const formSteps = [
     fields: vacancyFormFunnelFields,
     Component: VacancyFormFunnel,
   },
-]
+] satisfies {
+  label: string
+  fields: readonly string[]
+  Component: ComponentType<VacancyFormStepProps>
+}[]
 
 type FormStepField = (typeof formSteps)[number]["fields"][number]
 
