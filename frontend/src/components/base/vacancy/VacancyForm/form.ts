@@ -18,6 +18,7 @@ const formSchema = z.object({
   format: z.enum(VacancyFormat, { error: "ENUM_NOT_FILLED" }),
   schedule: z.enum(VacancySchedule, { error: "ENUM_NOT_FILLED" }),
   workExperience: z.enum(VacancyWorkExperience, { error: "ENUM_NOT_FILLED" }),
+  skillIds: z.array(formSchemaFields.relation),
   salaryFrom: formSchemaFields.number
     .pipe(z.number().int().positive())
     .nullable(),
@@ -56,6 +57,7 @@ export const getFormDefaultValues = (
   format: vacancy?.format,
   schedule: vacancy?.schedule,
   workExperience: vacancy?.workExperience,
+  skillIds: vacancy?.skills?.map((skill) => skill.id) ?? [],
   salaryFrom: vacancy?.salaryFrom ?? null,
   salaryTo: vacancy?.salaryTo ?? null,
   cityId: vacancy?.city?.id ?? null,

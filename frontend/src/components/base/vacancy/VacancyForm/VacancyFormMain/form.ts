@@ -10,6 +10,7 @@ export const formFields: FieldPath<FormInputValues>[] = [
   "schedule",
   "workExperience",
   "cityId",
+  "skillIds",
   "salaryFrom",
   "salaryTo",
   "description",

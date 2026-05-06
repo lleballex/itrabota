@@ -14,6 +14,7 @@ import Textarea from "@/components/ui/Textarea"
 import Separator from "@/components/ui/Separator"
 import { useSpecializations } from "@/api/specializations/get-specializations"
 import { useCities } from "@/api/cities/get-cities"
+import { useSkills } from "@/api/skills/get-skills"
 
 import { FormInputValues, FormOutputValues } from "../form"
 
@@ -22,6 +23,7 @@ export default function VacancyFormMain() {
 
   const specializations = useSpecializations()
   const cities = useCities()
+  const skills = useSkills()
 
   return (
     <>
@@ -157,6 +159,28 @@ export default function VacancyFormMain() {
             )}
           />
         </div>
+        <Controller
+          control={form.control}
+          name="skillIds"
+          render={({ field, fieldState }) => (
+            <SearchSelect
+              {...field}
+              multiple
+              className="w-full"
+              error={fieldState.error}
+              label="Навыки"
+              items={
+                skills.status === "success"
+                  ? skills.data.map((skill) => ({
+                      value: skill.id,
+                      content: skill.name,
+                      searchValue: skill.name,
+                    }))
+                  : []
+              }
+            />
+          )}
+        />
       </div>
 
       <Separator type="horizontal" />
