@@ -112,7 +112,12 @@ export class ApplicationsService {
       .addOrderBy("applicationMeeting.startsAt", "ASC")
       .addOrderBy("message.createdAt", "ASC")
       .addOrderBy(
-        `CASE WHEN message.type = '${ApplicationMessageType.UserMessage}' THEN 1 ELSE 0 END`,
+        `CASE
+          WHEN message.type = '${ApplicationMessageType.CandidateAccepted}' THEN 0
+          WHEN message.type = '${ApplicationMessageType.MeetingScheduled}' THEN 1
+          WHEN message.type = '${ApplicationMessageType.UserMessage}' THEN 3
+          ELSE 2
+        END`,
         "ASC",
       )
       .addOrderBy("message.id", "ASC")
