@@ -60,7 +60,7 @@ export default function ModalRoot({
         className={classNames(
           className,
           styles.root,
-          "transition-all max-w-[90dvw] max-h-[90dvh]",
+          "max-w-[90dvw] max-h-[90dvh]",
         )}
         role="dialog"
         style={{ width: width }}

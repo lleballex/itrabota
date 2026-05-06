@@ -20,10 +20,10 @@ export default function ModalHeader({ className, children }: Props) {
     <div
       className={classNames(
         "flex items-center justify-between gap-2",
-        className
+        className,
       )}
     >
-      <h2 className="text-h2">{children}</h2>
+      <h2 className="text-h3">{children}</h2>
       <Button type="base" onClick={() => onIsActiveChange(false)}>
         {/* TODO: move values to config */}
         <Icon className="text-[24px]" icon="cross" />
