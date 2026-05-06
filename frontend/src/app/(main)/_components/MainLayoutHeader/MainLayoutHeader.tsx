@@ -6,6 +6,7 @@ import classNames from "classnames"
 import Button from "@/components/ui/Button"
 import { Routes } from "@/config/routes"
 import { useMe } from "@/api/auth/get-me"
+import { useAuthTransitionStore } from "@/stores/auth-transition"
 
 import MainLayoutHeaderUser from "./MainLayoutHeaderUser"
 
@@ -15,6 +16,7 @@ interface Props {
 
 export default function MainLayoutHeader({ className }: Props) {
   const me = useMe()
+  const isLoggingOut = useAuthTransitionStore((state) => state.isLoggingOut)
 
   return (
     <header
@@ -27,7 +29,7 @@ export default function MainLayoutHeader({ className }: Props) {
         </h1>
       </Link>
 
-      {me.status === "success" ? (
+      {isLoggingOut ? null : me.status === "success" ? (
         <MainLayoutHeaderUser user={me.data} />
       ) : (
         <Button type="glass" link={{ url: Routes.login }}>

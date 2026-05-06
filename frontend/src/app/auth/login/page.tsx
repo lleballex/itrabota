@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { useRouter } from "next/navigation"
 
@@ -7,18 +8,24 @@ import Input from "@/components/ui/Input"
 import Button from "@/components/ui/Button"
 import { Routes } from "@/config/routes"
 import { useLogin } from "@/api/auth/login"
+import { useAuthTransitionStore } from "@/stores/auth-transition"
 
 import { formResolver } from "./form"
 import { handleFormApiError } from "@/lib/handle-form-api-error"
 
 export default function LoginPage() {
   const router = useRouter()
+  const finishLogout = useAuthTransitionStore((state) => state.finishLogout)
 
   const form = useForm({
     resolver: formResolver,
   })
 
   const { mutate, status } = useLogin()
+
+  useEffect(() => {
+    finishLogout()
+  }, [finishLogout])
 
   const onSubmit = form.handleSubmit((data) => {
     mutate(data, {

@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation"
 import HighlightList from "@/components/ui/HighlightList"
 import { useMe } from "@/api/auth/get-me"
 import RemoteData from "@/components/ui/RemoteData"
+import { useAuthTransitionStore } from "@/stores/auth-transition"
 
 import { sidebarLinks } from "./links"
 
@@ -18,35 +19,38 @@ export default function MainLayoutSidebar({ className }: Props) {
   const pathname = usePathname()
 
   const me = useMe()
+  const isLoggingOut = useAuthTransitionStore((state) => state.isLoggingOut)
 
   return (
     <nav className={classNames(className, "p-2 border border-border rounded")}>
       {/* TODO: center loader */}
-      <RemoteData
-        data={me}
-        onSuccess={(me) => (
-          <HighlightList.Root
-            className="flex flex-col gap-1.5"
-            highlightClassName="bg-primary rounded-[calc(var(--radius)-var(--spacing)*2)]"
-          >
-            {sidebarLinks[me.role].map((link) => (
-              <HighlightList.Item
-                activeClassName="text-fg-heading"
-                key={link.url}
-                active={pathname === link.url}
-              >
-                <Link
-                  className="flex items-center gap-1.5 p-1 px-1.5 transition-all hover:text-fg-heading"
-                  href={link.url}
+      {!isLoggingOut && (
+        <RemoteData
+          data={me}
+          onSuccess={(me) => (
+            <HighlightList.Root
+              className="flex flex-col gap-1.5"
+              highlightClassName="bg-primary rounded-[calc(var(--radius)-var(--spacing)*2)]"
+            >
+              {sidebarLinks[me.role].map((link) => (
+                <HighlightList.Item
+                  activeClassName="text-fg-heading"
+                  key={link.url}
+                  active={pathname === link.url}
                 >
-                  {link.icon}
-                  {link.title}
-                </Link>
-              </HighlightList.Item>
-            ))}
-          </HighlightList.Root>
-        )}
-      />
+                  <Link
+                    className="flex items-center gap-1.5 p-1 px-1.5 transition-all hover:text-fg-heading"
+                    href={link.url}
+                  >
+                    {link.icon}
+                    {link.title}
+                  </Link>
+                </HighlightList.Item>
+              ))}
+            </HighlightList.Root>
+          )}
+        />
+      )}
     </nav>
   )
 }

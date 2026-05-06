@@ -7,6 +7,7 @@ import { useMe } from "@/api/auth/get-me"
 import { Routes } from "@/config/routes"
 import { User, UserRole } from "@/types/entities/user"
 import Icon from "@/components/ui/Icon"
+import { useAuthTransitionStore } from "@/stores/auth-transition"
 import { useToastsStore } from "@/stores/toasts"
 
 interface Props {
@@ -23,12 +24,18 @@ export default function AuthProvider({
   const router = useRouter()
 
   const { addToast } = useToastsStore()
+  const isLoggingOut = useAuthTransitionStore((state) => state.isLoggingOut)
 
   const me = useMe()
 
   const [children, setChildren] = useState<ReactNode>(null)
 
   useEffect(() => {
+    if (isLoggingOut) {
+      setChildren(null)
+      return
+    }
+
     if (me.status === "success") {
       if (!roles || roles.includes(me.data.role)) {
         const profile = {
@@ -70,7 +77,7 @@ export default function AuthProvider({
       setChildren(<Loader />)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [me, roles, allowNoProfile, Component])
+  }, [me, roles, allowNoProfile, Component, isLoggingOut])
 
   return children
 }
