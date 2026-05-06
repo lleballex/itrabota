@@ -67,6 +67,91 @@ export class CandidatesService {
       )
     }
 
+    if (params?.employmentTypes?.length) {
+      qb.andWhere('candidate."employmentType" IN (:...employmentTypes)', {
+        employmentTypes: params.employmentTypes,
+      })
+    }
+
+    if (params?.formats?.length) {
+      qb.andWhere("candidate.format IN (:...formats)", {
+        formats: params.formats,
+      })
+    }
+
+    if (params?.schedules?.length) {
+      qb.andWhere("candidate.schedule IN (:...schedules)", {
+        schedules: params.schedules,
+      })
+    }
+
+    if (params?.specializationIds?.length) {
+      qb.andWhere("specialization.id IN (:...specializationIds)", {
+        specializationIds: params.specializationIds,
+      })
+    }
+
+    if (params?.cityIds?.length) {
+      qb.andWhere("city.id IN (:...cityIds)", {
+        cityIds: params.cityIds,
+      })
+    }
+
+    if (params?.skillIds?.length) {
+      qb.andWhere("skills.id IN (:...skillIds)", {
+        skillIds: params.skillIds,
+      })
+    }
+
+    if (params?.salaryFrom) {
+      qb.andWhere(
+        '(candidate."salaryFrom" IS NULL OR candidate."salaryFrom" >= :salaryFrom)',
+        {
+          salaryFrom: params.salaryFrom,
+        },
+      )
+    }
+
+    if (params?.salaryTo) {
+      qb.andWhere(
+        '(candidate."salaryTo" IS NULL OR candidate."salaryTo" <= :salaryTo)',
+        {
+          salaryTo: params.salaryTo,
+        },
+      )
+    }
+
+    if (params?.ageFrom !== undefined) {
+      qb.andWhere("date_part('year', age(candidate.\"bornAt\")) >= :ageFrom", {
+        ageFrom: params.ageFrom,
+      })
+    }
+
+    if (params?.ageTo !== undefined) {
+      qb.andWhere("date_part('year', age(candidate.\"bornAt\")) <= :ageTo", {
+        ageTo: params.ageTo,
+      })
+    }
+
+    if (params?.totalWorkExperienceMonthsMin !== undefined) {
+      qb.andWhere(
+        `COALESCE((
+          SELECT SUM(GREATEST(
+            (
+              date_part('year', age(COALESCE("workExperience"."endedAt", now()), "workExperience"."startedAt")) * 12
+              + date_part('month', age(COALESCE("workExperience"."endedAt", now()), "workExperience"."startedAt"))
+            )::int,
+            0
+          ))
+          FROM "work_experience_item" "workExperience"
+          WHERE "workExperience"."candidateId" = candidate.id
+        ), 0) >= :totalWorkExperienceMonthsMin`,
+        {
+          totalWorkExperienceMonthsMin: params.totalWorkExperienceMonthsMin,
+        },
+      )
+    }
+
     return qb
   }
 
