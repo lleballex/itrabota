@@ -45,18 +45,18 @@ export class MeetingsService {
 
     if (application.candidate?.id !== user.candidate.id) {
       throw new ForbiddenException(
-        "You are not allowed to access meeting slots for this application",
+        "Вы не можете смотреть слоты встречи для этого процесса найма",
       )
     }
 
     if (!application.funnelStep?.shouldCreateCall) {
       throw new ConflictException(
-        "This application stage does not require meeting scheduling",
+        "Для этого этапа не требуется назначать встречу",
       )
     }
 
     if (!application.vacancy?.recruiter?.id) {
-      throw new ConflictException("Application recruiter is not defined")
+      throw new ConflictException("Рекрутер для этого процесса не указан")
     }
 
     const slots = await this.getAvailableSlotsForRecruiter(
@@ -107,7 +107,7 @@ export class MeetingsService {
       .getOne()
 
     if (overlapMeeting) {
-      throw new ConflictException("Meeting slot is no longer available")
+      throw new ConflictException("Это время встречи уже недоступно")
     }
   }
 
@@ -203,7 +203,7 @@ export class MeetingsService {
     const slot = new Date(meetingStartsAt)
 
     if (Number.isNaN(slot.getTime())) {
-      throw new BadRequestException("meetingStartsAt must be a valid ISO date")
+      throw new BadRequestException("Введите корректную дату и время встречи")
     }
 
     const slotMoscowDate = this.utcDateToMoscowDate(slot)
@@ -211,7 +211,7 @@ export class MeetingsService {
       this.getWorkdayUtcBounds(slotMoscowDate)
 
     if (slot < workdayStartUtc || slot >= workdayEndUtc) {
-      throw new ConflictException("Meeting slot is outside working hours")
+      throw new ConflictException("Время встречи вне рабочего расписания")
     }
 
     if (
@@ -219,11 +219,11 @@ export class MeetingsService {
       slot.getUTCSeconds() !== 0 ||
       slot.getUTCMilliseconds() !== 0
     ) {
-      throw new ConflictException("Meeting slot must start on a full hour")
+      throw new ConflictException("Встреча должна начинаться в начале часа")
     }
 
     if (slot <= new Date()) {
-      throw new ConflictException("Meeting slot must be in the future")
+      throw new ConflictException("Встреча должна быть назначена на будущее")
     }
 
     return slot
@@ -231,7 +231,7 @@ export class MeetingsService {
 
   private getWorkdayUtcBounds(date: string) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-      throw new BadRequestException("date must be in YYYY-MM-DD format")
+      throw new BadRequestException("Дата должна быть в формате ГГГГ-ММ-ДД")
     }
 
     return {
@@ -245,11 +245,11 @@ export class MeetingsService {
     const toDate = new Date(to)
 
     if (Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime())) {
-      throw new BadRequestException("from and to must be valid ISO dates")
+      throw new BadRequestException("Введите корректный диапазон дат")
     }
 
     if (fromDate >= toDate) {
-      throw new BadRequestException("from must be earlier than to")
+      throw new BadRequestException("Дата начала должна быть раньше даты конца")
     }
 
     return { fromDate, toDate }

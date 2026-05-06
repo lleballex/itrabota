@@ -58,7 +58,7 @@ export class AuthService {
 
   async register(dto: RegisterDto): Promise<string> {
     if (!(await this.usersService.isEmailAvailable(dto.email))) {
-      throw new BadRequestException("Email is already in use") // TODO: unufied exception with key
+      throw new BadRequestException("Эта почта уже используется") // TODO: unufied exception with key
     }
 
     const user = await this.usersService.create({

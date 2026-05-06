@@ -83,11 +83,13 @@ export class RecruiterApplicationsService {
       )
 
       if (vacancy.recruiter?.id !== user.recruiter.id) {
-        throw new ForbiddenException("You are not the author of the vacancy")
+        throw new ForbiddenException("Вы не являетесь автором этой вакансии")
       }
 
       if (vacancy.status !== VacancyStatus.Active) {
-        throw new ConflictException("Cannot invite to not active vacancy")
+        throw new ConflictException(
+          "Нельзя пригласить кандидата на неактивную вакансию",
+        )
       }
 
       const candidate = await this.candidatesService.findOneForRecruiterById(
@@ -136,7 +138,7 @@ export class RecruiterApplicationsService {
 
       if (application.vacancy?.recruiter?.id !== user.recruiter.id) {
         throw new ForbiddenException(
-          "You are not allowed to reject this application",
+          "Вы не можете отклонить этот процесс найма",
         )
       }
 
@@ -170,19 +172,19 @@ export class RecruiterApplicationsService {
 
       if (application.status !== ApplicationStatus.Pending) {
         throw new ConflictException(
-          "Only pending applications can be moved to next step",
+          "На следующий этап можно перевести только активный процесс найма",
         )
       }
 
       if (application.vacancy?.recruiter?.id !== user.recruiter.id) {
         throw new ForbiddenException(
-          "You are not allowed to move this application to next step",
+          "Вы не можете перевести этот процесс найма на следующий этап",
         )
       }
 
       if (this.applicationsService.isWaitingForCandidateResponse(application)) {
         throw new ConflictException(
-          "Cannot move application until candidate responds to the invitation",
+          "Нельзя перейти дальше, пока кандидат не ответит на приглашение",
         )
       }
 

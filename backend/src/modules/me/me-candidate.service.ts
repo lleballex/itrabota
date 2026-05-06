@@ -32,7 +32,7 @@ export class MeCandidateService {
       email &&
       !(await this.usersService.isEmailAvailable(email, { userId, manager }))
     ) {
-      throw new ConflictException("Email is already in use")
+      throw new ConflictException("Эта почта уже используется")
     }
   }
 

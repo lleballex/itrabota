@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common"
+import { Injectable, NotFoundException } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import { DeepPartial, EntityManager, Repository } from "typeorm"
 
@@ -16,7 +16,7 @@ export class RecruitersService {
     const recruiter = await repo.findOneBy({ id })
 
     if (!recruiter) {
-      throw new Error("Recruiter not found")
+      throw new NotFoundException("Рекрутер не найден")
     }
 
     return recruiter

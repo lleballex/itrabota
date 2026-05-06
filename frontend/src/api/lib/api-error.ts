@@ -11,7 +11,7 @@ export const transformErrorToApiError = (error: Error) => {
 
   if (error instanceof AxiosError) {
     apiError = transformAxiosErrorToApiError(error) ?? {
-      message: error.message,
+      message: getFallbackAxiosErrorMessage(error),
       statusCode: error.status ?? 500,
     }
   } else {
@@ -33,7 +33,7 @@ const transformAxiosErrorToApiError = (e: AxiosError): ApiError | null => {
     data &&
     typeof data === "object" &&
     "message" in data &&
-    typeof data.message === "string"
+    (typeof data.message === "string" || Array.isArray(data.message))
   ) {
     let fields: ApiError["fields"]
 
@@ -42,13 +42,41 @@ const transformAxiosErrorToApiError = (e: AxiosError): ApiError | null => {
     }
 
     return {
-      message: data.message,
+      message: normalizeApiMessage(data.message),
       statusCode: e.response!.status,
       fields,
     }
   }
 
   return null
+}
+
+const normalizeApiMessage = (message: string | unknown[]) => {
+  if (Array.isArray(message)) {
+    return "Проверьте правильность заполнения полей"
+  }
+
+  return translateKnownApiMessage(message)
+}
+
+const getFallbackAxiosErrorMessage = (error: AxiosError) => {
+  if (!error.response) {
+    return "Не удалось подключиться к серверу"
+  }
+
+  return "Что-то пошло не так"
+}
+
+const translateKnownApiMessage = (message: string) => {
+  const messages: Record<string, string> = {
+    "Bad Request": "Некорректный запрос",
+    Forbidden: "Доступ запрещен",
+    "Internal server error": "Что-то пошло не так",
+    "Not Found": "Не найдено",
+    Unauthorized: "Нужно войти в аккаунт",
+  }
+
+  return messages[message] ?? message
 }
 
 const isApiErrorFields = (data: unknown): data is ApiError["fields"] => {

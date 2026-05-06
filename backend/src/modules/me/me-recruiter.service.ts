@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from "@nestjs/common"
+import {
+  ConflictException,
+  Injectable,
+  UnprocessableEntityException,
+} from "@nestjs/common"
 import { DataSource, EntityManager } from "typeorm"
 
 import { UsersService } from "@/modules/users/users.service"
@@ -34,7 +38,7 @@ export class MeRecruiterService {
       email &&
       !(await this.usersService.isEmailAvailable(email, { userId, manager }))
     ) {
-      throw new ConflictException("Email is already in use")
+      throw new ConflictException("Эта почта уже используется")
     }
   }
 
@@ -133,7 +137,9 @@ export class MeRecruiterService {
 
       if (companyDto) {
         if (!user.recruiter.company) {
-          throw new Error("Recruiter company not specified")
+          throw new UnprocessableEntityException(
+            "Компания рекрутера не указана",
+          )
         }
 
         const companyLogo = await this.handleCompanyLogoUpsert(

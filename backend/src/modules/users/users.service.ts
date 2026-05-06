@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from "@nestjs/common"
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+} from "@nestjs/common"
 import {
   DeepPartial,
   EntityManager,
@@ -57,7 +62,7 @@ export class UsersService {
     const user = await qb.getOne()
 
     if (!user) {
-      throw new NotFoundException("User not found") // TODO: unified exception
+      throw new NotFoundException("Пользователь не найден") // TODO: unified exception
     }
 
     if (user.candidate) {
@@ -82,7 +87,7 @@ export class UsersService {
     const user = await this.findOneById(id, manager)
 
     if (user.role !== UserRole.Recruiter) {
-      throw new Error("User must be a recruiter")
+      throw new ForbiddenException("Пользователь не является рекрутером")
     }
 
     return user as WithConcreted<typeof user, "role", typeof UserRole.Recruiter>
@@ -92,7 +97,7 @@ export class UsersService {
     const user = await this.findRecruiterById(id, manager)
 
     if (!user.recruiter) {
-      throw new Error("Recruiter must be filled")
+      throw new UnprocessableEntityException("Профиль рекрутера не заполнен")
     }
 
     return user as WithRequired<typeof user, "recruiter">
@@ -102,7 +107,7 @@ export class UsersService {
     const user = await this.findOneById(id, manager)
 
     if (user.role !== UserRole.Candidate) {
-      throw new Error("User must be a candidate")
+      throw new ForbiddenException("Пользователь не является кандидатом")
     }
 
     return user as WithConcreted<typeof user, "role", typeof UserRole.Candidate>
@@ -112,7 +117,7 @@ export class UsersService {
     const user = await this.findCandidateById(id, manager)
 
     if (!user.candidate) {
-      throw new Error("Candidate must be filled")
+      throw new UnprocessableEntityException("Профиль кандидата не заполнен")
     }
 
     return user as WithRequired<typeof user, "candidate">

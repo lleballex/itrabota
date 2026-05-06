@@ -65,7 +65,7 @@ export class CandidateApplicationsService {
       )
 
       if (vacancy.status === VacancyStatus.Archived) {
-        throw new ConflictException("Archived vacancy cannot receive responses")
+        throw new ConflictException("На архивную вакансию нельзя откликнуться")
       }
 
       const user = await this.usersService.findFilledCandidateById(
@@ -94,7 +94,7 @@ export class CandidateApplicationsService {
     const vacancy = await this.vacanciesService.findOneById(vacancyId)
 
     if (vacancy.status === VacancyStatus.Archived) {
-      throw new NotFoundException("Vacancy not found")
+      throw new NotFoundException("Вакансия не найдена")
     }
 
     const user = await this.usersService.findFilledCandidateById(user_.id)
@@ -120,7 +120,7 @@ export class CandidateApplicationsService {
 
       if (application.candidate?.id !== user.candidate.id) {
         throw new ForbiddenException(
-          "You are not allowed to reject this application",
+          "Вы не можете отклонить этот процесс найма",
         )
       }
 
@@ -151,20 +151,20 @@ export class CandidateApplicationsService {
       )
 
       if (application.status !== ApplicationStatus.Pending) {
-        throw new ConflictException("Only pending applications can be accepted")
+        throw new ConflictException(
+          "Принять можно только активный процесс найма",
+        )
       }
 
       if (application.candidate?.id !== user.candidate.id) {
-        throw new ForbiddenException(
-          "You are not allowed to accept this application",
-        )
+        throw new ForbiddenException("Вы не можете принять этот процесс найма")
       }
 
       if (
         !this.applicationsService.isWaitingForCandidateResponse(application)
       ) {
         throw new ConflictException(
-          "Application is not waiting for candidate response",
+          "Этот процесс найма сейчас не ожидает ответа кандидата",
         )
       }
 
@@ -173,7 +173,7 @@ export class CandidateApplicationsService {
       if (shouldCreateMeeting) {
         if (!dto.meetingStartsAt) {
           throw new ConflictException(
-            "meetingStartsAt is required for this application stage",
+            "Для этого этапа нужно выбрать время встречи",
           )
         }
 
@@ -181,7 +181,7 @@ export class CandidateApplicationsService {
           !application.vacancy?.recruiter?.id ||
           !application.funnelStep?.id
         ) {
-          throw new ConflictException("Application stage cannot create meeting")
+          throw new ConflictException("Для этого этапа нельзя создать встречу")
         }
 
         const hasMeetingForCurrentStep = application.meetings?.some(
@@ -189,9 +189,7 @@ export class CandidateApplicationsService {
         )
 
         if (hasMeetingForCurrentStep) {
-          throw new ConflictException(
-            "Meeting has already been scheduled for this application stage",
-          )
+          throw new ConflictException("Встреча для этого этапа уже назначена")
         }
 
         await this.meetingsService.assertSlotAvailable(

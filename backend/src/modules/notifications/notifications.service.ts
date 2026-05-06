@@ -108,7 +108,7 @@ export class NotificationsService {
   ) {
     if (data.type === ApplicationMessageType.UserMessage) {
       throw new BadRequestException(
-        "Cannot create notification for user messages",
+        "Нельзя создать уведомление для пользовательского сообщения",
       )
     }
 

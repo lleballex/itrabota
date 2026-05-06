@@ -38,7 +38,7 @@ export class AttachmentsService {
     const attachment = await qb.getOne()
 
     if (!attachment) {
-      throw new NotFoundException("Attachment not found")
+      throw new NotFoundException("Файл не найден")
     }
 
     return attachment

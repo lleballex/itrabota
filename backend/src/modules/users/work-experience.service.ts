@@ -17,7 +17,7 @@ export class WorkExperienceService {
     const item = await repo.findOne({ where: { id } })
 
     if (!item) {
-      throw new NotFoundException("WorkExperienceItem not found")
+      throw new NotFoundException("Запись об опыте работы не найдена")
     }
 
     return item

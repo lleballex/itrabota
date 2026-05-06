@@ -16,7 +16,7 @@ export class ApplicationMessagesService {
     const message = await repo.findOne({ where: { id } })
 
     if (!message) {
-      throw new NotFoundException("Application message not found")
+      throw new NotFoundException("Сообщение процесса найма не найдено")
     }
 
     return message

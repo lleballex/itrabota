@@ -1,5 +1,6 @@
 import {
   ForbiddenException,
+  InternalServerErrorException,
   Injectable,
   NotFoundException,
 } from "@nestjs/common"
@@ -99,7 +100,7 @@ export class VacanciesService {
     const vacancy = await qb.getOne()
 
     if (!vacancy) {
-      throw new NotFoundException("Vacancy not found") // TODO: unified exception
+      throw new NotFoundException("Вакансия не найдена") // TODO: unified exception
     }
 
     return vacancy
@@ -234,7 +235,9 @@ export class VacanciesService {
       !candidateSkillsRelation?.joinTableName ||
       !workExperienceCandidateRelation?.joinColumns[0]
     ) {
-      throw new Error("Candidate match relations must be configured")
+      throw new InternalServerErrorException(
+        "Не удалось рассчитать совпадение с вакансией",
+      )
     }
 
     const vacancySkillsTable = escape(vacancySkillsRelation.joinTableName)
@@ -491,7 +494,7 @@ export class VacanciesService {
 
     if (user_.role === UserRole.Candidate) {
       if (vacancy.status === VacancyStatus.Archived) {
-        throw new NotFoundException("Vacancy not found")
+        throw new NotFoundException("Вакансия не найдена")
       }
 
       return vacancy
@@ -501,13 +504,13 @@ export class VacanciesService {
       const user = await this.usersService.findFilledRecruiterById(user_.id)
 
       if (vacancy.recruiter?.id !== user.recruiter.id) {
-        throw new ForbiddenException("You are not the author of the vacancy")
+        throw new ForbiddenException("Вы не являетесь автором этой вакансии")
       }
 
       return vacancy
     }
 
-    throw new ForbiddenException("You are not allowed to view this vacancy")
+    throw new ForbiddenException("Вы не можете просматривать эту вакансию")
   }
 
   async findMatchedCandidates(id: string, user_: ICurrentUser) {
@@ -515,7 +518,7 @@ export class VacanciesService {
     const user = await this.usersService.findFilledRecruiterById(user_.id)
 
     if (vacancy.recruiter?.id !== user.recruiter.id) {
-      throw new ForbiddenException("You are not the author of the vacancy")
+      throw new ForbiddenException("Вы не являетесь автором этой вакансии")
     }
 
     return this.candidatesService.findMatchedForVacancy(vacancy)
@@ -607,7 +610,7 @@ export class VacanciesService {
       )
 
       if (vacancy.recruiter?.id !== user.recruiter.id) {
-        throw new ForbiddenException("You are not the author of the vacancy")
+        throw new ForbiddenException("Вы не являетесь автором этой вакансии")
       }
 
       if (vacancy.status === status) return
@@ -653,7 +656,7 @@ export class VacanciesService {
       )
 
       if (vacancy.recruiter?.id !== user.recruiter.id) {
-        throw new ForbiddenException("You are not the author of the vacancy")
+        throw new ForbiddenException("Вы не являетесь автором этой вакансии")
       }
 
       const vacanciesRepo = manager.getRepository(Vacancy)

@@ -124,7 +124,7 @@ export class ApplicationsService {
       .getOne()
 
     if (!application) {
-      throw new NotFoundException("Application not found")
+      throw new NotFoundException("Процесс найма не найден")
     }
 
     if (application.candidate) {
@@ -203,7 +203,7 @@ export class ApplicationsService {
       throw e
     }
 
-    throw new ConflictException("Application already exists")
+    throw new ConflictException("Процесс найма уже существует")
   }
 
   async reject(
@@ -218,7 +218,9 @@ export class ApplicationsService {
       manager?.getRepository(Application) ?? this.applicationsRepo
 
     if (application.status !== ApplicationStatus.Pending) {
-      throw new ConflictException("Only pending applications can be rejected")
+      throw new ConflictException(
+        "Отклонить можно только активный процесс найма",
+      )
     }
 
     application.status = ApplicationStatus.Rejected

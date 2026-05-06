@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from "@nestjs/common"
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import {
   Brackets,
@@ -199,7 +203,9 @@ export class CandidatesService {
       !vacancySkillsRelation?.joinTableName ||
       !workExperienceCandidateRelation?.joinColumns[0]
     ) {
-      throw new Error("Vacancy match relations must be configured")
+      throw new InternalServerErrorException(
+        "Не удалось рассчитать совпадение с кандидатом",
+      )
     }
 
     const candidateSkillsTable = escape(candidateSkillsRelation.joinTableName)
@@ -453,7 +459,7 @@ export class CandidatesService {
     const candidate = await qb.getOne()
 
     if (!candidate) {
-      throw new NotFoundException("Candidate not found") // TODO: unified exception
+      throw new NotFoundException("Кандидат не найден") // TODO: unified exception
     }
 
     return this.attachTotalWorkExperienceMonths(candidate)

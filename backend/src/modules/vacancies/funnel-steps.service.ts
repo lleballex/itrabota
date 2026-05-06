@@ -24,7 +24,7 @@ export class FunnelStepsService {
     const funnelStep = await repo.findOne({ where })
 
     if (!funnelStep) {
-      throw new NotFoundException("Funnel step not found")
+      throw new NotFoundException("Этап воронки не найден")
     }
 
     return funnelStep
