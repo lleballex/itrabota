@@ -8,8 +8,6 @@ import RemoteData from "@/components/ui/RemoteData"
 import { useCandidate } from "@/api/candidates/get-candidate"
 import CandidateDetailed from "@/components/base/candidate/CandidateDetailed"
 
-import CandidateApplicationsHistory from "./_components/CandidateApplicationsHistory"
-
 const Content = () => {
   const { candidateId } = useParams<{ candidateId: string }>()
   const candidate = useCandidate({ id: candidateId })
@@ -18,13 +16,7 @@ const Content = () => {
     <RemoteData
       data={candidate}
       onSuccess={(candidate) => (
-        <CandidateDetailed
-          candidate={candidate}
-          role={UserRole.Recruiter}
-          footerChildren={
-            <CandidateApplicationsHistory candidateId={candidateId} />
-          }
-        />
+        <CandidateDetailed candidate={candidate} role={UserRole.Recruiter} />
       )}
     />
   )

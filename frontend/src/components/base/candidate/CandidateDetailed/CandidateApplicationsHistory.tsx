@@ -121,7 +121,7 @@ const getRejectedAtLabel = (application: Application) => {
   }
 
   if (rejection.message.type === ApplicationMessageType.VacancyArchived) {
-    return `Отклонено рекрутером из-за архивирования вакансии`
+    return "Отклонено рекрутером из-за архивирования вакансии"
   }
 
   const actor =
