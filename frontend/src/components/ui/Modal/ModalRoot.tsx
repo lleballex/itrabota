@@ -28,6 +28,7 @@ export default function ModalRoot({
 
     if (isActive && !dialogRef.current.open) {
       dialogRef.current.showModal()
+      window.dispatchEvent(new CustomEvent("top-layer-open"))
     } else if (!isActive && dialogRef.current.open) {
       dialogRef.current.close()
     }

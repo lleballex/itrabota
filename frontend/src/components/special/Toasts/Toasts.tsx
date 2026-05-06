@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import classNames from "classnames"
 
 import { useToastsStore } from "@/stores/toasts"
@@ -9,12 +9,50 @@ import styles from "./Toasts.module.css"
 
 const TOAST_DURATION = 10_000
 const TOAST_EXIT_DURATION = 220
+const TOP_LAYER_OPEN_EVENT = "top-layer-open"
 
 export default function Toasts() {
   const toasts = useToastsStore((state) => state.toasts)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const container = containerRef.current
+
+    if (!container) return
+
+    container.setAttribute("popover", "manual")
+
+    if (!("showPopover" in container) || !("hidePopover" in container)) return
+
+    const syncPopover = () => {
+      if (!toasts.length) {
+        if (container.matches(":popover-open")) {
+          container.hidePopover()
+        }
+
+        return
+      }
+
+      if (container.matches(":popover-open")) {
+        container.hidePopover()
+      }
+
+      container.showPopover()
+    }
+
+    syncPopover()
+    window.addEventListener(TOP_LAYER_OPEN_EVENT, syncPopover)
+
+    return () => {
+      window.removeEventListener(TOP_LAYER_OPEN_EVENT, syncPopover)
+    }
+  }, [toasts.length])
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-[var(--spacing-screen)] z-50 flex flex-col items-end gap-2 px-[var(--spacing-screen)]">
+    <div
+      ref={containerRef}
+      className="fixed top-auto right-[var(--spacing-screen)] bottom-[var(--spacing-screen)] left-auto z-50 m-0 flex w-50 max-w-[calc(100dvw-var(--spacing-screen)*2)] flex-col items-end gap-2 border-0 bg-transparent p-0 overflow-visible"
+    >
       {toasts.map((toast) => (
         <ToastItem key={toast.id} toast={toast} />
       ))}
