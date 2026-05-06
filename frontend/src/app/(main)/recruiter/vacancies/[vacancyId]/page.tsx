@@ -13,7 +13,9 @@ import { Routes } from "@/config/routes"
 import Icon from "@/components/ui/Icon"
 import { Vacancy, VacancyStatus } from "@/types/entities/vacancy"
 import HighlightList from "@/components/ui/HighlightList"
+import Tooltip from "@/components/ui/Tooltip"
 import RecruiterVacancyApplications from "./_components/RecruiterVacancyApplications"
+import RecruiterVacancyMatchedCandidates from "./_components/RecruiterVacancyMatchedCandidates"
 import VacancyArchiveConfirmModal, {
   VacancyArchiveAction,
 } from "./_components/VacancyArchiveConfirmModal"
@@ -22,10 +24,10 @@ interface Props {
   vacancy: Vacancy
 }
 
+type VacancyTab = "vacancy" | "applications" | "matchedCandidates"
+
 const LoadedContent = ({ vacancy }: Props) => {
-  const [activeTab, setActiveTab] = useState<"vacancy" | "applications">(
-    "vacancy",
-  )
+  const [activeTab, setActiveTab] = useState<VacancyTab>("vacancy")
   const [archiveAction, setArchiveAction] =
     useState<VacancyArchiveAction | null>(null)
 
@@ -51,6 +53,30 @@ const LoadedContent = ({ vacancy }: Props) => {
         >
           <Button type="base" onClick={() => setActiveTab("applications")}>
             Отклики
+          </Button>
+        </HighlightList.Item>
+        <HighlightList.Item
+          className="w-full py-1 transition-all hover:text-fg-heading"
+          activeClassName="text-fg-heading"
+          active={activeTab === "matchedCandidates"}
+        >
+          <Button type="base" onClick={() => setActiveTab("matchedCandidates")}>
+            <span className="inline-flex items-center justify-center gap-1">
+              Подходящие соискатели
+              <Tooltip
+                className="text-left"
+                content="Подберём соискателей, которые лучше всего подходят вашей вакансии."
+                position="right"
+              >
+                <span
+                  className="inline-flex transition-all"
+                  tabIndex={0}
+                  aria-label="О подходящих соискателях"
+                >
+                  <Icon className="text-[16px]" icon="info" />
+                </span>
+              </Tooltip>
+            </span>
           </Button>
         </HighlightList.Item>
       </HighlightList.Root>
@@ -91,6 +117,10 @@ const LoadedContent = ({ vacancy }: Props) => {
 
       {activeTab === "applications" && (
         <RecruiterVacancyApplications vacancy={vacancy} />
+      )}
+
+      {activeTab === "matchedCandidates" && (
+        <RecruiterVacancyMatchedCandidates vacancy={vacancy} />
       )}
 
       <VacancyArchiveConfirmModal

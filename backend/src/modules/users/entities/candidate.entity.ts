@@ -83,6 +83,8 @@ export class Candidate extends BaseEntity {
 
   totalWorkExperienceMonths?: number
 
+  matchPercent?: number
+
   @OneToOne(() => Attachment, { nullable: true, onDelete: "SET NULL" })
   @JoinColumn()
   avatar?: Attachment | null

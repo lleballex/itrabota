@@ -59,6 +59,15 @@ export class VacanciesController {
     return this.vacanciesService.findOneForCurrentUser(id, user)
   }
 
+  @Get(":id/matched-candidates")
+  @Auth(UserRole.Recruiter)
+  findMatchedCandidates(
+    @Param("id") id: string,
+    @CurrentUser() user: ICurrentUser,
+  ) {
+    return this.vacanciesService.findMatchedCandidates(id, user)
+  }
+
   @Post(":id/archive")
   @Auth(UserRole.Recruiter)
   archive(@Param("id") id: string, @CurrentUser() user: ICurrentUser) {

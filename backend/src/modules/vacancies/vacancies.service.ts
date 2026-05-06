@@ -18,10 +18,12 @@ import { Candidate } from "@/modules/users/entities/candidate.entity"
 import { WorkExperienceItem } from "@/modules/users/entities/work-experence-item.entity"
 import { UserRole } from "@/modules/users/types/user-role"
 import { ApplicationsService } from "@/modules/applications/applications.service"
+import { CandidatesService } from "@/modules/users/candidates.service"
 import {
   createCaseInsensitiveSearchExpression,
   normalizeSearchQuery,
 } from "@/common/lib/search"
+import { isNullish } from "@/common/lib/is-nullish"
 
 import {
   Vacancy,
@@ -34,7 +36,7 @@ import { GetRecruiterVacanciesDto } from "./dto/get-recruiter-vacancies.dto"
 import { FunnelStepsService } from "./funnel-steps.service"
 import { UpdateVacancyDto } from "./dto/update-vacancy-dto"
 import { GetCandidateVacanciesDto } from "./dto/get-candidate-vacancies.dto"
-import { isNullish } from "@/common/lib/is-nullish"
+import { MATCH_FOR_ME_MIN_PERCENT, MATCH_PERCENT_WEIGHTS } from "./lib/matching"
 
 type VacancyFilters = Pick<
   GetCandidateVacanciesDto,
@@ -56,18 +58,6 @@ type VacancyWithMatchRaw = {
   match_percent?: string | number | null
 }
 
-const MATCH_FOR_ME_MIN_PERCENT = 75
-const MATCH_PERCENT_WEIGHTS = {
-  skills: 30,
-  specialization: 20,
-  experience: 15,
-  salary: 15,
-  format: 7,
-  city: 5,
-  employmentType: 5,
-  schedule: 3,
-}
-
 @Injectable()
 export class VacanciesService {
   constructor(
@@ -77,6 +67,7 @@ export class VacanciesService {
     private readonly dataSource: DataSource,
     private readonly funnelStepsService: FunnelStepsService,
     private readonly usersService: UsersService,
+    private readonly candidatesService: CandidatesService,
     private readonly applicationsService: ApplicationsService,
   ) {}
 
@@ -517,6 +508,17 @@ export class VacanciesService {
     }
 
     throw new ForbiddenException("You are not allowed to view this vacancy")
+  }
+
+  async findMatchedCandidates(id: string, user_: ICurrentUser) {
+    const vacancy = await this.findOneById(id)
+    const user = await this.usersService.findFilledRecruiterById(user_.id)
+
+    if (vacancy.recruiter?.id !== user.recruiter.id) {
+      throw new ForbiddenException("You are not the author of the vacancy")
+    }
+
+    return this.candidatesService.findMatchedForVacancy(vacancy)
   }
 
   async findAllForRecruiter(
