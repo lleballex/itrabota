@@ -14,7 +14,6 @@ import { useApplications } from "@/api/applications/get-applications"
 import {
   ApplicationStatus,
   ApplicationType,
-  ApplicationTypes,
 } from "@/types/entities/application"
 import ApplicationCard from "@/components/base/application/ApplicationCard"
 import ApplicationStatusMarker from "@/components/base/application/ApplicationStatus"
@@ -71,18 +70,30 @@ const Content = () => {
           className="flex flex-row border border-border p-1 rounded"
           highlightClassName="bg-primary"
         >
-          {Object.values(ApplicationType).map((type_) => (
-            <HighlightList.Item
-              key={type_}
-              className="w-full py-1 transition-all hover:text-fg-heading"
-              activeClassName="text-fg-heading"
-              active={type_ === type}
+          <HighlightList.Item
+            className="w-full py-1 transition-all hover:text-fg-heading"
+            activeClassName="text-fg-heading"
+            active={type === ApplicationType.Response}
+          >
+            <Button
+              type="base"
+              onClick={() => setType(ApplicationType.Response)}
             >
-              <Button type="base" onClick={() => setType(type_)}>
-                {ApplicationTypes[type_]}
-              </Button>
-            </HighlightList.Item>
-          ))}
+              Отклики
+            </Button>
+          </HighlightList.Item>
+          <HighlightList.Item
+            className="w-full py-1 transition-all hover:text-fg-heading"
+            activeClassName="text-fg-heading"
+            active={type === ApplicationType.Invitation}
+          >
+            <Button
+              type="base"
+              onClick={() => setType(ApplicationType.Invitation)}
+            >
+              Приглашения
+            </Button>
+          </HighlightList.Item>
         </HighlightList.Root>
       </div>
 
