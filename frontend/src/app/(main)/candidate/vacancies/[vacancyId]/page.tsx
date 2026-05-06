@@ -1,7 +1,7 @@
 "use client"
 
-import { useParams, useSearchParams } from "next/navigation"
-import { useEffect, useMemo, useState } from "react"
+import { useParams } from "next/navigation"
+import { useState } from "react"
 
 import AuthProvider from "@/components/special/AuthProvider"
 import { User, UserRole } from "@/types/entities/user"
@@ -15,25 +15,24 @@ import VacancyRespondModal from "@/components/base/vacancy/VacancyRespondModal"
 import { Vacancy } from "@/types/entities/vacancy"
 import { Application } from "@/types/entities/application"
 import ApplicationDetailed from "@/components/base/application/ApplicationDetailed"
+import { useQueryState } from "@/lib/use-query-state"
+
+const vacancyTabs = ["vacancy", "application"] as const
+const vacancyOnlyTabs = ["vacancy"] as const
 
 interface Props {
   vacancy: Vacancy
   application: Application | null
   me: User
-  initialTab?: "vacancy" | "application"
 }
 
-const LoadedContent = ({ vacancy, application, me, initialTab }: Props) => {
+const LoadedContent = ({ vacancy, application, me }: Props) => {
   const [isRespondModalActive, setIsRespondModalActive] = useState(false)
-  const [activeTab, setActiveTab] = useState<"vacancy" | "application">(
+  const [activeTab, setActiveTab] = useQueryState(
+    "tab",
+    application ? vacancyTabs : vacancyOnlyTabs,
     "vacancy",
   )
-
-  useEffect(() => {
-    if (!initialTab || (initialTab === "application" && !application)) return
-
-    setActiveTab(initialTab)
-  }, [initialTab, application])
 
   return (
     <div className="flex flex-col gap-6 h-[calc(100dvh-var(--spacing-screen)*2-var(--height-control)-var(--spacing)*5)] min-h-0">
@@ -101,18 +100,9 @@ const LoadedContent = ({ vacancy, application, me, initialTab }: Props) => {
 
 const Content = ({ me }: { me: User }) => {
   const { vacancyId } = useParams<{ vacancyId: string }>()
-  const searchParams = useSearchParams()
 
   const vacancy = useVacancy({ id: vacancyId })
   const application = useMyApplication({ vacancyId })
-
-  const initialTab = useMemo(() => {
-    const tab = searchParams.get("tab")
-
-    if (tab === "vacancy" || tab === "application") {
-      return tab
-    }
-  }, [searchParams])
 
   return (
     <RemoteData
@@ -125,7 +115,6 @@ const Content = ({ me }: { me: User }) => {
               vacancy={vacancy}
               application={application}
               me={me}
-              initialTab={initialTab}
             />
           )}
         />

@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { useParams } from "next/navigation"
 
 import AuthProvider from "@/components/special/AuthProvider"
@@ -13,6 +12,9 @@ import VacancyDetailed from "@/components/base/vacancy/VacancyDetailed"
 import ApplicationDetailed from "@/components/base/application/ApplicationDetailed"
 import { Application } from "@/types/entities/application"
 import CandidateDetailed from "@/components/base/candidate/CandidateDetailed"
+import { useQueryState } from "@/lib/use-query-state"
+
+const applicationTabs = ["vacancy", "candidate", "application"] as const
 
 const LoadedContent = ({
   application,
@@ -21,9 +23,11 @@ const LoadedContent = ({
   application: Application
   me: User
 }) => {
-  const [activeTab, setActiveTab] = useState<
-    "vacancy" | "candidate" | "application"
-  >("application")
+  const [activeTab, setActiveTab] = useQueryState(
+    "tab",
+    applicationTabs,
+    "application",
+  )
 
   return (
     <div

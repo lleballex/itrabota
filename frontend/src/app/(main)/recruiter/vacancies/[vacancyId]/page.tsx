@@ -19,15 +19,21 @@ import RecruiterVacancyMatchedCandidates from "./_components/RecruiterVacancyMat
 import VacancyArchiveConfirmModal, {
   VacancyArchiveAction,
 } from "./_components/VacancyArchiveConfirmModal"
+import { useQueryState } from "@/lib/use-query-state"
 
 interface Props {
   vacancy: Vacancy
 }
 
 type VacancyTab = "vacancy" | "applications" | "matchedCandidates"
+const vacancyTabs = ["vacancy", "applications", "matchedCandidates"] as const
 
 const LoadedContent = ({ vacancy }: Props) => {
-  const [activeTab, setActiveTab] = useState<VacancyTab>("vacancy")
+  const [activeTab, setActiveTab] = useQueryState<VacancyTab>(
+    "tab",
+    vacancyTabs,
+    "vacancy",
+  )
   const [archiveAction, setArchiveAction] =
     useState<VacancyArchiveAction | null>(null)
 

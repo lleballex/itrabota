@@ -10,7 +10,7 @@ import dayGridPlugin from "@fullcalendar/daygrid"
 import interactionPlugin from "@fullcalendar/interaction"
 import FullCalendar from "@fullcalendar/react"
 import timeGridPlugin from "@fullcalendar/timegrid"
-import { useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 import { useMeetings } from "@/api/meetings/get-meetings"
 import MeetingCalendarEventModal from "@/components/base/meeting/MeetingCalendarEventModal"
@@ -19,6 +19,7 @@ import Button from "@/components/ui/Button"
 import Icon from "@/components/ui/Icon"
 import { Meeting } from "@/types/entities/meeting"
 import { UserRole } from "@/types/entities/user"
+import { useQueryState } from "@/lib/use-query-state"
 
 import styles from "./MeetingCalendar.module.css"
 
@@ -47,6 +48,7 @@ const CALENDAR_VIEWS = [
 ] as const
 
 type CalendarView = (typeof CALENDAR_VIEWS)[number]["id"]
+const CALENDAR_VIEW_IDS = CALENDAR_VIEWS.map((view) => view.id)
 
 const formatMonthYear = new Intl.DateTimeFormat("ru-RU", {
   month: "long",
@@ -67,7 +69,11 @@ export default function MeetingCalendar({ role }: Props) {
   const [selectedMeetingId, setSelectedMeetingId] = useState<string | null>(
     null,
   )
-  const [currentView, setCurrentView] = useState<CalendarView>("dayGridMonth")
+  const [currentView, setCurrentView] = useQueryState<CalendarView>(
+    "view",
+    CALENDAR_VIEW_IDS,
+    "dayGridMonth",
+  )
   const [currentDate, setCurrentDate] = useState(() => new Date())
   const [visibleRange, setVisibleRange] = useState<VisibleRange | null>(null)
 
@@ -137,6 +143,14 @@ export default function MeetingCalendar({ role }: Props) {
     setCurrentView(nextView)
     calendarRef.current?.getApi().changeView(nextView)
   }
+
+  useEffect(() => {
+    const calendarApi = calendarRef.current?.getApi()
+
+    if (calendarApi && calendarApi.view.type !== currentView) {
+      calendarApi.changeView(currentView)
+    }
+  }, [currentView])
 
   const onPrev = () => {
     calendarRef.current?.getApi().prev()

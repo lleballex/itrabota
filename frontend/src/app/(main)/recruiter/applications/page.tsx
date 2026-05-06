@@ -18,13 +18,23 @@ import {
 import ApplicationCard from "@/components/base/application/ApplicationCard"
 import ApplicationStatusMarker from "@/components/base/application/ApplicationStatus"
 import { Routes } from "@/config/routes"
+import { useQueryState } from "@/lib/use-query-state"
+
+const applicationTypeTabs = [
+  ApplicationType.Response,
+  ApplicationType.Invitation,
+] as const
 
 export default function RecruiterApplicationsPage() {
   return <AuthProvider roles={[UserRole.Recruiter]} Component={Content} />
 }
 
 const Content = () => {
-  const [type, setType] = useState<ApplicationType>(ApplicationType.Response)
+  const [type, setType] = useQueryState(
+    "tab",
+    applicationTypeTabs,
+    ApplicationType.Response,
+  )
   const [query, setQuery] = useState<string | null>(null)
   const [status, setStatus] = useState<ApplicationStatus | null>(
     ApplicationStatus.Pending,
