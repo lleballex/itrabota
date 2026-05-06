@@ -4,6 +4,10 @@ interface Toast {
   id: string
   message: string
   type: "success" | "danger"
+  action?: {
+    label: string
+    url: string
+  }
 }
 
 interface ToastsStore {

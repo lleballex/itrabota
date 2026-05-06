@@ -8,9 +8,9 @@ import {
 import { ApiError, transformErrorToApiError } from "@/api/lib/api-error"
 import { useToastsStore } from "@/stores/toasts"
 
-interface InlineOptions {
+interface InlineOptions<D> {
   onError?: (error: ApiError) => boolean
-  onSuccess?: () => void
+  onSuccess?: (data: D) => void
   onSettles?: () => void
 }
 
@@ -34,7 +34,7 @@ export const createUseMutation = <D, MA = void>(
       mutationFn: (args, ctx) => mutation(args, ctx),
     })
 
-    const mutate = (data: MA, inlineOptions?: InlineOptions) => {
+    const mutate = (data: MA, inlineOptions?: InlineOptions<D>) => {
       mutate_(data, {
         ...inlineOptions,
         onSuccess: async (res, args) => {
@@ -49,7 +49,7 @@ export const createUseMutation = <D, MA = void>(
             ) ?? [],
           )
 
-          inlineOptions?.onSuccess?.()
+          inlineOptions?.onSuccess?.(res)
         },
         onError: (error) => {
           const apiError = transformErrorToApiError(error)

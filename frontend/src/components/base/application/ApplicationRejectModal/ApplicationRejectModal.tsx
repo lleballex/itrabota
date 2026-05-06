@@ -6,7 +6,6 @@ import Button from "@/components/ui/Button"
 import Modal from "@/components/ui/Modal"
 import Textarea from "@/components/ui/Textarea"
 import { handleFormApiError } from "@/lib/handle-form-api-error"
-import { useToastsStore } from "@/stores/toasts"
 import { Application } from "@/types/entities/application"
 import { UserRole } from "@/types/entities/user"
 import { Vacancy } from "@/types/entities/vacancy"
@@ -33,8 +32,6 @@ export default function ApplicationRejectModal({
   active: isActive,
   onActiveChange: onIsActiveChange,
 }: Props) {
-  const { addToast } = useToastsStore()
-
   const form = useForm<FormInputValues, unknown, FormOutputValues>({
     resolver: formResolver,
     defaultValues: formDefaultValues,
@@ -72,13 +69,6 @@ export default function ApplicationRejectModal({
       },
       {
         onSuccess: () => {
-          addToast({
-            type: "success",
-            message:
-              role === UserRole.Recruiter
-                ? "Кандидат отклонен"
-                : "Процесс найма завершен",
-          })
           form.reset()
           onIsActiveChange(false)
         },

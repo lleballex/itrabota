@@ -1,6 +1,7 @@
 import { axios } from "@/api/lib/axios"
 import { createUseMutation } from "@/api/lib/create-use-mutation"
 import {
+  Vacancy,
   VacancyEmploymentType,
   VacancyFormat,
   VacancySchedule,
@@ -32,6 +33,7 @@ interface Data {
 }
 
 export const useCreateVacancy = createUseMutation(
-  (data: Data) => axios.post("/vacancies", data),
+  (data: Data) =>
+    axios.post<Vacancy>("/vacancies", data).then((res) => res.data),
   { invalidateQueries: ["vacancies"] },
 )

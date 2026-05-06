@@ -1,3 +1,4 @@
+import { Application } from "@/types/entities/application"
 import { UserRole } from "@/types/entities/user"
 import { axios } from "../lib/axios"
 import { createUseMutation } from "../lib/create-use-mutation"
@@ -24,7 +25,7 @@ export const useCreateApplication = createUseMutation(
       [UserRole.Recruiter]: "/applications/recruiter",
     }[role]
 
-    return axios.post(url, data)
+    return axios.post<Application>(url, data).then((res) => res.data)
   },
   { invalidateQueries: ["applications", "vacancies"] },
 )

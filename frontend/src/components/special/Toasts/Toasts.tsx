@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import classNames from "classnames"
+import Link from "next/link"
 
 import { useToastsStore } from "@/stores/toasts"
 import Icon from "@/components/ui/Icon"
@@ -65,6 +66,10 @@ interface ToastItemProps {
     id: string
     message: string
     type: "success" | "danger"
+    action?: {
+      label: string
+      url: string
+    }
   }
 }
 
@@ -107,7 +112,19 @@ function ToastItem({ toast }: ToastItemProps) {
       role={toast.type === "danger" ? "alert" : "status"}
     >
       <div className="min-w-0 flex-1 text-sm font-semibold leading-[1.35] text-fg-heading">
-        {toast.message}
+        <span>{toast.message}</span>
+        {toast.action && (
+          <>
+            <span>. </span>
+            <Link
+              className="font-bold text-primary underline decoration-primary/50 underline-offset-3 transition-all hover:text-fg-heading hover:decoration-fg-heading"
+              href={toast.action.url}
+              onClick={closeToast}
+            >
+              {toast.action.label}
+            </Link>
+          </>
+        )}
       </div>
 
       <Button

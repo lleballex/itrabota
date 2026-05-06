@@ -14,6 +14,7 @@ import { useToastsStore } from "@/stores/toasts"
 import { Candidate } from "@/types/entities/candidate"
 import { UserRole } from "@/types/entities/user"
 import { VacancyStatus } from "@/types/entities/vacancy"
+import { Routes } from "@/config/routes"
 
 import {
   formDefaultValues,
@@ -56,10 +57,14 @@ export default function InviteCandidateModal({
         ...data,
       },
       {
-        onSuccess: () => {
+        onSuccess: (application) => {
           addToast({
             type: "success",
             message: "Приглашение отправлено",
+            action: {
+              label: "Перейти",
+              url: Routes.recruiter.application(application.id),
+            },
           })
           onActiveChange(false)
           form.reset()

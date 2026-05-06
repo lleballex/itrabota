@@ -8,6 +8,7 @@ import { Vacancy } from "@/types/entities/vacancy"
 import { handleFormApiError } from "@/lib/handle-form-api-error"
 import { useToastsStore } from "@/stores/toasts"
 import { UserRole } from "@/types/entities/user"
+import { Routes } from "@/config/routes"
 
 import {
   formDefaultValues,
@@ -49,6 +50,12 @@ export default function VacancyRespondModal({
           addToast({
             type: "success",
             message: "Отклик отправлен",
+            action: {
+              label: "Перейти",
+              url: Routes.candidate.vacancy(vacancy.id, {
+                tab: "application",
+              }),
+            },
           })
           onIsActiveChange(false)
           form.reset()

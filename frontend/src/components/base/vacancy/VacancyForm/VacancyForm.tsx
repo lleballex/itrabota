@@ -78,12 +78,12 @@ export default function VacancyForm({ vacancy }: Props) {
       )
     } else {
       create(data, {
-        onSuccess: () => {
+        onSuccess: (createdVacancy) => {
           addToast({
             type: "success",
             message: "Вакансия создана",
           })
-          router.push(Routes.recruiter.vacancies)
+          router.push(Routes.recruiter.vacancy(createdVacancy.id))
         },
         onError: (error) => handleFormApiError({ error, form }),
       })
