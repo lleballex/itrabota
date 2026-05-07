@@ -19,6 +19,7 @@ type SelectValue<V> = V | V[] | null
 interface SelectItem<V> {
   value: V
   content: ReactNode
+  disabled?: boolean
 }
 
 interface Props<V> {
@@ -26,10 +27,7 @@ interface Props<V> {
   label?: string
   error?: FormError
   value?: SelectValue<V>
-  items: {
-    value: V
-    content: ReactNode
-  }[]
+  items: SelectItem<V>[]
   multiple?: boolean
   placeholder?: ReactNode
   renderValue?: (params: {
@@ -152,15 +150,20 @@ export default function Select<V>({
           ref={popoverContentRef}
         >
           <HighlightList.Root className="flex flex-col">
-            {items.map((item) => (
-              <HighlightList.Item
-                key={String(item.value)}
-                active={
-                  multiple
-                    ? Array.isArray(value) && value.includes(item.value)
-                    : value === item.value
-                }
-              >
+            {items.map((item) => {
+              const isActive = multiple
+                ? Array.isArray(value) && value.includes(item.value)
+                : value === item.value
+
+              const itemContent = item.disabled ? (
+                <Button
+                  className="py-1 px-2"
+                  type="base"
+                  disabled
+                >
+                  {item.content}
+                </Button>
+              ) : (
                 <Button
                   className="py-1 px-2"
                   type="base"
@@ -168,8 +171,14 @@ export default function Select<V>({
                 >
                   {item.content}
                 </Button>
-              </HighlightList.Item>
-            ))}
+              )
+
+              return (
+                <HighlightList.Item key={String(item.value)} active={isActive}>
+                  {itemContent}
+                </HighlightList.Item>
+              )
+            })}
           </HighlightList.Root>
         </Popover.Content>
       </Popover.Root>

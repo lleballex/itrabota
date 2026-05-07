@@ -3,7 +3,7 @@
 import classNames from "classnames"
 import dayjs from "dayjs"
 import Image from "next/image"
-import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 import { getCompanyLogo } from "@/lib/get-company-logo"
 import { getProfileAvatar } from "@/lib/get-profile-avatar"
@@ -12,7 +12,7 @@ import {
   getNotificationUrl,
   isNotificationUnread,
 } from "@/lib/notifications"
-import { Notification } from "@/types/entities/notification"
+import { Notification, NotificationType } from "@/types/entities/notification"
 import { UserRole } from "@/types/entities/user"
 
 interface Props {
@@ -51,8 +51,37 @@ export default function NotificationListItem({
   role,
   onClick,
 }: Props) {
+  const router = useRouter()
   const isUnread = isNotificationUnread(notification)
   const url = getNotificationUrl(notification, role)
+  const baseContent = getNotificationContent(notification)
+  const shouldShowMeetingLinkState =
+    notification.type === NotificationType.MeetingScheduled &&
+    Boolean(notification.meeting)
+  const meetingLink = notification.meeting?.link
+
+  const notificationContent = (
+    <>
+      {baseContent}
+      {shouldShowMeetingLinkState &&
+        (meetingLink ? (
+          <>
+            . Ссылка на встречу:{" "}
+            <a
+              className="break-all text-primary underline transition hover:opacity-70"
+              href={meetingLink}
+              rel="noreferrer"
+              target="_blank"
+              onClick={(event) => event.stopPropagation()}
+            >
+              {meetingLink}
+            </a>
+          </>
+        ) : (
+          ". Ссылку на встречу создать не удалось"
+        ))}
+    </>
+  )
   const content = compact ? (
     <div
       className={classNames("flex flex-col gap-0.5 border-border py-2", {
@@ -65,7 +94,7 @@ export default function NotificationListItem({
             "text-fg-heading font-bold": isUnread,
           })}
         >
-          {getNotificationContent(notification)}
+          {notificationContent}
         </p>
         {isUnread && (
           <span className="mt-1 h-2.5 min-w-2.5 rounded-full bg-primary" />
@@ -103,7 +132,7 @@ export default function NotificationListItem({
               "font-medium text-fg-heading": isUnread,
             })}
           >
-            {getNotificationContent(notification)}
+            {notificationContent}
           </p>
         </div>
 
@@ -121,26 +150,28 @@ export default function NotificationListItem({
         "group relative flex gap-4 pt-3 after:absolute after:top-0 after:right-[calc(var(--spacing-content)*-1)] after:bottom-0 after:left-[calc(var(--spacing-content)*-1)] after:-z-1 after:bg-[rgba(20,20,20)] after:opacity-0 after:transition-all hover:after:opacity-100",
       )
 
-  if (!url) {
-    return (
-      <div
-        className={rootClassName}
-        role="button"
-        tabIndex={0}
-        onClick={() => onClick?.(notification)}
-      >
-        {content}
-      </div>
-    )
+  const handleClick = () => {
+    onClick?.(notification)
+
+    if (url) {
+      router.push(url)
+    }
   }
 
   return (
-    <Link
+    <div
       className={rootClassName}
-      href={url}
-      onClick={() => onClick?.(notification)}
+      role={url ? "link" : "button"}
+      tabIndex={0}
+      onClick={handleClick}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault()
+          handleClick()
+        }
+      }}
     >
       {content}
-    </Link>
+    </div>
   )
 }

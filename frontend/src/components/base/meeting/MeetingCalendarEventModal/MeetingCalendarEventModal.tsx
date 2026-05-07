@@ -89,8 +89,7 @@ export default function MeetingCalendarEventModal({
     displayedMeeting.startsAt,
     displayedMeeting.endsAt,
   )}`
-  const meetingLink =
-    displayedMeeting.link || "https://example.com/test-meeting"
+  const meetingLink = displayedMeeting.link
   const vacancyTitle = displayedMeeting.application?.vacancy?.title ?? "Встреча"
   const candidateName = getCandidateName(displayedMeeting) || "Не указано"
   const candidateUrl = displayedMeeting.candidate?.id
@@ -112,14 +111,18 @@ export default function MeetingCalendarEventModal({
       <div className="flex flex-col gap-2">
         <div className="flex flex-col gap-1">
           <p className="text-sm text-fg">Ссылка</p>
-          <a
-            className="break-all underline text-primary transition-all hover:opacity-70"
-            href={meetingLink}
-            rel="noreferrer"
-            target="_blank"
-          >
-            {meetingLink}
-          </a>
+          {meetingLink ? (
+            <a
+              className="break-all underline text-primary transition-all hover:opacity-70"
+              href={meetingLink}
+              rel="noreferrer"
+              target="_blank"
+            >
+              {meetingLink}
+            </a>
+          ) : (
+            <p>Ссылку на встречу создать не удалось</p>
+          )}
         </div>
 
         <div className="flex flex-col gap-1">
@@ -162,7 +165,7 @@ export default function MeetingCalendarEventModal({
         ) : (
           <div className="flex flex-col gap-1">
             <p className="text-sm text-fg">Компания</p>
-            <p className="text-lg font-bold text-fg-heading">{companyName}</p>
+            <p>{companyName}</p>
           </div>
         )}
       </div>

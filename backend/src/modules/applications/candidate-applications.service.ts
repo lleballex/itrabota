@@ -220,6 +220,14 @@ export class CandidateApplicationsService {
 
       if (shouldCreateMeeting) {
         const meetingStartsAt = new Date(dto.meetingStartsAt!)
+        const meetingLink = await this.meetingsService.createVideoMeetingLink({
+          topic: application.vacancy?.title
+            ? `Встреча по вакансии ${application.vacancy.title}`
+            : "Встреча по процессу найма",
+          startsAt: meetingStartsAt,
+          durationMinutes: MEETING_DURATION_MINUTES,
+          timezone: MEETING_TIMEZONE,
+        })
         const meetingScheduledMessage = await this.messagesService.create(
           {
             application: { id: application.id },
@@ -241,7 +249,7 @@ export class CandidateApplicationsService {
               meetingStartsAt.getTime() + MEETING_DURATION_MINUTES * 60 * 1000,
             ),
             timezone: MEETING_TIMEZONE,
-            link: null,
+            link: meetingLink,
           },
           manager,
         )

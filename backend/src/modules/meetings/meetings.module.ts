@@ -8,6 +8,7 @@ import { CandidateMeetingsController } from "./candidate-meetings.controller"
 import { Meeting } from "./entities/meeting.entity"
 import { MeetingsService } from "./meetings.service"
 import { RecruiterMeetingsController } from "./recruiter-meetings.controller"
+import { ZoomMeetingsService } from "./zoom-meetings.service"
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { RecruiterMeetingsController } from "./recruiter-meetings.controller"
     forwardRef(() => ApplicationsModule),
   ],
   controllers: [CandidateMeetingsController, RecruiterMeetingsController],
-  providers: [MeetingsService],
+  providers: [MeetingsService, ZoomMeetingsService],
   exports: [MeetingsService],
 })
 export class MeetingsModule {}

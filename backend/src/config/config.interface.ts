@@ -9,4 +9,8 @@ export interface AppConfig {
   JWT_SECRET: string
   JWT_EXPIRES_IN: string
   MAX_REQUEST_BODY_SIZE: string
+  ZOOM_ACCOUNT_ID: string
+  ZOOM_CLIENT_ID: string
+  ZOOM_CLIENT_SECRET: string
+  ZOOM_HOST_USER_ID?: string
 }

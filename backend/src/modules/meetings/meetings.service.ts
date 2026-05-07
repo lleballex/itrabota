@@ -18,6 +18,7 @@ import {
   MOSCOW_UTC_OFFSET_HOURS,
 } from "./constants/meeting.constants"
 import { Meeting } from "./entities/meeting.entity"
+import { ZoomMeetingsService } from "./zoom-meetings.service"
 
 export interface MeetingSlot {
   startsAt: string
@@ -31,6 +32,7 @@ export class MeetingsService {
     private readonly meetingsRepo: Repository<Meeting>,
     private readonly applicationsService: ApplicationsService,
     private readonly usersService: UsersService,
+    private readonly zoomMeetingsService: ZoomMeetingsService,
   ) {}
 
   async getCandidateSlots(
@@ -116,6 +118,15 @@ export class MeetingsService {
     const meeting = repo.create(data)
 
     return repo.save(meeting)
+  }
+
+  createVideoMeetingLink(data: {
+    topic: string
+    startsAt: Date
+    durationMinutes: number
+    timezone: string
+  }) {
+    return this.zoomMeetingsService.createMeeting(data)
   }
 
   private async getMeetings(params: {

@@ -11,6 +11,7 @@ import Modal from "@/components/ui/Modal"
 import Button from "@/components/ui/Button"
 import Calendar from "@/components/ui/Calendar"
 import { formatMeetingTimeRange, MEETING_TIMEZONE } from "@/lib/meeting"
+import Select from "@/components/ui/Select"
 
 interface Props {
   application: Application
@@ -97,7 +98,7 @@ export default function ApplicationMeetingModal({
   }
 
   return (
-    <Modal.Root active={active} onActiveChange={onActiveChange} width={600}>
+    <Modal.Root active={active} onActiveChange={onActiveChange} width={500}>
       <Modal.Header>Выберите время встречи</Modal.Header>
 
       <div className="flex flex-col gap-3 self-center">
@@ -144,6 +145,24 @@ export default function ApplicationMeetingModal({
 
         {formError && <p className="text-danger">{formError}</p>}
       </div>
+
+      <Select
+        label="Где создать встречу?"
+        value="zoom"
+        items={[
+          { value: "zoom", content: "Zoom" },
+              {
+                value: "yandex",
+                content: "Яндекс Телемост (появится позже)",
+                disabled: true,
+              },
+              {
+                value: "google",
+                content: "Google Meet (появится позже)",
+                disabled: true,
+              },
+            ]}
+          />
 
       <Modal.Controls>
         <Button

@@ -169,6 +169,30 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
     })
   }
 
+  const getMeetingLinkMessageSuffix = (message: ApplicationMessage) => {
+    if (!message.meeting) {
+      return ""
+    }
+
+    if (!message.meeting.link) {
+      return ". Ссылку на встречу создать не удалось"
+    }
+
+    return (
+      <>
+        . Ссылка на встречу:{" "}
+        <a
+          className="break-all text-primary underline transition hover:opacity-70"
+          href={message.meeting.link}
+          rel="noreferrer"
+          target="_blank"
+        >
+          {message.meeting.link}
+        </a>
+      </>
+    )
+  }
+
   const getMessageContent = (message: ApplicationMessage) => {
     switch (message.type) {
       case ApplicationMessageType.UserMessage:
@@ -212,13 +236,18 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
             : "Кандидат назначил встречу"
         }
 
-        return role === UserRole.Candidate
-          ? `Вы назначили встречу на ${formatMeetingDateTime(
-              message.meeting.startsAt,
-            )}`
-          : `Кандидат назначил встречу на ${formatMeetingDateTime(
-              message.meeting.startsAt,
-            )}`
+        return (
+          <>
+            {role === UserRole.Candidate
+              ? `Вы назначили встречу на ${formatMeetingDateTime(
+                  message.meeting.startsAt,
+                )}`
+              : `Кандидат назначил встречу на ${formatMeetingDateTime(
+                  message.meeting.startsAt,
+                )}`}
+            {getMeetingLinkMessageSuffix(message)}
+          </>
+        )
     }
   }
 
