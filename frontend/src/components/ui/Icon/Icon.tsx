@@ -12,6 +12,8 @@ import {
   CircleAlert,
   FilesIcon,
   FileTextIcon,
+  GitlabIcon,
+  GithubIcon,
   HouseIcon,
   InfoIcon,
   LoaderCircleIcon,
@@ -67,6 +69,12 @@ const ICONS = {
   },
   fileText: {
     Component: FileTextIcon,
+  },
+  github: {
+    Component: GithubIcon,
+  },
+  gitlab: {
+    Component: GitlabIcon,
   },
   house: {
     Component: HouseIcon,

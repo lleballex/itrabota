@@ -38,6 +38,7 @@ interface CandidateFilters {
   salaryFrom: string | null
   salaryTo: string | null
   experienceYearsFrom: string | null
+  projectsCountMin: string | null
   ageFrom: string | null
   ageTo: string | null
 }
@@ -55,6 +56,7 @@ const DEFAULT_FILTERS: CandidateFilters = {
   salaryFrom: null,
   salaryTo: null,
   experienceYearsFrom: null,
+  projectsCountMin: null,
   ageFrom: null,
   ageTo: null,
 }
@@ -100,6 +102,7 @@ const getActiveDrawerFiltersCount = (filters: CandidateFilters) =>
     filters.salaryFrom ? 1 : 0,
     filters.salaryTo ? 1 : 0,
     filters.experienceYearsFrom ? 1 : 0,
+    filters.projectsCountMin ? 1 : 0,
     filters.ageFrom ? 1 : 0,
     filters.ageTo ? 1 : 0,
   ].reduce((acc, count) => acc + count, 0)
@@ -150,6 +153,7 @@ const Content = () => {
     salaryTo: getNumberValue(filters.salaryTo) ?? undefined,
     totalWorkExperienceMonthsMin:
       experienceYearsFrom === null ? undefined : experienceYearsFrom * 12,
+    projectsCountMin: getNumberValue(filters.projectsCountMin) ?? undefined,
     ageFrom: getNumberValue(filters.ageFrom) ?? undefined,
     ageTo: getNumberValue(filters.ageTo) ?? undefined,
   })
@@ -355,6 +359,14 @@ const Content = () => {
               updateDrawerFilter("experienceYearsFrom", value)
             }
             placeholder="3"
+          />
+
+          <Input
+            className="w-full"
+            label="Проектов от"
+            value={filters.projectsCountMin}
+            onChange={(value) => updateDrawerFilter("projectsCountMin", value)}
+            placeholder="2"
           />
 
           <Input

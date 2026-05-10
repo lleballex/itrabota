@@ -35,6 +35,12 @@ interface ContactItem {
   href: string
 }
 
+interface RepositoryItem {
+  icon: "github" | "gitlab"
+  content: string
+  href: string
+}
+
 export default function CandidateDetailed({
   candidate,
   role,
@@ -47,6 +53,7 @@ export default function CandidateDetailed({
     candidate.city?.name,
   ].filter((item): item is string => Boolean(item))
   const contactItems: ContactItem[] = []
+  const repositoryItems: RepositoryItem[] = []
 
   if (candidate.user?.email) {
     contactItems.push({
@@ -71,6 +78,22 @@ export default function CandidateDetailed({
         ? candidate.tgUsername
         : `@${candidate.tgUsername}`,
       href: `https://t.me/${candidate.tgUsername.replace(/^@/, "")}`,
+    })
+  }
+
+  if (candidate.githubUrl) {
+    repositoryItems.push({
+      icon: "github",
+      content: "GitHub",
+      href: candidate.githubUrl,
+    })
+  }
+
+  if (candidate.gitlabUrl) {
+    repositoryItems.push({
+      icon: "gitlab",
+      content: "GitLab",
+      href: candidate.gitlabUrl,
     })
   }
 
@@ -152,6 +175,13 @@ export default function CandidateDetailed({
           </div>
         </div>
 
+        {candidate.description && (
+          <div className="flex flex-col gap-1.5">
+            <p className="text-h5">О соискателе</p>
+            <p>{candidate.description}</p>
+          </div>
+        )}
+
         {!!contactItems.length && (
           <div className="flex flex-col gap-1.5">
             <p className="text-h5">Контакты</p>
@@ -186,10 +216,30 @@ export default function CandidateDetailed({
           </div>
         )}
 
-        {candidate.description && (
+        {candidate.education && (
           <div className="flex flex-col gap-1.5">
-            <p className="text-h5">О соискателе</p>
-            <p>{candidate.description}</p>
+            <p className="text-h5">Образование</p>
+            <p>{candidate.education}</p>
+          </div>
+        )}
+
+        {!!repositoryItems.length && (
+          <div className="flex flex-col gap-1.5">
+            <p className="text-h5">Репозитории</p>
+            <div className="flex flex-wrap gap-x-6 gap-y-2">
+              {repositoryItems.map((item) => (
+                <a
+                  className="flex items-center gap-1 text-secondary-light transition-colors hover:text-primary"
+                  href={item.href}
+                  key={item.href}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <Icon className="shrink-0" icon={item.icon} />
+                  <span>{item.content}</span>
+                </a>
+              ))}
+            </div>
           </div>
         )}
 
@@ -198,17 +248,56 @@ export default function CandidateDetailed({
             <p className="text-h5">Опыт работы</p>
             {candidate.workExperience.map((item) => (
               <div className="flex flex-col gap-1.5" key={item.id}>
-                <p>
-                  <span className="font-semibold">{item.position}</span> в{" "}
-                  {item.companyName}
-                </p>
-                <p className="text-secondary-light">
-                  {dayjs(item.startedAt).format("MM.YYYY")} -{" "}
-                  {item.endedAt
-                    ? dayjs(item.endedAt).format("MM.YYYY")
-                    : "н.в."}
-                </p>
+                <div className="flex items-center gap-2 justify-between">
+                  <p>
+                    <span className="font-semibold">{item.position}</span> в{" "}
+                    {item.companyName}
+                  </p>
+                  <p className="text-secondary-light">
+                    {dayjs(item.startedAt).format("MM.YYYY")} -{" "}
+                    {item.endedAt
+                      ? dayjs(item.endedAt).format("MM.YYYY")
+                      : "н.в."}
+                  </p>
+                </div>
                 {item.description && <p>{item.description}</p>}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!!candidate.projects?.length && (
+          <div className="flex flex-col gap-3">
+            <p className="text-h5">Проекты</p>
+            {candidate.projects.map((project) => (
+              <div className="flex flex-col gap-1.5" key={project.id}>
+                <div className="flex justify-between gap-2 items-center">
+                  {project.url ? (
+                    <a
+                      className="font-semibold text-primary underline underline-offset-2"
+                      href={project.url}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {project.title}
+                    </a>
+                  ) : (
+                    <p className="font-semibold">{project.title}</p>
+                  )}
+                  {!!project.skills?.length && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {project.skills.map((skill) => (
+                        <span
+                          className="px-1 py-0.25 border text-sm border-border rounded text-caption"
+                          key={skill.id}
+                        >
+                          {skill.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {project.description && <p>{project.description}</p>}
               </div>
             ))}
           </div>

@@ -23,6 +23,7 @@ import CandidateProfileWorkExperience from "./_components/CandidateProfileWorkEx
 import CandidateProfileAvatar from "./_components/CandidateProfileAvatar"
 import CandidateProfileVisibility from "./_components/CandidateProfileVisibility"
 import CandidateProfileJobExpectations from "./_components/CandidateProfileJobExpectations"
+import CandidateProfileProjects from "./_components/CandidateProfileProjects"
 
 interface Props {
   me: User
@@ -40,7 +41,11 @@ const Content = ({ me }: Props) => {
   const { mutate: update, status: updateStatus } = useUpdateMeCandidate()
 
   const onSubmit = form.handleSubmit((data) => {
-    const avatar = data.avatar?.content ? data.avatar : data.avatar ? undefined : null
+    const avatar = data.avatar?.content
+      ? data.avatar
+      : data.avatar
+        ? undefined
+        : null
 
     if (me.candidate) {
       update(
@@ -85,9 +90,11 @@ const Content = ({ me }: Props) => {
         <ProfileForm.BlockSeparator />
         <CandidateProfileJobExpectations />
         <ProfileForm.BlockSeparator />
-        <CandidateProfileVisibility />
-        <ProfileForm.BlockSeparator />
         <CandidateProfileWorkExperience />
+        <ProfileForm.BlockSeparator />
+        <CandidateProfileProjects />
+        <ProfileForm.BlockSeparator />
+        <CandidateProfileVisibility />
       </ProfileForm.Main>
     </ProfileForm.Root>
   )

@@ -102,10 +102,7 @@ export class RecruiterApplicationsService {
     private readonly candidatesService: CandidatesService,
   ) {}
 
-  async getDashboard(
-    dto: GetRecruiterDashboardDto,
-    user_: ICurrentUser,
-  ) {
+  async getDashboard(dto: GetRecruiterDashboardDto, user_: ICurrentUser) {
     const user = await this.usersService.findFilledRecruiterById(user_.id)
     const range = this.getDashboardRange(dto.period)
     const applicationTypes = dto.includeInvitations
@@ -669,7 +666,9 @@ export class RecruiterApplicationsService {
         .andWhere("application.type IN (:...applicationTypes)", {
           applicationTypes,
         })
-        .andWhere('message."createdAt" >= :start', { start: range.currentStart })
+        .andWhere('message."createdAt" >= :start', {
+          start: range.currentStart,
+        })
         .andWhere('message."createdAt" < :end', { end: range.currentEnd })
         .getRawMany<DashboardRawTimestamp>(),
       this.createApplicationMessagesDashboardQB(recruiterId)
@@ -683,7 +682,9 @@ export class RecruiterApplicationsService {
         .andWhere("application.type IN (:...applicationTypes)", {
           applicationTypes,
         })
-        .andWhere('message."createdAt" >= :start', { start: range.currentStart })
+        .andWhere('message."createdAt" >= :start', {
+          start: range.currentStart,
+        })
         .andWhere('message."createdAt" < :end', { end: range.currentEnd })
         .getRawMany<DashboardRawTimestamp>(),
     ])
@@ -699,19 +700,11 @@ export class RecruiterApplicationsService {
     }
 
     for (const row of acceptedRows) {
-      this.incrementTimelineBucket(
-        buckets,
-        new Date(row.createdAt),
-        "accepted",
-      )
+      this.incrementTimelineBucket(buckets, new Date(row.createdAt), "accepted")
     }
 
     for (const row of rejectedRows) {
-      this.incrementTimelineBucket(
-        buckets,
-        new Date(row.createdAt),
-        "rejected",
-      )
+      this.incrementTimelineBucket(buckets, new Date(row.createdAt), "rejected")
     }
 
     return buckets.map((bucket) => bucket.value)
@@ -748,7 +741,9 @@ export class RecruiterApplicationsService {
         .andWhere("application.type IN (:...applicationTypes)", {
           applicationTypes,
         })
-        .andWhere('message."createdAt" >= :start', { start: range.currentStart })
+        .andWhere('message."createdAt" >= :start', {
+          start: range.currentStart,
+        })
         .andWhere('message."createdAt" < :end', { end: range.currentEnd })
         .groupBy("vacancy.id")
         .addGroupBy("vacancy.title")
@@ -766,7 +761,9 @@ export class RecruiterApplicationsService {
         .andWhere("application.type IN (:...applicationTypes)", {
           applicationTypes,
         })
-        .andWhere('message."createdAt" >= :start', { start: range.currentStart })
+        .andWhere('message."createdAt" >= :start', {
+          start: range.currentStart,
+        })
         .andWhere('message."createdAt" < :end', { end: range.currentEnd })
         .groupBy("vacancy.id")
         .addGroupBy("vacancy.title")

@@ -89,6 +89,12 @@ export class GetRecruiterCandidatesDto {
   @Min(0)
   @Type(() => Number)
   @IsOptional()
+  projectsCountMin?: number
+
+  @IsInt()
+  @Min(0)
+  @Type(() => Number)
+  @IsOptional()
   ageFrom?: number
 
   @IsInt()

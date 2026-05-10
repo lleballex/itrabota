@@ -3,6 +3,7 @@ import { TypeOrmModule } from "@nestjs/typeorm"
 
 import { UsersModule } from "@/modules/users/users.module"
 import { ApplicationsModule } from "@/modules/applications/applications.module"
+import { SkillsModule } from "@/modules/skills/skills.module"
 
 import { Vacancy } from "./entities/vacancy.entity"
 import { VacanciesService } from "./vacancies.service"
@@ -15,6 +16,7 @@ import { FunnelStepsService } from "./funnel-steps.service"
     TypeOrmModule.forFeature([Vacancy, FunnelStep]),
     UsersModule,
     ApplicationsModule,
+    SkillsModule,
   ],
   controllers: [VacanciesController],
   providers: [VacanciesService, FunnelStepsService],

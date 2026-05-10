@@ -3,6 +3,7 @@ import { Controller, useFormContext } from "react-hook-form"
 import { useSkills } from "@/api/skills/get-skills"
 import { useSpecializations } from "@/api/specializations/get-specializations"
 import ProfileForm from "@/components/base/profile/ProfileForm"
+import Input from "@/components/ui/Input"
 import SearchSelect from "@/components/ui/SearchSelect"
 
 import { FormInputValues, FormOutputValues } from "../../form"
@@ -15,6 +16,19 @@ export default function CandidateProfileJob() {
 
   return (
     <ProfileForm.Block title="Профессиональная информация">
+      <Controller
+        control={form.control}
+        name="education"
+        render={({ field, fieldState }) => (
+          <Input
+            {...field}
+            value={field.value ?? ""}
+            className="w-full"
+            error={fieldState.error}
+            label="Образование"
+          />
+        )}
+      />
       <ProfileForm.FieldsRow>
         <Controller
           control={form.control}
@@ -60,12 +74,41 @@ export default function CandidateProfileJob() {
           )}
         />
       </ProfileForm.FieldsRow>
+      <ProfileForm.FieldsRow>
+        <Controller
+          control={form.control}
+          name="githubUrl"
+          render={({ field, fieldState }) => (
+            <Input
+              {...field}
+              value={field.value ?? ""}
+              className="w-full"
+              error={fieldState.error}
+              label="GitHub"
+            />
+          )}
+        />
+        <Controller
+          control={form.control}
+          name="gitlabUrl"
+          render={({ field, fieldState }) => (
+            <Input
+              {...field}
+              value={field.value ?? ""}
+              className="w-full"
+              error={fieldState.error}
+              label="GitLab"
+            />
+          )}
+        />
+      </ProfileForm.FieldsRow>
       <Controller
         control={form.control}
         name="description"
         render={({ field, fieldState }) => (
           <Textarea
             {...field}
+            value={field.value ?? ""}
             className="w-full"
             error={fieldState.error}
             label="О себе"

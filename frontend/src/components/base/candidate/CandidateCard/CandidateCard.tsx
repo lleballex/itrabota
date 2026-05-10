@@ -48,6 +48,12 @@ export default function CandidateCard({
     candidate.schedule ? VacancySchedules[candidate.schedule] : null,
     candidateSalary ? `З/п ${candidateSalary.toLowerCase()}` : null,
   ].filter((item): item is string => Boolean(item))
+  const projectsCount = candidate.projects?.length ?? 0
+  const projectsLabel = pluralize(projectsCount, {
+    one: "проект",
+    few: "проекта",
+    many: "проектов",
+  })
 
   return (
     <Link
@@ -100,6 +106,10 @@ export default function CandidateCard({
             ))}
           </div>
         )}
+
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
+          <p>{projectsLabel}</p>
+        </div>
 
         {!!candidate.skills?.length && (
           <div className="flex flex-wrap gap-1">

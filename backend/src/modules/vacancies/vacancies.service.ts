@@ -1,7 +1,6 @@
 import {
   ConflictException,
   ForbiddenException,
-  InternalServerErrorException,
   Injectable,
   NotFoundException,
 } from "@nestjs/common"
@@ -16,26 +15,21 @@ import {
 
 import { ICurrentUser } from "@/modules/auth/interfaces/current-user.interface"
 import { UsersService } from "@/modules/users/users.service"
-import { Candidate } from "@/modules/users/entities/candidate.entity"
-import { WorkExperienceItem } from "@/modules/users/entities/work-experence-item.entity"
 import { UserRole } from "@/modules/users/types/user-role"
 import { ApplicationsService } from "@/modules/applications/applications.service"
 import { CandidatesService } from "@/modules/users/candidates.service"
 import { applyTokenizedCaseInsensitiveSearch } from "@/common/lib/search"
 import { isNullish } from "@/common/lib/is-nullish"
+import { SkillsService } from "@/modules/skills/skills.service"
 
-import {
-  Vacancy,
-  VacancyFormat,
-  VacancyStatus,
-  VacancyWorkExperience,
-} from "./entities/vacancy.entity"
+import { Vacancy, VacancyStatus } from "./entities/vacancy.entity"
 import { CreateVacancyDto } from "./dto/create-vacancy.dto"
 import { GetRecruiterVacanciesDto } from "./dto/get-recruiter-vacancies.dto"
 import { FunnelStepsService } from "./funnel-steps.service"
 import { UpdateVacancyDto } from "./dto/update-vacancy-dto"
 import { GetCandidateVacanciesDto } from "./dto/get-candidate-vacancies.dto"
-import { MATCH_FOR_ME_MIN_PERCENT, MATCH_PERCENT_WEIGHTS } from "./lib/matching"
+import { MATCH_FOR_ME_MIN_PERCENT } from "./lib/matching"
+import { calculateMatchPercent } from "./lib/calculate-match-percent"
 
 type VacancyFilters = Pick<
   GetCandidateVacanciesDto,
@@ -51,12 +45,6 @@ type VacancyFilters = Pick<
   | "salaryTo"
 >
 
-type VacancyWithMatchRaw = {
-  match_vacancy_id?: string
-  vacancy_id?: string
-  match_percent?: string | number | null
-}
-
 @Injectable()
 export class VacanciesService {
   constructor(
@@ -68,6 +56,7 @@ export class VacanciesService {
     private readonly usersService: UsersService,
     private readonly candidatesService: CandidatesService,
     private readonly applicationsService: ApplicationsService,
+    private readonly skillsService: SkillsService,
   ) {}
 
   private createQB(manager?: EntityManager) {
@@ -100,6 +89,8 @@ export class VacanciesService {
     if (!vacancy) {
       throw new NotFoundException("Вакансия не найдена") // TODO: unified exception
     }
+
+    await this.enrichVacancies([vacancy], manager)
 
     return vacancy
   }
@@ -205,12 +196,6 @@ export class VacanciesService {
       })
     }
 
-    if (filters.skillIds?.length) {
-      qb.andWhere("skills.id IN (:...skillIds)", {
-        skillIds: filters.skillIds,
-      })
-    }
-
     if (filters.salaryFrom) {
       qb.andWhere('(vacancy."salaryFrom" >= :salaryFrom)', {
         salaryFrom: filters.salaryFrom,
@@ -224,271 +209,22 @@ export class VacanciesService {
     }
   }
 
-  private getCandidateMatchPercentExpression() {
-    const escape = (value: string) => this.dataSource.driver.escape(value)
-    const vacancySkillsRelation =
-      this.vacanciesRepo.metadata.findRelationWithPropertyPath("skills")
-    const candidateSkillsRelation = this.dataSource
-      .getMetadata(Candidate)
-      .findRelationWithPropertyPath("skills")
-    const workExperienceMetadata =
-      this.dataSource.getMetadata(WorkExperienceItem)
-    const workExperienceCandidateRelation =
-      workExperienceMetadata.findRelationWithPropertyPath("candidate")
-
-    if (
-      !vacancySkillsRelation?.joinTableName ||
-      !candidateSkillsRelation?.joinTableName ||
-      !workExperienceCandidateRelation?.joinColumns[0]
-    ) {
-      throw new InternalServerErrorException(
-        "Не удалось рассчитать совпадение с вакансией",
-      )
+  private hasEffectiveSkills(vacancy: Vacancy, skillIds: string[] | undefined) {
+    if (!skillIds?.length) {
+      return true
     }
 
-    const vacancySkillsTable = escape(vacancySkillsRelation.joinTableName)
-    const vacancySkillsVacancyColumn = escape(
-      vacancySkillsRelation.joinColumns[0].databaseName,
-    )
-    const vacancySkillsSkillColumn = escape(
-      vacancySkillsRelation.inverseJoinColumns[0].databaseName,
+    const effectiveSkillIds = new Set(
+      vacancy.effectiveSkills?.map((skill) => skill.id) ?? [],
     )
 
-    const candidateSkillsTable = escape(candidateSkillsRelation.joinTableName)
-    const candidateSkillsCandidateColumn = escape(
-      candidateSkillsRelation.joinColumns[0].databaseName,
-    )
-    const candidateSkillsSkillColumn = escape(
-      candidateSkillsRelation.inverseJoinColumns[0].databaseName,
-    )
-    const workExperienceTable = escape(workExperienceMetadata.tableName)
-    const workExperienceCandidateColumn = escape(
-      workExperienceCandidateRelation.joinColumns[0].databaseName,
-    )
-    const workExperienceStartedAtColumn = escape(
-      workExperienceMetadata.findColumnWithPropertyName("startedAt")!
-        .databaseName,
-    )
-    const workExperienceEndedAtColumn = escape(
-      workExperienceMetadata.findColumnWithPropertyName("endedAt")!
-        .databaseName,
-    )
-
-    const requiredSkillsCountExpression = `
-      (
-        SELECT COUNT(*)::numeric
-        FROM ${vacancySkillsTable} "vacancySkillCount"
-        WHERE "vacancySkillCount".${vacancySkillsVacancyColumn} = vacancy.id
-      )
-    `
-
-    const matchedSkillsCountExpression = `
-      (
-        SELECT COUNT(*)::numeric
-        FROM ${vacancySkillsTable} "vacancySkillMatch"
-        INNER JOIN ${candidateSkillsTable} "candidateSkillMatch"
-          ON "candidateSkillMatch".${candidateSkillsSkillColumn} = "vacancySkillMatch".${vacancySkillsSkillColumn}
-          AND "candidateSkillMatch".${candidateSkillsCandidateColumn} = :candidateId
-        WHERE "vacancySkillMatch".${vacancySkillsVacancyColumn} = vacancy.id
-      )
-    `
-
-    const skillsScoreExpression = `
-      CASE
-        WHEN ${requiredSkillsCountExpression} > 0
-        THEN LEAST(
-          ${MATCH_PERCENT_WEIGHTS.skills},
-          ${matchedSkillsCountExpression} * ${MATCH_PERCENT_WEIGHTS.skills}.0 / ${requiredSkillsCountExpression}
-        )
-        ELSE ${MATCH_PERCENT_WEIGHTS.skills}
-      END
-    `
-
-    const candidateSpecializationIdExpression =
-      "CAST(:candidateSpecializationId AS uuid)"
-    const candidateSalaryFromExpression =
-      "CAST(:candidateSalaryFrom AS numeric)"
-    const candidateSalaryToExpression = "CAST(:candidateSalaryTo AS numeric)"
-    const candidateFormatExpression = "CAST(:candidateFormat AS text)"
-    const candidateCityIdExpression = "CAST(:candidateCityId AS uuid)"
-    const candidateEmploymentTypeExpression =
-      "CAST(:candidateEmploymentType AS text)"
-    const candidateScheduleExpression = "CAST(:candidateSchedule AS text)"
-
-    const specializationScoreExpression = `
-      CASE
-        WHEN specialization.id IS NULL
-        THEN ${MATCH_PERCENT_WEIGHTS.specialization}
-        WHEN ${candidateSpecializationIdExpression} IS NOT NULL AND specialization.id = ${candidateSpecializationIdExpression}
-        THEN ${MATCH_PERCENT_WEIGHTS.specialization}
-        ELSE 0
-      END
-    `
-
-    const candidateExperienceMonthsExpression = `
-      (
-        SELECT COALESCE(
-          SUM(
-            GREATEST(
-              0,
-              DATE_PART(
-                'year',
-                AGE(
-                  COALESCE("workExperienceMatch".${workExperienceEndedAtColumn}, NOW()),
-                  "workExperienceMatch".${workExperienceStartedAtColumn}
-                )
-              ) * 12
-              + DATE_PART(
-                'month',
-                AGE(
-                  COALESCE("workExperienceMatch".${workExperienceEndedAtColumn}, NOW()),
-                  "workExperienceMatch".${workExperienceStartedAtColumn}
-                )
-              )
-            )
-          ),
-          0
-        )
-        FROM ${workExperienceTable} "workExperienceMatch"
-        WHERE "workExperienceMatch".${workExperienceCandidateColumn} = :candidateId
-      )
-    `
-
-    const experienceScoreExpression = `
-      CASE
-        WHEN vacancy."workExperience" IS NULL
-        THEN ${MATCH_PERCENT_WEIGHTS.experience}
-        WHEN vacancy."workExperience" = '${VacancyWorkExperience.None}' AND ${candidateExperienceMonthsExpression} >= 0
-        THEN ${MATCH_PERCENT_WEIGHTS.experience}
-        WHEN vacancy."workExperience" = '${VacancyWorkExperience.UpToYear}' AND ${candidateExperienceMonthsExpression} > 0
-        THEN ${MATCH_PERCENT_WEIGHTS.experience}
-        WHEN vacancy."workExperience" = '${VacancyWorkExperience.OneToThreeYears}' AND ${candidateExperienceMonthsExpression} >= 12
-        THEN ${MATCH_PERCENT_WEIGHTS.experience}
-        WHEN vacancy."workExperience" = '${VacancyWorkExperience.ThreeToFiveYears}' AND ${candidateExperienceMonthsExpression} >= 36
-        THEN ${MATCH_PERCENT_WEIGHTS.experience}
-        WHEN vacancy."workExperience" = '${VacancyWorkExperience.FromFiveYears}' AND ${candidateExperienceMonthsExpression} >= 60
-        THEN ${MATCH_PERCENT_WEIGHTS.experience}
-        ELSE 0
-      END
-    `
-
-    const salaryScoreExpression = `
-      CASE
-        WHEN vacancy."salaryFrom" IS NULL AND vacancy."salaryTo" IS NULL
-        THEN ${MATCH_PERCENT_WEIGHTS.salary}
-        WHEN (vacancy."salaryTo" IS NULL OR COALESCE(${candidateSalaryFromExpression}, 0) <= vacancy."salaryTo")
-          AND (vacancy."salaryFrom" IS NULL OR COALESCE(${candidateSalaryToExpression}, 999999999999) >= vacancy."salaryFrom")
-        THEN ${MATCH_PERCENT_WEIGHTS.salary}
-        ELSE 0
-      END
-    `
-
-    const formatScoreExpression = `
-      CASE
-        WHEN vacancy.format IS NULL
-        THEN ${MATCH_PERCENT_WEIGHTS.format}
-        WHEN ${candidateFormatExpression} IS NOT NULL AND vacancy.format::text = ${candidateFormatExpression}
-        THEN ${MATCH_PERCENT_WEIGHTS.format}
-        ELSE 0
-      END
-    `
-
-    const cityScoreExpression = `
-      CASE
-        WHEN vacancy.format = '${VacancyFormat.Remote}' OR city.id IS NULL
-        THEN ${MATCH_PERCENT_WEIGHTS.city}
-        WHEN ${candidateCityIdExpression} IS NOT NULL AND city.id = ${candidateCityIdExpression}
-        THEN ${MATCH_PERCENT_WEIGHTS.city}
-        ELSE 0
-      END
-    `
-
-    const employmentTypeScoreExpression = `
-      CASE
-        WHEN vacancy."employmentType" IS NULL
-        THEN ${MATCH_PERCENT_WEIGHTS.employmentType}
-        WHEN ${candidateEmploymentTypeExpression} IS NOT NULL AND vacancy."employmentType"::text = ${candidateEmploymentTypeExpression}
-        THEN ${MATCH_PERCENT_WEIGHTS.employmentType}
-        ELSE 0
-      END
-    `
-
-    const scheduleScoreExpression = `
-      CASE
-        WHEN vacancy.schedule IS NULL
-        THEN ${MATCH_PERCENT_WEIGHTS.schedule}
-        WHEN ${candidateScheduleExpression} IS NOT NULL AND vacancy.schedule::text = ${candidateScheduleExpression}
-        THEN ${MATCH_PERCENT_WEIGHTS.schedule}
-        ELSE 0
-      END
-    `
-
-    return `
-      ROUND(
-        ${skillsScoreExpression}
-        + ${specializationScoreExpression}
-        + ${experienceScoreExpression}
-        + ${salaryScoreExpression}
-        + ${formatScoreExpression}
-        + ${cityScoreExpression}
-        + ${employmentTypeScoreExpression}
-        + ${scheduleScoreExpression}
-      )::int
-    `
+    return skillIds.some((skillId) => effectiveSkillIds.has(skillId))
   }
 
-  private applyCandidateMatchPercent(
-    qb: SelectQueryBuilder<Vacancy>,
-    user: Awaited<ReturnType<UsersService["findFilledCandidateById"]>>,
-    options?: { filterByMatch?: boolean },
-  ) {
-    const matchPercentExpression = this.getCandidateMatchPercentExpression()
+  private async enrichVacancies(vacancies: Vacancy[], manager?: EntityManager) {
+    await this.skillsService.enrichSkillContainers(vacancies, manager)
 
-    qb.addSelect(matchPercentExpression, "match_percent").setParameters({
-      candidateId: user.candidate.id,
-      candidateCityId: user.candidate.city?.id ?? null,
-      candidateSpecializationId: user.candidate.specialization?.id ?? null,
-      candidateSalaryFrom: user.candidate.salaryFrom,
-      candidateSalaryTo: user.candidate.salaryTo,
-      candidateFormat: user.candidate.format,
-      candidateEmploymentType: user.candidate.employmentType,
-      candidateSchedule: user.candidate.schedule,
-    })
-
-    if (options?.filterByMatch) {
-      qb.andWhere(`${matchPercentExpression} >= :minMatchPercent`, {
-        minMatchPercent: MATCH_FOR_ME_MIN_PERCENT,
-      })
-      qb.orderBy(matchPercentExpression, "DESC").addOrderBy(
-        "vacancy.createdAt",
-        "DESC",
-      )
-    }
-  }
-
-  private applyMatchPercentToVacancies(
-    vacancies: Vacancy[],
-    rawVacancies: VacancyWithMatchRaw[],
-  ) {
-    const matchPercentByVacancyId = new Map<string, number>()
-
-    for (const rawVacancy of rawVacancies) {
-      const vacancyId = rawVacancy.match_vacancy_id ?? rawVacancy.vacancy_id
-
-      if (!vacancyId || matchPercentByVacancyId.has(vacancyId)) {
-        continue
-      }
-
-      matchPercentByVacancyId.set(
-        vacancyId,
-        Number(rawVacancy.match_percent ?? 0),
-      )
-    }
-
-    return vacancies.map((vacancy) => {
-      vacancy.matchPercent = matchPercentByVacancyId.get(vacancy.id) ?? 0
-      return vacancy
-    })
+    return vacancies
   }
 
   findOneById(id: string, manager?: EntityManager) {
@@ -546,7 +282,7 @@ export class VacanciesService {
       qb.andWhere("vacancy.status = :status", { status: dto.status })
     }
 
-    return qb.getMany()
+    return this.enrichVacancies(await qb.getMany())
   }
 
   async findAllForCandidate(
@@ -560,16 +296,36 @@ export class VacanciesService {
     })
 
     this.applyVacancyFilters(qb, dto.matchForMe ? { query: dto.query } : dto)
-    this.applyCandidateMatchPercent(qb, user, {
-      filterByMatch: dto.matchForMe,
-    })
 
-    const { entities, raw } = await qb.getRawAndEntities()
-
-    return this.applyMatchPercentToVacancies(
-      entities,
-      raw as VacancyWithMatchRaw[],
+    const vacancies = await this.enrichVacancies(await qb.getMany())
+    const filteredVacancies = vacancies.filter((vacancy) =>
+      this.hasEffectiveSkills(
+        vacancy,
+        dto.matchForMe ? undefined : dto.skillIds,
+      ),
     )
+
+    for (const vacancy of filteredVacancies) {
+      vacancy.matchPercent = calculateMatchPercent(vacancy, user.candidate)
+    }
+
+    if (!dto.matchForMe) {
+      return filteredVacancies
+    }
+
+    return filteredVacancies
+      .filter(
+        (vacancy) => (vacancy.matchPercent ?? 0) >= MATCH_FOR_ME_MIN_PERCENT,
+      )
+      .sort((left, right) => {
+        const diff = (right.matchPercent ?? 0) - (left.matchPercent ?? 0)
+
+        if (diff !== 0) {
+          return diff
+        }
+
+        return right.createdAt.getTime() - left.createdAt.getTime()
+      })
   }
 
   async create(dto_: CreateVacancyDto, user_: ICurrentUser) {

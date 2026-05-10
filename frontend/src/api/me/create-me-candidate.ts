@@ -15,6 +15,9 @@ interface Data {
   phoneNumber?: string | null
   tgUsername?: string | null
   description?: string | null
+  education?: string | null
+  githubUrl?: string | null
+  gitlabUrl?: string | null
   isHidden?: boolean
   cityId?: string | null
   specializationId?: string | null
@@ -36,6 +39,12 @@ interface Data {
     startedAt: string
     endedAt?: string | null
     description?: string | null
+  }[]
+  projects?: {
+    title: string
+    url?: string | null
+    description?: string | null
+    skillIds?: string[]
   }[]
 }
 

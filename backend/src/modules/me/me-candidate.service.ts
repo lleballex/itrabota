@@ -8,6 +8,7 @@ import { AttachmentsService } from "@/modules/attachments/attachments.service"
 import { CreateAttachmentDto } from "@/modules/attachments/dto/create-attachment.dto"
 import { Candidate } from "@/modules/users/entities/candidate.entity"
 import { WorkExperienceService } from "@/modules/users/work-experience.service"
+import { CandidateProjectsService } from "@/modules/users/candidate-projects.service"
 import { isNullish } from "@/common/lib/is-nullish"
 
 import { CreateMeCandidateDto } from "./dto/create-me-candidate.dto"
@@ -21,6 +22,7 @@ export class MeCandidateService {
     private readonly usersService: UsersService,
     private readonly attachmentsService: AttachmentsService,
     private readonly workExperieceService: WorkExperienceService,
+    private readonly candidateProjectsService: CandidateProjectsService,
   ) {}
 
   private async validateEmail(
@@ -108,11 +110,51 @@ export class MeCandidateService {
     }
   }
 
+  private async handleProjectsUpsert(
+    dto: UpdateMeCandidateDto["projects"],
+    candidate: Candidate,
+    manager?: EntityManager,
+  ) {
+    if (!dto) return
+
+    if (candidate.projects) {
+      for (const item of candidate.projects) {
+        const itemExists = dto.some((i) => i.id === item.id)
+
+        if (!itemExists) {
+          await this.candidateProjectsService.remove(item.id, manager)
+        }
+      }
+    }
+
+    for (const itemDto of dto) {
+      const data = {
+        ...itemDto,
+        skills: isNullish(itemDto.skillIds)
+          ? itemDto.skillIds
+          : itemDto.skillIds.map((id) => ({ id })),
+      }
+
+      if (itemDto.id) {
+        await this.candidateProjectsService.update(itemDto.id, data, manager)
+      } else {
+        await this.candidateProjectsService.create(
+          {
+            ...data,
+            candidate: { id: candidate.id },
+          },
+          manager,
+        )
+      }
+    }
+  }
+
   async create(dto_: CreateMeCandidateDto, user_: ICurrentUser) {
     const {
       email,
       avatar: avatarDto,
       workExperience: workExperienceDto,
+      projects: projectsDto,
       specializationId,
       cityId,
       skillIds,
@@ -150,6 +192,7 @@ export class MeCandidateService {
         candidate,
         manager,
       )
+      await this.handleProjectsUpsert(projectsDto, candidate, manager)
     })
 
     return this.usersService.findOneById(user_.id)
@@ -160,6 +203,7 @@ export class MeCandidateService {
       email,
       avatar: avatarDto,
       workExperience: workExperienceDto,
+      projects: projectsDto,
       specializationId,
       cityId,
       skillIds,
@@ -201,6 +245,7 @@ export class MeCandidateService {
         user.candidate,
         manager,
       )
+      await this.handleProjectsUpsert(projectsDto, user.candidate, manager)
     })
 
     return this.usersService.findOneById(user_.id)

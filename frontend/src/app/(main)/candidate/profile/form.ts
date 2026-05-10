@@ -33,6 +33,9 @@ const formSchema = z.object({
   tgUsername: formSchemaFields.string.nullable(),
   skillIds: z.array(formSchemaFields.relation),
   description: formSchemaFields.string.nullable(),
+  education: formSchemaFields.string.nullable(),
+  githubUrl: formSchemaFields.url.nullable(),
+  gitlabUrl: formSchemaFields.url.nullable(),
   workExperience: z.array(
     z.object({
       id: formSchemaFields.string.optional(),
@@ -41,6 +44,15 @@ const formSchema = z.object({
       startedAt: formSchemaFields.string, // TODO: date
       endedAt: formSchemaFields.string.nullable(), // TODO: date
       description: formSchemaFields.string.nullable(),
+    }),
+  ),
+  projects: z.array(
+    z.object({
+      id: formSchemaFields.string.optional(),
+      title: formSchemaFields.string,
+      url: formSchemaFields.url.nullable(),
+      description: formSchemaFields.string.nullable(),
+      skillIds: z.array(formSchemaFields.relation),
     }),
   ),
 })
@@ -72,7 +84,15 @@ export const getFormDefaultValues = (
   tgUsername: user?.candidate?.tgUsername ?? null,
   skillIds: user?.candidate?.skills?.map((skill) => skill.id) ?? [],
   description: user?.candidate?.description ?? null,
+  education: user?.candidate?.education ?? null,
+  githubUrl: user?.candidate?.githubUrl ?? null,
+  gitlabUrl: user?.candidate?.gitlabUrl ?? null,
   workExperience: user?.candidate?.workExperience ?? [],
+  projects:
+    user?.candidate?.projects?.map((project) => ({
+      ...project,
+      skillIds: project.skills?.map((skill) => skill.id) ?? [],
+    })) ?? [],
 })
 
 export const formDefaultWorkExperienceItem: FormOutputValues["workExperience"][0] = {
@@ -82,4 +102,12 @@ export const formDefaultWorkExperienceItem: FormOutputValues["workExperience"][0
   startedAt: "",
   endedAt: null,
   description: null,
+}
+
+export const formDefaultProjectItem: FormOutputValues["projects"][0] = {
+  id: undefined,
+  title: "",
+  url: null,
+  description: null,
+  skillIds: [],
 }

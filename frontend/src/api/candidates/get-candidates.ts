@@ -20,6 +20,7 @@ interface RecruiterParams {
   salaryFrom?: number
   salaryTo?: number
   totalWorkExperienceMonthsMin?: number
+  projectsCountMin?: number
   ageFrom?: number
   ageTo?: number
 }

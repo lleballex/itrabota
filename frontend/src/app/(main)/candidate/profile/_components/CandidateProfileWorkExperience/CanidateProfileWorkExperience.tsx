@@ -102,7 +102,7 @@ export default function CandidateProfileWorkExperience() {
                 {...field}
                 className="w-full"
                 error={fieldState.error}
-                label="Описание"
+                label="Описание (чем занимались, проекты, технологии, фукнционал)"
               />
             )}
           />

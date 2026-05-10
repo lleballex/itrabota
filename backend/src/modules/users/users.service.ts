@@ -15,6 +15,7 @@ import { InjectRepository } from "@nestjs/typeorm"
 import { WithRequired } from "@/common/types/with-required.type"
 import { UserRole } from "@/modules/users/types/user-role"
 import { WithConcreted } from "@/common/types/with-concreted.type"
+import { SkillsService } from "@/modules/skills/skills.service"
 
 import { User } from "./entities/user.entity"
 import { calculateTotalWorkExperienceMonths } from "./lib/calculate-total-work-experience-months"
@@ -23,6 +24,7 @@ import { calculateTotalWorkExperienceMonths } from "./lib/calculate-total-work-e
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly usersRepo: Repository<User>,
+    private readonly skillsService: SkillsService,
   ) {}
 
   private createQueryBuider(manager?: EntityManager) {
@@ -39,6 +41,11 @@ export class UsersService {
       .leftJoinAndSelect("candidate.specialization", "candidateSpecialization")
       .leftJoinAndSelect("candidate.skills", "candidateSkills")
       .leftJoinAndSelect("candidate.workExperience", "workExperienceItem")
+      .leftJoinAndSelect("candidate.projects", "candidateProjectItem")
+      .leftJoinAndSelect(
+        "candidateProjectItem.skills",
+        "candidateProjectSkills",
+      )
       .leftJoinAndSelect("candidate.avatar", "avatar")
 
     return qb
@@ -66,6 +73,14 @@ export class UsersService {
     }
 
     if (user.candidate) {
+      await this.skillsService.enrichSkillContainer(
+        user.candidate,
+        options?.manager,
+      )
+      await this.skillsService.enrichSkillContainers(
+        user.candidate.projects ?? [],
+        options?.manager,
+      )
       user.candidate.totalWorkExperienceMonths =
         calculateTotalWorkExperienceMonths(user.candidate.workExperience)
     }

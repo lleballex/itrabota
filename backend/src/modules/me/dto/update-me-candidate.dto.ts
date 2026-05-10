@@ -11,6 +11,7 @@ import {
   IsOptional,
   IsPositive,
   IsString,
+  IsUrl,
   IsUUID,
   ValidateNested,
 } from "class-validator"
@@ -45,6 +46,30 @@ class CreateOrUpdateWorkExperienceItemDto {
   @IsNotEmpty()
   @IsOptional()
   description?: string | null
+}
+
+class CreateOrUpdateCandidateProjectItemDto {
+  @IsUUID("4")
+  @IsOptional()
+  id?: string
+
+  @IsString()
+  @IsNotEmpty()
+  title!: string
+
+  @IsUrl()
+  @IsOptional()
+  url?: string | null
+
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  description?: string | null
+
+  @IsArray()
+  @IsUUID("4", { each: true })
+  @IsOptional()
+  skillIds?: string[]
 }
 
 export class UpdateMeCandidateDto {
@@ -86,6 +111,19 @@ export class UpdateMeCandidateDto {
   @IsNotEmpty()
   @IsOptional()
   description?: string | null
+
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  education?: string | null
+
+  @IsUrl()
+  @IsOptional()
+  githubUrl?: string | null
+
+  @IsUrl()
+  @IsOptional()
+  gitlabUrl?: string | null
 
   @IsBoolean()
   @IsOptional()
@@ -136,4 +174,10 @@ export class UpdateMeCandidateDto {
   @ValidateNested({ each: true })
   @IsOptional()
   workExperience?: CreateOrUpdateWorkExperienceItemDto[]
+
+  @IsArray()
+  @Type(() => CreateOrUpdateCandidateProjectItemDto)
+  @ValidateNested({ each: true })
+  @IsOptional()
+  projects?: CreateOrUpdateCandidateProjectItemDto[]
 }

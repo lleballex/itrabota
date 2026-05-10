@@ -1,6 +1,8 @@
+import { ReactNode } from "react"
+
 interface Props {
   label: string
-  content: string
+  content: ReactNode
 }
 
 export default function CandidateDetailedItem({ label, content }: Props) {

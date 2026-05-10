@@ -23,6 +23,7 @@ import {
 } from "@/modules/vacancies/entities/vacancy.entity"
 
 import { User } from "./user.entity"
+import { CandidateProjectItem } from "./candidate-project-item.entity"
 import { WorkExperienceItem } from "./work-experence-item.entity"
 
 @Entity("candidate")
@@ -47,6 +48,15 @@ export class Candidate extends BaseEntity {
 
   @Column("text", { nullable: true })
   description!: string | null
+
+  @Column("varchar", { nullable: true })
+  education!: string | null
+
+  @Column("varchar", { nullable: true })
+  githubUrl!: string | null
+
+  @Column("varchar", { nullable: true })
+  gitlabUrl!: string | null
 
   @Column("boolean", { default: false })
   isHidden!: boolean
@@ -78,8 +88,17 @@ export class Candidate extends BaseEntity {
   @JoinTable()
   skills?: Skill[]
 
+  explicitSkills?: Skill[]
+
+  effectiveSkills?: Skill[]
+
+  impliedSkills?: Skill[]
+
   @OneToMany(() => WorkExperienceItem, (item) => item.candidate)
   workExperience?: WorkExperienceItem[]
+
+  @OneToMany(() => CandidateProjectItem, (item) => item.candidate)
+  projects?: CandidateProjectItem[]
 
   totalWorkExperienceMonths?: number
 

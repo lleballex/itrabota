@@ -9,6 +9,7 @@ import {
   VacancyFormat,
   VacancySchedule,
 } from "./vacancy"
+import { CandidateProjectItem } from "./candidate-project-item"
 import { WorkExperienceItem } from "./work-experience-item"
 
 export interface Candidate extends BaseEntity {
@@ -19,6 +20,9 @@ export interface Candidate extends BaseEntity {
   phoneNumber: string | null
   tgUsername: string | null
   description: string | null
+  education: string | null
+  githubUrl: string | null
+  gitlabUrl: string | null
   isHidden: boolean
   salaryFrom: number | null
   salaryTo: number | null
@@ -28,7 +32,11 @@ export interface Candidate extends BaseEntity {
   city?: City | null
   specialization?: Specialization | null
   skills?: Skill[]
+  explicitSkills?: Skill[]
+  effectiveSkills?: Skill[]
+  impliedSkills?: Skill[]
   workExperience?: WorkExperienceItem[]
+  projects?: CandidateProjectItem[]
   totalWorkExperienceMonths?: number
   matchPercent?: number
   avatar?: Attachment | null
