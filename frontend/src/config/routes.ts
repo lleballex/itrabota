@@ -8,6 +8,7 @@ export const Routes = {
   register: "/auth/register",
 
   recruiter: {
+    dashboard: "/recruiter/dashboard",
     profile: "/recruiter/profile",
     newVacancy: "/recruiter/new-vacancy",
     vacancies: "/recruiter/vacancies",
@@ -37,9 +38,9 @@ export const Routes = {
   },
 }
 
-export const getVacanciesRouteByRole = (role: UserRole) =>
+export const getFilledProfileEntryRouteByRole = (role: UserRole) =>
   ({
-    [UserRole.Recruiter]: Routes.recruiter.vacancies,
+    [UserRole.Recruiter]: Routes.recruiter.dashboard,
     [UserRole.Candidate]: Routes.candidate.vacancies,
   })[role]
 
@@ -56,6 +57,6 @@ export const getEntryRouteForUser = (user: User) => {
   }[user.role]
 
   return profile
-    ? getVacanciesRouteByRole(user.role)
+    ? getFilledProfileEntryRouteByRole(user.role)
     : getProfileRouteByRole(user.role)
 }

@@ -10,6 +10,7 @@ import { RejectApplicationDto } from "./dto/reject-application.dto"
 import { RecruiterApplicationsService } from "./recruiter-applications.service"
 import { GetRecruiterApplicationsDto } from "./dto/get-recruiter-applications.dto"
 import { OfferRecruiterApplicationDto } from "./dto/offer-recruiter-application"
+import { GetRecruiterDashboardDto } from "./dto/get-recruiter-dashboard.dto"
 
 @Controller("applications/recruiter")
 @Auth(UserRole.Recruiter)
@@ -24,6 +25,14 @@ export class RecruiterApplicationsController {
     @CurrentUser() user: ICurrentUser,
   ) {
     return this.recruiterApplicationsService.findAll(query, user)
+  }
+
+  @Get("dashboard")
+  getDashboard(
+    @Query() query: GetRecruiterDashboardDto,
+    @CurrentUser() user: ICurrentUser,
+  ) {
+    return this.recruiterApplicationsService.getDashboard(query, user)
   }
 
   @Post()

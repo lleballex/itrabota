@@ -12,6 +12,11 @@ interface SidebarLink {
 
 const recruiterLinks: SidebarLink[] = [
   {
+    url: Routes.recruiter.dashboard,
+    title: "Дашборд",
+    icon: <Icon icon="house" />,
+  },
+  {
     url: Routes.recruiter.vacancies,
     title: "Вакансии",
     icon: <Icon icon="files" />,

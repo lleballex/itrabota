@@ -3,7 +3,8 @@ import {
   ForbiddenException,
   Injectable,
 } from "@nestjs/common"
-import { DataSource } from "typeorm"
+import { InjectRepository } from "@nestjs/typeorm"
+import { DataSource, Repository } from "typeorm"
 
 import { UsersService } from "@/modules/users/users.service"
 import { ICurrentUser } from "@/modules/auth/interfaces/current-user.interface"
@@ -25,10 +26,73 @@ import { IRecruiterApplicationsSearchParams } from "./interfaces/recruiter-appli
 import { OfferRecruiterApplicationDto } from "./dto/offer-recruiter-application"
 import { ApplicationMessagesService } from "./application-messages.service"
 import { NotificationsService } from "@/modules/notifications/notifications.service"
+import {
+  GetRecruiterDashboardDto,
+  RecruiterDashboardPeriod,
+} from "./dto/get-recruiter-dashboard.dto"
+import { ApplicationMessage } from "./entities/application-message.entity"
+
+export type DashboardMetricTrend = "up" | "down" | "flat"
+
+export interface DashboardMetric {
+  value: number
+  previousValue: number
+  delta: number
+  deltaPercent: number | null
+  trend: DashboardMetricTrend
+}
+
+export interface DashboardTimelineBucket {
+  bucketStart: string
+  responses: number
+  accepted: number
+  rejected: number
+}
+
+export interface DashboardTopVacancy {
+  vacancyId: string
+  title: string
+  responses: number
+  accepted: number
+  rejected: number
+  pending: number
+  conversionPercent: number
+}
+
+interface DashboardRange {
+  period: RecruiterDashboardPeriod
+  currentStart: Date
+  currentEnd: Date
+  previousStart: Date
+  previousEnd: Date
+}
+
+interface DashboardRawTimestamp {
+  createdAt: Date
+}
+
+interface DashboardTopVacancyBaseRaw {
+  vacancyId: string
+  vacancyTitle: string
+  applicationType: ApplicationType
+  applicationStatus: ApplicationStatus
+}
+
+interface DashboardTopVacancyEventRaw {
+  vacancyId: string
+  vacancyTitle: string
+  count: string
+}
 
 @Injectable()
 export class RecruiterApplicationsService {
   constructor(
+    @InjectRepository(Application)
+    private readonly applicationsRepo: Repository<Application>,
+
+    @InjectRepository(ApplicationMessage)
+    private readonly applicationMessagesRepo: Repository<ApplicationMessage>,
+
     private readonly dataSource: DataSource,
     private readonly applicationsService: ApplicationsService,
     private readonly messagesService: ApplicationMessagesService,
@@ -37,6 +101,54 @@ export class RecruiterApplicationsService {
     private readonly vacanciesService: VacanciesService,
     private readonly candidatesService: CandidatesService,
   ) {}
+
+  async getDashboard(
+    dto: GetRecruiterDashboardDto,
+    user_: ICurrentUser,
+  ) {
+    const user = await this.usersService.findFilledRecruiterById(user_.id)
+    const range = this.getDashboardRange(dto.period)
+    const applicationTypes = dto.includeInvitations
+      ? [ApplicationType.Response, ApplicationType.Invitation]
+      : [ApplicationType.Response]
+
+    const [
+      responses,
+      accepted,
+      rejected,
+      pendingCurrent,
+      timeline,
+      topVacancies,
+    ] = await Promise.all([
+      this.getResponseMetrics(user.recruiter.id, range, applicationTypes),
+      this.getAcceptedMetrics(user.recruiter.id, range, applicationTypes),
+      this.getRejectedMetrics(user.recruiter.id, range, applicationTypes),
+      this.getPendingCurrentCount(user.recruiter.id, applicationTypes),
+      this.getTimeline(user.recruiter.id, range, applicationTypes),
+      this.getTopVacancies(user.recruiter.id, range, applicationTypes),
+    ])
+
+    return {
+      period: {
+        key: range.period,
+        currentStart: range.currentStart.toISOString(),
+        currentEnd: range.currentEnd.toISOString(),
+        previousStart: range.previousStart.toISOString(),
+        previousEnd: range.previousEnd.toISOString(),
+        includeInvitations: Boolean(dto.includeInvitations),
+      },
+      summary: {
+        responses,
+        accepted,
+        rejected,
+        pendingCurrent: {
+          value: pendingCurrent,
+        },
+      },
+      timeline,
+      topVacancies,
+    }
+  }
 
   async findAll(dto: IRecruiterApplicationsSearchParams, user_: ICurrentUser) {
     const user = await this.usersService.findFilledRecruiterById(user_.id)
@@ -247,5 +359,487 @@ export class RecruiterApplicationsService {
         manager,
       )
     })
+  }
+
+  private getDashboardRange(
+    period: RecruiterDashboardPeriod = "month",
+  ): DashboardRange {
+    const now = new Date()
+    let currentStart: Date
+    let currentEnd: Date
+
+    switch (period) {
+      case "day":
+        currentStart = this.startOfDay(now)
+        currentEnd = this.addDays(currentStart, 1)
+        break
+      case "week":
+        currentStart = this.startOfWeek(now)
+        currentEnd = this.addDays(currentStart, 7)
+        break
+      case "year":
+        currentStart = new Date(now.getFullYear(), 0, 1)
+        currentEnd = new Date(now.getFullYear() + 1, 0, 1)
+        break
+      case "month":
+      default:
+        currentStart = new Date(now.getFullYear(), now.getMonth(), 1)
+        currentEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1)
+        break
+    }
+
+    const previousStart = new Date(
+      currentStart.getTime() - (currentEnd.getTime() - currentStart.getTime()),
+    )
+
+    return {
+      period,
+      currentStart,
+      currentEnd,
+      previousStart,
+      previousEnd: currentStart,
+    }
+  }
+
+  private startOfDay(date: Date) {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate())
+  }
+
+  private startOfWeek(date: Date) {
+    const start = this.startOfDay(date)
+    const day = start.getDay()
+    const diff = day === 0 ? -6 : 1 - day
+
+    start.setDate(start.getDate() + diff)
+
+    return start
+  }
+
+  private addDays(date: Date, amount: number) {
+    const next = new Date(date)
+
+    next.setDate(next.getDate() + amount)
+
+    return next
+  }
+
+  private addHours(date: Date, amount: number) {
+    const next = new Date(date)
+
+    next.setHours(next.getHours() + amount)
+
+    return next
+  }
+
+  private buildMetric(value: number, previousValue: number): DashboardMetric {
+    const delta = value - previousValue
+
+    return {
+      value,
+      previousValue,
+      delta,
+      deltaPercent:
+        previousValue > 0 ? Math.round((delta / previousValue) * 100) : null,
+      trend: delta > 0 ? "up" : delta < 0 ? "down" : "flat",
+    }
+  }
+
+  private createApplicationsDashboardQB(recruiterId: string) {
+    return this.applicationsRepo
+      .createQueryBuilder("application")
+      .leftJoin("application.vacancy", "vacancy")
+      .leftJoin("vacancy.recruiter", "recruiter")
+      .where("recruiter.id = :recruiterId", { recruiterId })
+  }
+
+  private createApplicationMessagesDashboardQB(recruiterId: string) {
+    return this.applicationMessagesRepo
+      .createQueryBuilder("message")
+      .leftJoin("message.application", "application")
+      .leftJoin("application.vacancy", "vacancy")
+      .leftJoin("vacancy.recruiter", "recruiter")
+      .where("recruiter.id = :recruiterId", { recruiterId })
+  }
+
+  private async countResponsesInRange(
+    recruiterId: string,
+    start: Date,
+    end: Date,
+    applicationTypes: ApplicationType[],
+  ) {
+    return this.createApplicationsDashboardQB(recruiterId)
+      .andWhere("application.type IN (:...applicationTypes)", {
+        applicationTypes,
+      })
+      .andWhere("application.createdAt >= :start", { start })
+      .andWhere("application.createdAt < :end", { end })
+      .getCount()
+  }
+
+  private async countMessagesByTypesInRange(
+    recruiterId: string,
+    messageTypes: ApplicationMessageType[],
+    start: Date,
+    end: Date,
+    applicationTypes: ApplicationType[],
+  ) {
+    return this.createApplicationMessagesDashboardQB(recruiterId)
+      .andWhere("message.type IN (:...messageTypes)", { messageTypes })
+      .andWhere("application.type IN (:...applicationTypes)", {
+        applicationTypes,
+      })
+      .andWhere("message.createdAt >= :start", { start })
+      .andWhere("message.createdAt < :end", { end })
+      .getCount()
+  }
+
+  private async getResponseMetrics(
+    recruiterId: string,
+    range: DashboardRange,
+    applicationTypes: ApplicationType[],
+  ) {
+    const [value, previousValue] = await Promise.all([
+      this.countResponsesInRange(
+        recruiterId,
+        range.currentStart,
+        range.currentEnd,
+        applicationTypes,
+      ),
+      this.countResponsesInRange(
+        recruiterId,
+        range.previousStart,
+        range.previousEnd,
+        applicationTypes,
+      ),
+    ])
+
+    return this.buildMetric(value, previousValue)
+  }
+
+  private async getAcceptedMetrics(
+    recruiterId: string,
+    range: DashboardRange,
+    applicationTypes: ApplicationType[],
+  ) {
+    const [value, previousValue] = await Promise.all([
+      this.countMessagesByTypesInRange(
+        recruiterId,
+        [ApplicationMessageType.RecruiterOfferedJob],
+        range.currentStart,
+        range.currentEnd,
+        applicationTypes,
+      ),
+      this.countMessagesByTypesInRange(
+        recruiterId,
+        [ApplicationMessageType.RecruiterOfferedJob],
+        range.previousStart,
+        range.previousEnd,
+        applicationTypes,
+      ),
+    ])
+
+    return this.buildMetric(value, previousValue)
+  }
+
+  private async getRejectedMetrics(
+    recruiterId: string,
+    range: DashboardRange,
+    applicationTypes: ApplicationType[],
+  ) {
+    const rejectionTypes = [
+      ApplicationMessageType.CandidateRejected,
+      ApplicationMessageType.RecruiterRejected,
+    ]
+
+    const [value, previousValue] = await Promise.all([
+      this.countMessagesByTypesInRange(
+        recruiterId,
+        rejectionTypes,
+        range.currentStart,
+        range.currentEnd,
+        applicationTypes,
+      ),
+      this.countMessagesByTypesInRange(
+        recruiterId,
+        rejectionTypes,
+        range.previousStart,
+        range.previousEnd,
+        applicationTypes,
+      ),
+    ])
+
+    return this.buildMetric(value, previousValue)
+  }
+
+  private async getPendingCurrentCount(
+    recruiterId: string,
+    applicationTypes: ApplicationType[],
+  ) {
+    return this.createApplicationsDashboardQB(recruiterId)
+      .andWhere("application.type IN (:...applicationTypes)", {
+        applicationTypes,
+      })
+      .andWhere("application.status = :status", {
+        status: ApplicationStatus.Pending,
+      })
+      .getCount()
+  }
+
+  private createTimelineBuckets(range: DashboardRange) {
+    const buckets: Array<{
+      start: Date
+      end: Date
+      value: DashboardTimelineBucket
+    }> = []
+
+    let current = new Date(range.currentStart)
+
+    while (current < range.currentEnd) {
+      let next: Date
+
+      if (range.period === "day") {
+        next = this.addHours(current, 1)
+      } else if (range.period === "year") {
+        next = new Date(current.getFullYear(), current.getMonth() + 1, 1)
+      } else {
+        next = this.addDays(current, 1)
+      }
+
+      buckets.push({
+        start: new Date(current),
+        end: next,
+        value: {
+          bucketStart: current.toISOString(),
+          responses: 0,
+          accepted: 0,
+          rejected: 0,
+        },
+      })
+
+      current = next
+    }
+
+    return buckets
+  }
+
+  private incrementTimelineBucket(
+    buckets: Array<{
+      start: Date
+      end: Date
+      value: DashboardTimelineBucket
+    }>,
+    createdAt: Date,
+    metric: keyof Pick<
+      DashboardTimelineBucket,
+      "responses" | "accepted" | "rejected"
+    >,
+  ) {
+    const bucket = buckets.find(
+      ({ start, end }) => createdAt >= start && createdAt < end,
+    )
+
+    if (bucket) {
+      bucket.value[metric] += 1
+    }
+  }
+
+  private async getTimeline(
+    recruiterId: string,
+    range: DashboardRange,
+    applicationTypes: ApplicationType[],
+  ) {
+    const [responseRows, acceptedRows, rejectedRows] = await Promise.all([
+      this.createApplicationsDashboardQB(recruiterId)
+        .select('application."createdAt"', "createdAt")
+        .andWhere("application.type IN (:...applicationTypes)", {
+          applicationTypes,
+        })
+        .andWhere('application."createdAt" >= :start', {
+          start: range.currentStart,
+        })
+        .andWhere('application."createdAt" < :end', {
+          end: range.currentEnd,
+        })
+        .getRawMany<DashboardRawTimestamp>(),
+      this.createApplicationMessagesDashboardQB(recruiterId)
+        .select('message."createdAt"', "createdAt")
+        .andWhere("message.type = :type", {
+          type: ApplicationMessageType.RecruiterOfferedJob,
+        })
+        .andWhere("application.type IN (:...applicationTypes)", {
+          applicationTypes,
+        })
+        .andWhere('message."createdAt" >= :start', { start: range.currentStart })
+        .andWhere('message."createdAt" < :end', { end: range.currentEnd })
+        .getRawMany<DashboardRawTimestamp>(),
+      this.createApplicationMessagesDashboardQB(recruiterId)
+        .select('message."createdAt"', "createdAt")
+        .andWhere("message.type IN (:...types)", {
+          types: [
+            ApplicationMessageType.CandidateRejected,
+            ApplicationMessageType.RecruiterRejected,
+          ],
+        })
+        .andWhere("application.type IN (:...applicationTypes)", {
+          applicationTypes,
+        })
+        .andWhere('message."createdAt" >= :start', { start: range.currentStart })
+        .andWhere('message."createdAt" < :end', { end: range.currentEnd })
+        .getRawMany<DashboardRawTimestamp>(),
+    ])
+
+    const buckets = this.createTimelineBuckets(range)
+
+    for (const row of responseRows) {
+      this.incrementTimelineBucket(
+        buckets,
+        new Date(row.createdAt),
+        "responses",
+      )
+    }
+
+    for (const row of acceptedRows) {
+      this.incrementTimelineBucket(
+        buckets,
+        new Date(row.createdAt),
+        "accepted",
+      )
+    }
+
+    for (const row of rejectedRows) {
+      this.incrementTimelineBucket(
+        buckets,
+        new Date(row.createdAt),
+        "rejected",
+      )
+    }
+
+    return buckets.map((bucket) => bucket.value)
+  }
+
+  private async getTopVacancies(
+    recruiterId: string,
+    range: DashboardRange,
+    applicationTypes: ApplicationType[],
+  ) {
+    const [baseRows, acceptedRows, rejectedRows] = await Promise.all([
+      this.createApplicationsDashboardQB(recruiterId)
+        .select("vacancy.id", "vacancyId")
+        .addSelect("vacancy.title", "vacancyTitle")
+        .addSelect("application.type", "applicationType")
+        .addSelect("application.status", "applicationStatus")
+        .andWhere('application."createdAt" >= :start', {
+          start: range.currentStart,
+        })
+        .andWhere('application."createdAt" < :end', {
+          end: range.currentEnd,
+        })
+        .andWhere("application.type IN (:...applicationTypes)", {
+          applicationTypes,
+        })
+        .getRawMany<DashboardTopVacancyBaseRaw>(),
+      this.createApplicationMessagesDashboardQB(recruiterId)
+        .select("vacancy.id", "vacancyId")
+        .addSelect("vacancy.title", "vacancyTitle")
+        .addSelect("COUNT(*)", "count")
+        .andWhere("message.type = :type", {
+          type: ApplicationMessageType.RecruiterOfferedJob,
+        })
+        .andWhere("application.type IN (:...applicationTypes)", {
+          applicationTypes,
+        })
+        .andWhere('message."createdAt" >= :start', { start: range.currentStart })
+        .andWhere('message."createdAt" < :end', { end: range.currentEnd })
+        .groupBy("vacancy.id")
+        .addGroupBy("vacancy.title")
+        .getRawMany<DashboardTopVacancyEventRaw>(),
+      this.createApplicationMessagesDashboardQB(recruiterId)
+        .select("vacancy.id", "vacancyId")
+        .addSelect("vacancy.title", "vacancyTitle")
+        .addSelect("COUNT(*)", "count")
+        .andWhere("message.type IN (:...types)", {
+          types: [
+            ApplicationMessageType.CandidateRejected,
+            ApplicationMessageType.RecruiterRejected,
+          ],
+        })
+        .andWhere("application.type IN (:...applicationTypes)", {
+          applicationTypes,
+        })
+        .andWhere('message."createdAt" >= :start', { start: range.currentStart })
+        .andWhere('message."createdAt" < :end', { end: range.currentEnd })
+        .groupBy("vacancy.id")
+        .addGroupBy("vacancy.title")
+        .getRawMany<DashboardTopVacancyEventRaw>(),
+    ])
+
+    const vacancyMap = new Map<string, DashboardTopVacancy>()
+
+    for (const row of baseRows) {
+      const vacancy = vacancyMap.get(row.vacancyId) ?? {
+        vacancyId: row.vacancyId,
+        title: row.vacancyTitle,
+        responses: 0,
+        accepted: 0,
+        rejected: 0,
+        pending: 0,
+        conversionPercent: 0,
+      }
+
+      vacancy.responses += 1
+
+      if (row.applicationStatus === ApplicationStatus.Pending) {
+        vacancy.pending += 1
+      }
+
+      vacancyMap.set(row.vacancyId, vacancy)
+    }
+
+    for (const row of acceptedRows) {
+      const vacancy = vacancyMap.get(row.vacancyId) ?? {
+        vacancyId: row.vacancyId,
+        title: row.vacancyTitle,
+        responses: 0,
+        accepted: 0,
+        rejected: 0,
+        pending: 0,
+        conversionPercent: 0,
+      }
+
+      vacancy.accepted += Number(row.count)
+
+      vacancyMap.set(row.vacancyId, vacancy)
+    }
+
+    for (const row of rejectedRows) {
+      const vacancy = vacancyMap.get(row.vacancyId) ?? {
+        vacancyId: row.vacancyId,
+        title: row.vacancyTitle,
+        responses: 0,
+        accepted: 0,
+        rejected: 0,
+        pending: 0,
+        conversionPercent: 0,
+      }
+
+      vacancy.rejected += Number(row.count)
+
+      vacancyMap.set(row.vacancyId, vacancy)
+    }
+
+    return [...vacancyMap.values()]
+      .map((vacancy) => ({
+        ...vacancy,
+        conversionPercent: vacancy.responses
+          ? Math.round((vacancy.accepted / vacancy.responses) * 100)
+          : 0,
+      }))
+      .sort((a, b) => {
+        const scoreA = a.responses + a.accepted + a.pending
+        const scoreB = b.responses + b.accepted + b.pending
+
+        return scoreB - scoreA
+      })
+      .slice(0, 5)
   }
 }

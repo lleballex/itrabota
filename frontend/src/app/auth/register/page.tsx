@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation"
 import Button from "@/components/ui/Button"
 import Input from "@/components/ui/Input"
 import Select from "@/components/ui/Select"
-import { Routes, getVacanciesRouteByRole } from "@/config/routes"
+import { Routes, getFilledProfileEntryRouteByRole } from "@/config/routes"
 import { UserRole } from "@/types/entities/user"
 import { useRegister } from "@/api/auth/register"
 
@@ -36,7 +36,7 @@ export default function RegisterPage() {
   const onSubmit = form.handleSubmit((data) => {
     mutate(data, {
       onSuccess: () => {
-        router.replace(getVacanciesRouteByRole(data.role))
+        router.replace(getFilledProfileEntryRouteByRole(data.role))
       },
       onError: (error) => handleFormApiError({ error, form }),
     })

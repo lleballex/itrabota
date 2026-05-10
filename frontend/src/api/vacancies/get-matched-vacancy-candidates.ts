@@ -7,7 +7,7 @@ interface Params {
 }
 
 export const useMatchedVacancyCandidates = createUseQuery(
-  "matched-vacancy-candidates",
+  "vacancies",
   ({ vacancyId }: Params) =>
     axios
       .get<Candidate[]>(`/vacancies/${vacancyId}/matched-candidates`)
