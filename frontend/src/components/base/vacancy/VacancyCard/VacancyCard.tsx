@@ -90,7 +90,11 @@ export default function VacancyCard({
         )}
 
         <div className="flex items-center gap-6">
-          <p>{VacancyWorkExperiences[vacancy.workExperience]}</p>
+          <p>
+            {VacancyWorkExperiences[vacancy.workExperience] === "Без опыта"
+              ? VacancyWorkExperiences[vacancy.workExperience]
+              : `Опыт ${VacancyWorkExperiences[vacancy.workExperience].toLowerCase()}`}
+          </p>
           <p>
             {VacancyFormats[vacancy.format]}{" "}
             {vacancy.format !== VacancyFormat.Remote &&

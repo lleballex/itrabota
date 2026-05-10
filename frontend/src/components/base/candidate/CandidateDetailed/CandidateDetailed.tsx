@@ -41,6 +41,8 @@ interface RepositoryItem {
   href: string
 }
 
+const formatMonthYear = (value: string) => dayjs(value).format("MMMM YYYY")
+
 export default function CandidateDetailed({
   candidate,
   role,
@@ -250,14 +252,14 @@ export default function CandidateDetailed({
               <div className="flex flex-col gap-1.5" key={item.id}>
                 <div className="flex items-center gap-2 justify-between">
                   <p>
-                    <span className="font-semibold">{item.position}</span> в{" "}
-                    {item.companyName}
+                    <span className="text-fg-heading font-bold">
+                      {item.position}
+                    </span>{" "}
+                    в {item.companyName}
                   </p>
                   <p className="text-secondary-light">
-                    {dayjs(item.startedAt).format("MM.YYYY")} -{" "}
-                    {item.endedAt
-                      ? dayjs(item.endedAt).format("MM.YYYY")
-                      : "н.в."}
+                    {formatMonthYear(item.startedAt)} -{" "}
+                    {item.endedAt ? formatMonthYear(item.endedAt) : "н.в."}
                   </p>
                 </div>
                 {item.description && <p>{item.description}</p>}
@@ -282,7 +284,9 @@ export default function CandidateDetailed({
                       {project.title}
                     </a>
                   ) : (
-                    <p className="font-semibold">{project.title}</p>
+                    <p className="font-semibold text-fg-heading">
+                      {project.title}
+                    </p>
                   )}
                   {!!project.skills?.length && (
                     <div className="flex flex-wrap gap-1.5">

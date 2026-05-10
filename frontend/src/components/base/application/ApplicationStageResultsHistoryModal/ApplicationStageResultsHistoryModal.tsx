@@ -66,7 +66,7 @@ export default function ApplicationStageResultsHistoryModal({
                         {stageResult.summary && (
                           <div className="flex flex-col gap-0.5">
                             <p className="text-secondary-light">Итог</p>
-                            <p className="whitespace-pre-wrap">
+                            <p className="whitespace-pre-wrap text-base">
                               {stageResult.summary}
                             </p>
                           </div>
@@ -75,7 +75,7 @@ export default function ApplicationStageResultsHistoryModal({
                         {stageResult.pros && (
                           <div className="flex flex-col gap-0.5">
                             <p className="text-secondary-light">Плюсы</p>
-                            <p className="whitespace-pre-wrap">
+                            <p className="whitespace-pre-wrap text-base">
                               {stageResult.pros}
                             </p>
                           </div>
@@ -84,7 +84,7 @@ export default function ApplicationStageResultsHistoryModal({
                         {stageResult.cons && (
                           <div className="flex flex-col gap-0.5">
                             <p className="text-secondary-light">Минусы</p>
-                            <p className="whitespace-pre-wrap">
+                            <p className="whitespace-pre-wrap text-base">
                               {stageResult.cons}
                             </p>
                           </div>
@@ -93,7 +93,7 @@ export default function ApplicationStageResultsHistoryModal({
                         {stageResult.notes && (
                           <div className="flex flex-col gap-0.5">
                             <p className="text-secondary-light">Заметки</p>
-                            <p className="whitespace-pre-wrap">
+                            <p className="whitespace-pre-wrap text-base">
                               {stageResult.notes}
                             </p>
                           </div>
@@ -102,7 +102,7 @@ export default function ApplicationStageResultsHistoryModal({
                         {stageResult.recommendation && (
                           <div className="flex flex-col gap-0.5">
                             <p className="text-secondary-light">Рекомендация</p>
-                            <p>
+                            <p className="text-base">
                               {
                                 ApplicationStageRecommendationLabels[
                                   stageResult.recommendation

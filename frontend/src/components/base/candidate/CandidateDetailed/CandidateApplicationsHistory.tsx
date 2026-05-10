@@ -223,7 +223,7 @@ export default function CandidateApplicationsHistory({ candidateId }: Props) {
               ))}
             </div>
           ) : (
-            <p className="text-secondary-light">Здесь пока пуста</p>
+            <p className="text-secondary-light">Здесь пока пусто</p>
           )
         }}
       />
