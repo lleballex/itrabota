@@ -43,7 +43,7 @@ export default function VacancyCard({
       href={url}
     >
       <Image
-        className="shrink-0 w-18 h-18 rounded-full"
+        className="shrink-0 w-18 h-18 rounded-full object-contain"
         src={getCompanyLogo(vacancy.recruiter?.company)}
         width={300}
         height={300}

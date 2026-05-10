@@ -107,7 +107,7 @@ export default function NotificationListItem({
   ) : (
     <>
       <Image
-        className="h-8 w-8 shrink-0 rounded-full"
+        className="h-8 w-8 shrink-0 rounded-full object-contain"
         src={getNotificationAvatar(notification, role)}
         width={180}
         height={180}

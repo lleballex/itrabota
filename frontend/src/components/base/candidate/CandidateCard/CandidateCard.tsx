@@ -64,7 +64,7 @@ export default function CandidateCard({
       href={url}
     >
       <Image
-        className="shrink-0 w-18 h-18 rounded-full"
+        className="shrink-0 w-18 h-18 rounded-full object-contain"
         src={getProfileAvatar({ profile: candidate, role: UserRole.Candidate })}
         width={300}
         height={300}

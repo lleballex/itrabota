@@ -105,7 +105,7 @@ export default function AvatarInput({
       <Image
         className={classNames(
           styles.anchor,
-          "w-25 h-25 rounded-full border border-transparent transition-all",
+          "w-25 h-25 rounded-full border border-transparent transition-all object-contain",
           {
             "!border-danger": error,
           }

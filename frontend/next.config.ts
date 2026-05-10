@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
         hostname: process.env.NEXT_PUBLIC_ATTACHMENT_HOST,
       },
     ],
+    dangerouslyAllowSVG: true,
   },
 }
 

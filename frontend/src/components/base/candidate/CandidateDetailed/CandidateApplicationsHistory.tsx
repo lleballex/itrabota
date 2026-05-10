@@ -155,7 +155,7 @@ const CandidateApplicationsHistoryItem = ({
   return (
     <div className="group relative flex gap-3 pt-3 first:pt-0">
       <Image
-        className="shrink-0 w-7 h-7 rounded-full"
+        className="shrink-0 w-7 h-7 rounded-full object-contain"
         src={getCompanyLogo(company)}
         width={120}
         height={120}

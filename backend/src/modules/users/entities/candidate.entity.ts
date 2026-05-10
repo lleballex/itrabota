@@ -61,7 +61,7 @@ export class Candidate extends BaseEntity {
   @Column("boolean", { default: false })
   isHidden!: boolean
 
-  @OneToOne(() => City, { nullable: true, onDelete: "SET NULL" })
+  @ManyToOne(() => City, { nullable: true, onDelete: "SET NULL" })
   @JoinColumn()
   city?: City | null
 

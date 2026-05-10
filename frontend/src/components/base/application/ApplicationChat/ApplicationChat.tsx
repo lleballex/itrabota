@@ -253,7 +253,7 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
             className="flex items-center gap-2 absolute top-0 left-0 right-0 z-10 pb-2 bg-linear-to-b from-bg from-[calc(100%-32px)] to-transparent"
           >
             <Image
-              className="w-7 h-7 rounded-full"
+              className="w-7 h-7 rounded-full object-contain"
               src={getProfileAvatar({
                 profile: man,
                 role: {

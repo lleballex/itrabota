@@ -24,7 +24,7 @@ export default function VacancyDetailed({ vacancy, controls }: Props) {
     <div className="flex flex-col gap-6">
       <div className="flex gap-3 items-center">
         <Image
-          className="shrink-0 w-20 h-20 rounded-full"
+          className="shrink-0 w-20 h-20 rounded-full object-contain"
           src={getCompanyLogo(vacancy.recruiter?.company)}
           width={300}
           height={300}
