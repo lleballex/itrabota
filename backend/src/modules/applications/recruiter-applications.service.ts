@@ -31,6 +31,8 @@ import {
   RecruiterDashboardPeriod,
 } from "./dto/get-recruiter-dashboard.dto"
 import { ApplicationMessage } from "./entities/application-message.entity"
+import { ApplicationStageResultsService } from "./application-stage-results.service"
+import { UpsertCurrentApplicationStageResultDto } from "./dto/upsert-current-application-stage-result.dto"
 
 export type DashboardMetricTrend = "up" | "down" | "flat"
 
@@ -95,6 +97,7 @@ export class RecruiterApplicationsService {
 
     private readonly dataSource: DataSource,
     private readonly applicationsService: ApplicationsService,
+    private readonly stageResultsService: ApplicationStageResultsService,
     private readonly messagesService: ApplicationMessagesService,
     private readonly notificationsService: NotificationsService,
     private readonly usersService: UsersService,
@@ -231,6 +234,18 @@ export class RecruiterApplicationsService {
       id,
       vacancy: { recruiter: { id: user.recruiter.id } },
     })
+  }
+
+  async findStageResultsByApplicationId(id: string, user_: ICurrentUser) {
+    return this.stageResultsService.findAllByApplicationId(id, user_)
+  }
+
+  async upsertCurrentStageResultByApplicationId(
+    id: string,
+    dto: UpsertCurrentApplicationStageResultDto,
+    user_: ICurrentUser,
+  ) {
+    return this.stageResultsService.upsertCurrentByApplicationId(id, dto, user_)
   }
 
   async rejectById(id: string, dto: RejectApplicationDto, user_: ICurrentUser) {

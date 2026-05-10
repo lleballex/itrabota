@@ -17,6 +17,7 @@ import { useAcceptApplicationByCandidate } from "@/api/applications/accept-appli
 import ApplicationOfferModal from "@/components/base/application/ApplicationOfferModal"
 import ApplicationMeetingModal from "@/components/base/application/ApplicationMeetingModal"
 import { formatMeetingDateTime } from "@/lib/meeting"
+import { isWaitingForCandidateResponse } from "@/components/base/application/application-helpers"
 
 interface Props {
   application: Application
@@ -58,26 +59,10 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
     return vacancy.funnelSteps[curStepIdx + 1] ?? null
   }, [vacancy, application])
 
-  const isWaitingForCandidateResponse = useMemo(() => {
-    if (
-      !application.messages?.length ||
-      application.status !== ApplicationStatus.Pending
-    ) {
-      return false
-    }
-
-    const lastMessage =
-      application.messages[application.messages.length - 1].type ===
-      ApplicationMessageType.UserMessage
-        ? application.messages[application.messages.length - 2]
-        : application.messages[application.messages.length - 1]
-
-    return (
-      lastMessage.type === ApplicationMessageType.RecruiterInvited ||
-      lastMessage.type === ApplicationMessageType.RecruiterOfferedStep ||
-      lastMessage.type === ApplicationMessageType.RecruiterOfferedJob
-    )
-  }, [application])
+  const isWaitingForResponse = useMemo(
+    () => isWaitingForCandidateResponse(application),
+    [application],
+  )
 
   const hasMeetingForCurrentStep = useMemo(
     () =>
@@ -129,7 +114,7 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
     resizeObserver.observe(controls)
 
     return () => resizeObserver.disconnect()
-  }, [hasControls, isWaitingForCandidateResponse, nextFunnelStep])
+  }, [hasControls, isWaitingForResponse, nextFunnelStep])
 
   const updateMessagesScrollShadow = useCallback(() => {
     const messagesContainer = messagesContainerRef.current
@@ -342,7 +327,7 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
           >
             {role === UserRole.Recruiter && (
               <div className="flex gap-2">
-                {!isWaitingForCandidateResponse && (
+                {!isWaitingForResponse && (
                   <Button
                     type="glass"
                     onClick={() => setIsOfferModalActive(true)}
@@ -357,14 +342,14 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
                   type="glass"
                   onClick={() => setIsRejectModalActive(true)}
                 >
-                  {isWaitingForCandidateResponse ? "Завершить" : "Отказать"}
+                  {isWaitingForResponse ? "Завершить" : "Отказать"}
                 </Button>
               </div>
             )}
 
             {role === UserRole.Candidate && (
               <div className="flex gap-2">
-                {isWaitingForCandidateResponse && (
+                {isWaitingForResponse && (
                   <Button
                     type="glass"
                     pending={acceptApplicationByCandidateStatus === "pending"}
@@ -378,7 +363,7 @@ export default function ApplicationChat({ application, vacancy, role }: Props) {
                   type="glass"
                   onClick={() => setIsRejectModalActive(true)}
                 >
-                  {isWaitingForCandidateResponse ? "Отклонить" : "Завершить"}
+                  {isWaitingForResponse ? "Отклонить" : "Завершить"}
                 </Button>
               </div>
             )}

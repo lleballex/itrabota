@@ -67,7 +67,7 @@ export default function ModalRoot({
         style={{ width: width }}
       >
         {/* TODO: move values to config */}
-        <div className="glass flex flex-col gap-3 p-4 rounded backdrop-blur-[15px] bg-[rgba(0,0,0,0.5)]">
+        <div className="glass flex flex-col gap-3 p-4 rounded backdrop-blur-[15px] bg-[rgba(0,0,0,0.5)] overflow-y-auto">
           {children}
         </div>
       </dialog>

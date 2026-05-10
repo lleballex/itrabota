@@ -7,6 +7,7 @@ import { FunnelStep } from "@/modules/vacancies/entities/funnel-step.entity"
 import { Meeting } from "@/modules/meetings/entities/meeting.entity"
 
 import { ApplicationMessage } from "./application-message.entity"
+import { ApplicationStageResult } from "./application-stage-result.entity"
 
 export const ApplicationStatus = {
   Pending: "pending",
@@ -62,4 +63,10 @@ export class Application extends BaseEntity {
 
   @OneToMany(() => Meeting, (meeting) => meeting.application)
   meetings?: Meeting[]
+
+  @OneToMany(
+    () => ApplicationStageResult,
+    (stageResult) => stageResult.application,
+  )
+  stageResults?: ApplicationStageResult[]
 }

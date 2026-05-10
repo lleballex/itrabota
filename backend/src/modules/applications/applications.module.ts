@@ -8,16 +8,22 @@ import { NotificationsModule } from "@/modules/notifications/notifications.modul
 
 import { Application } from "./entities/application.entity"
 import { ApplicationMessage } from "./entities/application-message.entity"
+import { ApplicationStageResult } from "./entities/application-stage-result.entity"
 import { ApplicationsService } from "./applications.service"
 import { ApplicationMessagesService } from "./application-messages.service"
 import { CandidateApplicationsService } from "./candidate-applications.service"
 import { RecruiterApplicationsService } from "./recruiter-applications.service"
 import { CandidateApplicationsController } from "./candidate-applications.controller"
 import { RecruiterApplicationsController } from "./recruiter-applications.controller"
+import { ApplicationStageResultsService } from "./application-stage-results.service"
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Application, ApplicationMessage]),
+    TypeOrmModule.forFeature([
+      Application,
+      ApplicationMessage,
+      ApplicationStageResult,
+    ]),
     UsersModule,
     forwardRef(() => VacanciesModule),
     forwardRef(() => MeetingsModule),
@@ -32,11 +38,13 @@ import { RecruiterApplicationsController } from "./recruiter-applications.contro
     CandidateApplicationsService,
     RecruiterApplicationsService,
     ApplicationMessagesService,
+    ApplicationStageResultsService,
   ],
   exports: [
     ApplicationsService,
     CandidateApplicationsService,
     RecruiterApplicationsService,
+    ApplicationStageResultsService,
   ],
 })
 export class ApplicationsModule {}
