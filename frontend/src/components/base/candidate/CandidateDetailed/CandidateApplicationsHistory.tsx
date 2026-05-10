@@ -208,10 +208,14 @@ export default function CandidateApplicationsHistory({ candidateId }: Props) {
 
       <RemoteData
         data={applications}
-        onSuccess={(applications) =>
-          applications.length ? (
+        onSuccess={(applications) => {
+          const completedApplications = applications.filter(
+            (application) => application.status !== ApplicationStatus.Pending,
+          )
+
+          return completedApplications.length ? (
             <div className="flex flex-col">
-              {applications.map((application) => (
+              {completedApplications.map((application) => (
                 <CandidateApplicationsHistoryItem
                   key={application.id}
                   application={application}
@@ -221,7 +225,7 @@ export default function CandidateApplicationsHistory({ candidateId }: Props) {
           ) : (
             <p className="text-secondary-light">Здесь пока пуста</p>
           )
-        }
+        }}
       />
     </div>
   )
