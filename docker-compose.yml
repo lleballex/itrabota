@@ -28,6 +28,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
+      NODE_OPTIONS: ${BACKEND_NODE_OPTIONS}
       PORT: 8000
       DB_NAME: ${POSTGRES_DB}
       DB_HOST: postgres
@@ -60,6 +61,7 @@ services:
       backend:
         condition: service_started
     environment:
+      NODE_OPTIONS: ${FRONTEND_NODE_OPTIONS}
       PORT: 3000
       INTERNAL_API_URL: ${INTERNAL_API_URL}
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
