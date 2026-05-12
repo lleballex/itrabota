@@ -124,11 +124,30 @@ export class RecruiterApplicationsService {
 
   async findOneById(id: string, user_: ICurrentUser) {
     const user = await this.usersService.findFilledRecruiterRefById(user_.id)
+    const application =
+      await this.applicationsService._findRecruiterViewContext(
+        id,
+        user.recruiter.id,
+      )
 
-    return this.applicationsService._findOneForRecruiterView(
-      id,
-      user.recruiter.id,
-    )
+    const [candidate, vacancy] = await Promise.all([
+      this.candidatesService.findOneById(application.candidate!.id),
+      this.vacanciesService.findOneById(application.vacancy!.id),
+    ])
+
+    application.candidate = candidate
+    application.vacancy = vacancy
+
+    if (application.funnelStep?.id) {
+      const currentFunnelStep =
+        vacancy.funnelSteps?.find(
+          (step) => step.id === application.funnelStep?.id,
+        ) ?? application.funnelStep
+
+      application.funnelStep = currentFunnelStep
+    }
+
+    return application
   }
 
   async findStageResultsByApplicationId(id: string, user_: ICurrentUser) {

@@ -205,7 +205,7 @@ export class ApplicationsService {
     return application
   }
 
-  async _findOneForRecruiterView(
+  async _findRecruiterViewContext(
     applicationId: string,
     recruiterId: string,
     manager?: EntityManager,
@@ -214,24 +214,9 @@ export class ApplicationsService {
 
     const application = await repo
       .createQueryBuilder("application")
-      .innerJoinAndSelect("application.vacancy", "vacancy")
-      .innerJoinAndSelect("vacancy.recruiter", "recruiter")
-      .leftJoinAndSelect("recruiter.company", "company")
-      .leftJoinAndSelect("company.industry", "industry")
-      .leftJoinAndSelect("company.logo", "companyLogo")
-      .leftJoinAndSelect("vacancy.specialization", "specialization")
-      .leftJoinAndSelect("vacancy.city", "city")
-      .leftJoinAndSelect("vacancy.skills", "skills")
-      .leftJoinAndSelect("vacancy.funnelSteps", "vacancyFunnelStep")
       .innerJoinAndSelect("application.candidate", "candidate")
-      .leftJoinAndSelect("candidate.user", "candidateUser")
-      .leftJoinAndSelect("candidate.city", "candidateCity")
-      .leftJoinAndSelect("candidate.specialization", "candidateSpecialization")
-      .leftJoinAndSelect("candidate.skills", "candidateSkill")
-      .leftJoinAndSelect("candidate.workExperience", "candidateWorkExperience")
-      .leftJoinAndSelect("candidate.projects", "candidateProjectItem")
-      .leftJoinAndSelect("candidateProjectItem.skills", "candidateProjectSkill")
-      .leftJoinAndSelect("candidate.avatar", "candidateAvatar")
+      .innerJoinAndSelect("application.vacancy", "vacancy")
+      .innerJoin("vacancy.recruiter", "recruiter")
       .leftJoinAndSelect("application.funnelStep", "funnelStep")
       .leftJoinAndSelect("application.messages", "message")
       .leftJoinAndSelect("message.meeting", "messageMeeting")
@@ -239,8 +224,7 @@ export class ApplicationsService {
       .leftJoinAndSelect("meeting.funnelStep", "meetingFunnelStep")
       .where("application.id = :applicationId", { applicationId })
       .andWhere("recruiter.id = :recruiterId", { recruiterId })
-      .orderBy("vacancyFunnelStep.index", "ASC")
-      .addOrderBy("meeting.startsAt", "ASC")
+      .orderBy("meeting.startsAt", "ASC")
       .addOrderBy("message.createdAt", "ASC")
       .addOrderBy(
         `CASE
@@ -256,11 +240,6 @@ export class ApplicationsService {
 
     if (!application) {
       throw new NotFoundException("Процесс найма не найден")
-    }
-
-    if (application.candidate) {
-      application.candidate.totalWorkExperienceMonths =
-        calculateTotalWorkExperienceMonths(application.candidate.workExperience)
     }
 
     return application
