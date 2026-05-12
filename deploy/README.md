@@ -57,10 +57,26 @@ cp .env.example .env
 
 ## 3. Запуск
 
+Можно работать через `Makefile`, чтобы не вводить длинные команды вручную.
+
+Основные команды:
+
+```bash
+make build
+make up
+make down
+make restart
+make logs
+make ps
+make seed
+```
+
+`make build` и `make up` запускают сборку с `COMPOSE_PARALLEL_LIMIT=1`, поэтому сервисы билдятся по одному, а не одновременно.
+
 На сервере из корня репозитория:
 
 ```bash
-docker compose up -d --build
+make up
 ```
 
 Проверить состояние контейнеров:
@@ -83,7 +99,7 @@ Swagger backend будет доступен по адресу:
 Если нужен проект не только "пустым", а сразу с наполнением, после первого успешного старта запусти:
 
 ```bash
-docker compose exec backend yarn db:seed:demo
+make seed
 ```
 
 Если демо-пользователи не нужны, этот шаг можно пропустить.
@@ -92,7 +108,7 @@ docker compose exec backend yarn db:seed:demo
 
 ```bash
 git pull
-docker compose up -d --build
+make up
 ```
 
 ## 6. Полезные команды
@@ -100,7 +116,7 @@ docker compose up -d --build
 Остановить:
 
 ```bash
-docker compose down
+make down
 ```
 
 Остановить и удалить volume базы:
@@ -112,7 +128,7 @@ docker compose down -v
 Перезапустить только backend:
 
 ```bash
-docker compose up -d --build backend
+make backend-restart
 ```
 
 ## 7. DNS и привязка домена
