@@ -279,6 +279,44 @@ export class ApplicationsService {
     return application
   }
 
+  async _findCandidateAcceptContextById(
+    applicationId: string,
+    manager?: EntityManager,
+  ) {
+    const repo = manager?.getRepository(Application) ?? this.applicationsRepo
+
+    const application = await repo
+      .createQueryBuilder("application")
+      .leftJoinAndSelect("application.candidate", "candidate")
+      .leftJoinAndSelect("application.vacancy", "vacancy")
+      .leftJoinAndSelect("vacancy.recruiter", "recruiter")
+      .leftJoinAndSelect("recruiter.user", "recruiterUser")
+      .leftJoinAndSelect("application.funnelStep", "funnelStep")
+      .leftJoinAndSelect("application.messages", "message")
+      .leftJoinAndSelect("application.meetings", "meeting")
+      .leftJoinAndSelect("meeting.funnelStep", "meetingFunnelStep")
+      .where("application.id = :applicationId", { applicationId })
+      .orderBy("meeting.startsAt", "ASC")
+      .addOrderBy("message.createdAt", "ASC")
+      .addOrderBy(
+        `CASE
+          WHEN message.type = '${ApplicationMessageType.CandidateAccepted}' THEN 0
+          WHEN message.type = '${ApplicationMessageType.MeetingScheduled}' THEN 1
+          WHEN message.type = '${ApplicationMessageType.UserMessage}' THEN 3
+          ELSE 2
+        END`,
+        "ASC",
+      )
+      .addOrderBy("message.id", "ASC")
+      .getOne()
+
+    if (!application) {
+      throw new NotFoundException("Процесс найма не найден")
+    }
+
+    return application
+  }
+
   async _findRecruiterOfferContextById(
     applicationId: string,
     manager?: EntityManager,

@@ -116,8 +116,6 @@ export class CandidateApplicationsService {
         manager,
       )
     })
-
-    return this.applicationsService._findOne({ id })
   }
 
   async acceptById(
@@ -126,15 +124,16 @@ export class CandidateApplicationsService {
     user_: ICurrentUser,
   ) {
     await this.dataSource.transaction(async (manager) => {
-      const user = await this.usersService.findFilledCandidateById(
+      const user = await this.usersService.findFilledCandidateRefById(
         user_.id,
         manager,
       )
 
-      const application = await this.applicationsService._findOne(
-        { id },
-        manager,
-      )
+      const application =
+        await this.applicationsService._findCandidateAcceptContextById(
+          id,
+          manager,
+        )
 
       if (application.status !== ApplicationStatus.Pending) {
         throw new ConflictException(
@@ -252,7 +251,5 @@ export class CandidateApplicationsService {
         )
       }
     })
-
-    return this.applicationsService._findOne({ id })
   }
 }
