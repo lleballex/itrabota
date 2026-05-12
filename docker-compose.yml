@@ -1,0 +1,83 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: 8000
+      DB_NAME: ${POSTGRES_DB}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      COOKIE_SECURE: ${COOKIE_SECURE}
+      COOKIE_SAME_SITE: ${COOKIE_SAME_SITE}
+      COOKIE_DOMAIN: ${COOKIE_DOMAIN}
+      MAX_REQUEST_BODY_SIZE: ${MAX_REQUEST_BODY_SIZE}
+      ZOOM_ACCOUNT_ID: ${ZOOM_ACCOUNT_ID}
+      ZOOM_CLIENT_ID: ${ZOOM_CLIENT_ID}
+      ZOOM_CLIENT_SECRET: ${ZOOM_CLIENT_SECRET}
+      ZOOM_HOST_USER_ID: ${ZOOM_HOST_USER_ID}
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        INTERNAL_API_URL: ${INTERNAL_API_URL}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_ATTACHMENT_HOST: ${NEXT_PUBLIC_ATTACHMENT_HOST}
+        NEXT_PUBLIC_ATTACHMENT_URL: ${NEXT_PUBLIC_ATTACHMENT_URL}
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_started
+    environment:
+      PORT: 3000
+      INTERNAL_API_URL: ${INTERNAL_API_URL}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      NEXT_PUBLIC_ATTACHMENT_HOST: ${NEXT_PUBLIC_ATTACHMENT_HOST}
+      NEXT_PUBLIC_ATTACHMENT_URL: ${NEXT_PUBLIC_ATTACHMENT_URL}
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      frontend:
+        condition: service_started
+      backend:
+        condition: service_started
+    ports:
+      - "80:80"
+    volumes:
+      - ./deploy/nginx/itrabota.conf:/etc/nginx/conf.d/default.conf:ro
+
+volumes:
+  postgres-data:

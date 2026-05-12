@@ -8,6 +8,9 @@ export interface AppConfig {
   CORS_ORIGINS: string
   JWT_SECRET: string
   JWT_EXPIRES_IN: string
+  COOKIE_SECURE: string
+  COOKIE_SAME_SITE: string
+  COOKIE_DOMAIN?: string
   MAX_REQUEST_BODY_SIZE: string
   ZOOM_ACCOUNT_ID: string
   ZOOM_CLIENT_ID: string

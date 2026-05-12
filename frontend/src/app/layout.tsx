@@ -31,7 +31,7 @@ export default function RootLayout({ children }: Props) {
       <body className="flex flex-col min-h-[100dvh] text-fg text-base bg-bg">
         <QueryClientProvider client={queryClient}>
           {children}
-          <ReactQueryDevtools />
+          {/* <ReactQueryDevtools /> */}
           <Toasts />
         </QueryClientProvider>
       </body>

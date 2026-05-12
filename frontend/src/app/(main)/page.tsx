@@ -5,7 +5,7 @@ import { Routes, getEntryRouteForUser } from "@/config/routes"
 import type { User } from "@/types/entities/user"
 
 const getMe = async () => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL
+  const apiUrl = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL
 
   if (!apiUrl) {
     return null

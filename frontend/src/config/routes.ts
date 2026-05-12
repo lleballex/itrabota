@@ -8,7 +8,6 @@ export const Routes = {
   register: "/auth/register",
 
   recruiter: {
-    dashboard: "/recruiter/dashboard",
     profile: "/recruiter/profile",
     newVacancy: "/recruiter/new-vacancy",
     vacancies: "/recruiter/vacancies",
@@ -40,7 +39,7 @@ export const Routes = {
 
 export const getFilledProfileEntryRouteByRole = (role: UserRole) =>
   ({
-    [UserRole.Recruiter]: Routes.recruiter.dashboard,
+    [UserRole.Recruiter]: Routes.recruiter.vacancies,
     [UserRole.Candidate]: Routes.candidate.vacancies,
   })[role]
 

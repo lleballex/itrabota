@@ -50,10 +50,7 @@ export class ApplicationsService {
       .leftJoinAndSelect("candidate.skills", "candidateSkill")
       .leftJoinAndSelect("candidate.workExperience", "candidateWorkExperience")
       .leftJoinAndSelect("candidate.projects", "candidateProjectItem")
-      .leftJoinAndSelect(
-        "candidateProjectItem.skills",
-        "candidateProjectSkill",
-      )
+      .leftJoinAndSelect("candidateProjectItem.skills", "candidateProjectSkill")
       .leftJoinAndSelect("candidate.avatar", "candidateAvatar")
       .leftJoinAndSelect("application.meetings", "meeting")
       .leftJoinAndSelect("meeting.funnelStep", "meetingFunnelStep")

@@ -83,7 +83,7 @@ export default function MainLayoutHeaderNotifications({ user }: Props) {
       </Popover.Trigger>
       <Popover.Content
         ref={popoverRef}
-        className="flex gap-2 p-2 w-[360px] max-w-[calc(100vw-var(--spacing-screen)*2)] flex-col py-0"
+        className="flex gap-2 p-2 w-[360px] max-w-[calc(100vw-var(--spacing-screen)*2)] max-h-[400px] overflow-y-auto flex-col py-0"
       >
         <RemoteData
           data={notifications}

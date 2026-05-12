@@ -7,7 +7,10 @@ import {
   HttpStatus,
   Res,
 } from "@nestjs/common"
-import { Response } from "express"
+import { ConfigService } from "@nestjs/config"
+import { CookieOptions, Response } from "express"
+
+import { AppConfig } from "@/config/config.interface"
 
 import { LoginDto } from "./dto/login.dto"
 import { CurrentUser } from "./decorators/current-user.decorator"
@@ -19,18 +22,42 @@ import { RegisterDto } from "./dto/register.dto"
 
 @Controller("auth")
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService<AppConfig, true>,
+  ) {}
+
+  private getAccessTokenCookieOptions(): CookieOptions {
+    const sameSiteValue =
+      this.configService
+        .get("COOKIE_SAME_SITE", { infer: true })
+        ?.toLowerCase() ?? "strict"
+
+    const sameSite: CookieOptions["sameSite"] =
+      sameSiteValue === "lax" || sameSiteValue === "none"
+        ? sameSiteValue
+        : "strict"
+
+    const domain = this.configService
+      .get("COOKIE_DOMAIN", { infer: true })
+      ?.trim()
+
+    return {
+      httpOnly: true,
+      secure:
+        this.configService.get("COOKIE_SECURE", { infer: true }) === "true",
+      sameSite,
+      path: "/",
+      ...(domain ? { domain } : {}),
+    }
+  }
 
   private setAccessToken(token: string, res: Response) {
-    res.cookie("accessToken", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-    })
+    res.cookie("accessToken", token, this.getAccessTokenCookieOptions())
   }
 
   private removeAccessToken(res: Response) {
-    res.clearCookie("accessToken")
+    res.clearCookie("accessToken", this.getAccessTokenCookieOptions())
   }
 
   @Post("login")
