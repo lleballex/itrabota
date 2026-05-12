@@ -3,7 +3,6 @@ FROM node:20-bookworm-slim AS deps
 WORKDIR /app
 
 ENV YARN_NODE_LINKER=node-modules
-ENV NODE_OPTIONS=--max-old-space-size=512
 
 COPY package.json yarn.lock ./
 
@@ -14,7 +13,6 @@ FROM node:20-bookworm-slim AS builder
 WORKDIR /app
 
 ENV YARN_NODE_LINKER=node-modules
-ENV NODE_OPTIONS=--max-old-space-size=512
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
