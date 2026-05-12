@@ -23,7 +23,7 @@ ps:
 	$(COMPOSE) ps
 
 seed:
-	$(COMPOSE) exec backend sh -lc 'corepack enable && yarn db:seed:demo'
+	$(COMPOSE) exec backend node -r ts-node/register -r tsconfig-paths/register src/scripts/demo-seed.ts
 
 backend-build:
 	$(COMPOSE) build backend --progress=plain
