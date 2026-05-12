@@ -3,6 +3,7 @@ FROM node:20-bookworm-slim AS deps
 WORKDIR /app
 
 ENV YARN_NODE_LINKER=node-modules
+ENV NEXT_TELEMETRY_DISABLED=1
 
 COPY package.json yarn.lock ./
 
@@ -13,6 +14,8 @@ FROM node:20-bookworm-slim AS builder
 WORKDIR /app
 
 ENV YARN_NODE_LINKER=node-modules
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_OPTIONS=--max-old-space-size=768
 
 ARG INTERNAL_API_URL
 ARG NEXT_PUBLIC_API_URL
@@ -28,7 +31,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 RUN mkdir -p public
-RUN corepack enable && yarn build
+RUN corepack enable && yarn next build
 
 FROM node:20-bookworm-slim AS runner
 
@@ -36,6 +39,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=3000
+ENV NEXT_TELEMETRY_DISABLED=1
 
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
