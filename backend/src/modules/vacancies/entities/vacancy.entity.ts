@@ -111,12 +111,6 @@ export class Vacancy extends BaseEntity {
   @JoinTable()
   skills?: Skill[]
 
-  explicitSkills?: Skill[]
-
-  effectiveSkills?: Skill[]
-
-  impliedSkills?: Skill[]
-
   @ManyToOne(() => Specialization, { nullable: false, onDelete: "CASCADE" })
   @JoinColumn()
   specialization?: Specialization

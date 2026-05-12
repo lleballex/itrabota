@@ -16,15 +16,13 @@ function hasSkillOverlap(
 }
 
 function calculateSkillScore(vacancy: Vacancy, candidate: Candidate) {
-  const requiredSkillIds =
-    vacancy.effectiveSkills?.map((skill) => skill.id) ?? []
+  const requiredSkillIds = vacancy.skills?.map((skill) => skill.id) ?? []
 
   if (!requiredSkillIds.length) {
     return MATCH_PERCENT_WEIGHTS.skills
   }
 
-  const availableSkillIds =
-    candidate.effectiveSkills?.map((skill) => skill.id) ?? []
+  const availableSkillIds = candidate.skills?.map((skill) => skill.id) ?? []
   const matchedSkillsCount = hasSkillOverlap(
     requiredSkillIds,
     availableSkillIds,

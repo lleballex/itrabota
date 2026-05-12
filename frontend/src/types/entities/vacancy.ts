@@ -22,9 +22,6 @@ export interface Vacancy extends BaseEntity {
   responsesCount?: number
   matchPercent?: number
   skills?: Skill[]
-  explicitSkills?: Skill[]
-  effectiveSkills?: Skill[]
-  impliedSkills?: Skill[]
   specialization?: Specialization
   city?: City
   recruiter?: Recruiter

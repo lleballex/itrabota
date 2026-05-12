@@ -7,8 +7,5 @@ export interface CandidateProjectItem extends BaseEntity {
   url: string | null
   description: string | null
   skills?: Skill[]
-  explicitSkills?: Skill[]
-  effectiveSkills?: Skill[]
-  impliedSkills?: Skill[]
   candidate?: Candidate
 }

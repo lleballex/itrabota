@@ -20,7 +20,6 @@ import { ApplicationsService } from "@/modules/applications/applications.service
 import { CandidatesService } from "@/modules/users/candidates.service"
 import { applyTokenizedCaseInsensitiveSearch } from "@/common/lib/search"
 import { isNullish } from "@/common/lib/is-nullish"
-import { SkillsService } from "@/modules/skills/skills.service"
 
 import { Vacancy, VacancyStatus } from "./entities/vacancy.entity"
 import { CreateVacancyDto } from "./dto/create-vacancy.dto"
@@ -56,7 +55,6 @@ export class VacanciesService {
     private readonly usersService: UsersService,
     private readonly candidatesService: CandidatesService,
     private readonly applicationsService: ApplicationsService,
-    private readonly skillsService: SkillsService,
   ) {}
 
   private createQB(manager?: EntityManager) {
@@ -89,8 +87,6 @@ export class VacanciesService {
     if (!vacancy) {
       throw new NotFoundException("Вакансия не найдена") // TODO: unified exception
     }
-
-    await this.enrichVacancies([vacancy], manager)
 
     return vacancy
   }
@@ -209,22 +205,16 @@ export class VacanciesService {
     }
   }
 
-  private hasEffectiveSkills(vacancy: Vacancy, skillIds: string[] | undefined) {
+  private hasMatchingSkills(vacancy: Vacancy, skillIds: string[] | undefined) {
     if (!skillIds?.length) {
       return true
     }
 
-    const effectiveSkillIds = new Set(
-      vacancy.effectiveSkills?.map((skill) => skill.id) ?? [],
+    const vacancySkillIds = new Set(
+      vacancy.skills?.map((skill) => skill.id) ?? [],
     )
 
-    return skillIds.some((skillId) => effectiveSkillIds.has(skillId))
-  }
-
-  private async enrichVacancies(vacancies: Vacancy[], manager?: EntityManager) {
-    await this.skillsService.enrichSkillContainers(vacancies, manager)
-
-    return vacancies
+    return skillIds.some((skillId) => vacancySkillIds.has(skillId))
   }
 
   findOneById(id: string, manager?: EntityManager) {
@@ -282,7 +272,7 @@ export class VacanciesService {
       qb.andWhere("vacancy.status = :status", { status: dto.status })
     }
 
-    return this.enrichVacancies(await qb.getMany())
+    return qb.getMany()
   }
 
   async findAllForCandidate(
@@ -297,9 +287,9 @@ export class VacanciesService {
 
     this.applyVacancyFilters(qb, dto.matchForMe ? { query: dto.query } : dto)
 
-    const vacancies = await this.enrichVacancies(await qb.getMany())
+    const vacancies = await qb.getMany()
     const filteredVacancies = vacancies.filter((vacancy) =>
-      this.hasEffectiveSkills(
+      this.hasMatchingSkills(
         vacancy,
         dto.matchForMe ? undefined : dto.skillIds,
       ),

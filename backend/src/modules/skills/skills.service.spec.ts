@@ -1,9 +1,7 @@
-import { ConflictException } from "@nestjs/common"
 import { Repository } from "typeorm"
 
 import { Skill } from "./entities/skills.entity"
 import { SkillsService } from "./skills.service"
-import { SkillDefinition } from "./types/skill-definition.type"
 
 function createSkill(name: string, overrides?: Partial<Skill>): Skill {
   return {
@@ -11,9 +9,6 @@ function createSkill(name: string, overrides?: Partial<Skill>): Skill {
     createdAt: overrides?.createdAt ?? new Date(),
     updatedAt: overrides?.updatedAt ?? new Date(),
     name,
-    implies: overrides?.implies ?? [],
-    impliedBy: overrides?.impliedBy,
-    impliesIds: overrides?.impliesIds,
   } as Skill
 }
 
@@ -21,7 +16,9 @@ class InMemorySkillsRepository {
   constructor(private readonly skills: Skill[]) {}
 
   find() {
-    return this.skills
+    return [...this.skills].sort((left, right) =>
+      left.name.localeCompare(right.name),
+    )
   }
 
   findOne(options: { where: { name: string } }) {
@@ -61,56 +58,29 @@ function createService(skills: Skill[]) {
 }
 
 describe("SkillsService", () => {
-  it("builds transitive effective skills", async () => {
-    const node = createSkill("Node.js")
-    const react = createSkill("React.js", { implies: [node] })
-    const next = createSkill("Next.js", { implies: [react] })
-    const service = createService([node, react, next])
+  it("returns skills sorted by name", async () => {
+    const service = createService([
+      createSkill("TypeScript"),
+      createSkill("CSS"),
+      createSkill("React.js"),
+    ])
 
-    await expect(service.resolveSkillSet([next.id])).resolves.toEqual({
-      explicitSkillIds: [next.id],
-      effectiveSkillIds: [next.id, react.id, node.id],
-      impliedSkillIds: [react.id, node.id],
-    })
+    await expect(service.findAll()).resolves.toEqual([
+      expect.objectContaining({ name: "CSS" }),
+      expect.objectContaining({ name: "React.js" }),
+      expect.objectContaining({ name: "TypeScript" }),
+    ])
   })
 
-  it("deduplicates implied skills across multiple edges", async () => {
-    const node = createSkill("Node.js")
-    const react = createSkill("React.js", { implies: [node] })
-    const next = createSkill("Next.js", { implies: [react, node] })
-    const service = createService([node, react, next])
+  it("creates only missing skills during sync", async () => {
+    const existingSkill = createSkill("React.js")
+    const service = createService([existingSkill])
 
-    await expect(service.resolveSkillSet([next.id])).resolves.toEqual({
-      explicitSkillIds: [next.id],
-      effectiveSkillIds: [next.id, react.id, node.id],
-      impliedSkillIds: [react.id, node.id],
-    })
-  })
+    await service.syncDefinitions([{ name: "React.js" }, { name: "Node.js" }])
 
-  it("does not infer reverse relations", async () => {
-    const node = createSkill("Node.js")
-    const react = createSkill("React.js", { implies: [node] })
-    const next = createSkill("Next.js", { implies: [react] })
-    const service = createService([node, react, next])
-
-    await expect(service.resolveSkillSet([node.id])).resolves.toEqual({
-      explicitSkillIds: [node.id],
-      effectiveSkillIds: [node.id],
-      impliedSkillIds: [],
-    })
-  })
-
-  it("rejects cyclic graphs during sync", async () => {
-    const node = createSkill("Node.js")
-    const react = createSkill("React.js")
-    const service = createService([node, react])
-    const definitions: SkillDefinition[] = [
-      { name: "Node.js", implies: ["React.js"] },
-      { name: "React.js", implies: ["Node.js"] },
-    ]
-
-    await expect(service.syncDefinitions(definitions)).rejects.toBeInstanceOf(
-      ConflictException,
-    )
+    await expect(service.findAll()).resolves.toEqual([
+      expect.objectContaining({ name: "Node.js" }),
+      expect.objectContaining({ name: "React.js" }),
+    ])
   })
 })

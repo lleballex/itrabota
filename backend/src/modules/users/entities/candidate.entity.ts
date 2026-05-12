@@ -88,12 +88,6 @@ export class Candidate extends BaseEntity {
   @JoinTable()
   skills?: Skill[]
 
-  explicitSkills?: Skill[]
-
-  effectiveSkills?: Skill[]
-
-  impliedSkills?: Skill[]
-
   @OneToMany(() => WorkExperienceItem, (item) => item.candidate)
   workExperience?: WorkExperienceItem[]
 

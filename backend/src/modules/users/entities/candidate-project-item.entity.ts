@@ -27,12 +27,6 @@ export class CandidateProjectItem extends BaseEntity {
   @JoinTable()
   skills?: Skill[]
 
-  explicitSkills?: Skill[]
-
-  effectiveSkills?: Skill[]
-
-  impliedSkills?: Skill[]
-
   @ManyToOne(() => Candidate, (candidate) => candidate.projects, {
     nullable: false,
     onDelete: "CASCADE",

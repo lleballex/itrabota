@@ -6,6 +6,5 @@ export function buildSkillSummary(skill: Skill): Skill {
     createdAt: skill.createdAt,
     updatedAt: skill.updatedAt,
     name: skill.name,
-    impliesIds: skill.implies?.map((impliedSkill) => impliedSkill.id) ?? [],
   } as Skill
 }

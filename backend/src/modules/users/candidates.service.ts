@@ -9,7 +9,6 @@ import {
 
 import { ICurrentUser } from "@/modules/auth/interfaces/current-user.interface"
 import { applyTokenizedCaseInsensitiveSearch } from "@/common/lib/search"
-import { SkillsService } from "@/modules/skills/skills.service"
 
 import { UsersService } from "./users.service"
 import { Candidate } from "./entities/candidate.entity"
@@ -25,7 +24,6 @@ export class CandidatesService {
     @InjectRepository(Candidate)
     private readonly candidatesRepo: Repository<Candidate>,
     private readonly usersService: UsersService,
-    private readonly skillsService: SkillsService,
   ) {}
 
   private createQB(params?: ICandidatesSearchParams, manager?: EntityManager) {
@@ -168,7 +166,7 @@ export class CandidatesService {
     return candidate
   }
 
-  private hasEffectiveSkills(
+  private hasMatchingSkills(
     candidate: Candidate,
     skillIds: string[] | undefined,
   ) {
@@ -176,24 +174,15 @@ export class CandidatesService {
       return true
     }
 
-    const effectiveSkillIds = new Set(
-      candidate.effectiveSkills?.map((skill) => skill.id) ?? [],
+    const candidateSkillIds = new Set(
+      candidate.skills?.map((skill) => skill.id) ?? [],
     )
 
-    return skillIds.some((skillId) => effectiveSkillIds.has(skillId))
+    return skillIds.some((skillId) => candidateSkillIds.has(skillId))
   }
 
-  private async enrichCandidates(
-    candidates: Candidate[],
-    manager?: EntityManager,
-  ) {
-    await this.skillsService.enrichSkillContainers(candidates, manager)
-
+  private enrichCandidates(candidates: Candidate[]) {
     for (const candidate of candidates) {
-      await this.skillsService.enrichSkillContainers(
-        candidate.projects ?? [],
-        manager,
-      )
       this.attachTotalWorkExperienceMonths(candidate)
     }
 
@@ -212,7 +201,7 @@ export class CandidatesService {
       throw new NotFoundException("Кандидат не найден") // TODO: unified exception
     }
 
-    await this.enrichCandidates([candidate], manager)
+    this.enrichCandidates([candidate])
 
     return candidate
   }
@@ -228,16 +217,16 @@ export class CandidatesService {
     await this.usersService.findFilledRecruiterById(user_.id)
 
     const qb = this.createQB(params).andWhere("candidate.isHidden = false")
-    const candidates = await this.enrichCandidates(await qb.getMany())
+    const candidates = this.enrichCandidates(await qb.getMany())
 
     return candidates.filter((candidate) =>
-      this.hasEffectiveSkills(candidate, params?.skillIds),
+      this.hasMatchingSkills(candidate, params?.skillIds),
     )
   }
 
   async findMatchedForVacancy(vacancy: Vacancy) {
     const qb = this.createQB().andWhere("candidate.isHidden = false")
-    const candidates = await this.enrichCandidates(await qb.getMany())
+    const candidates = this.enrichCandidates(await qb.getMany())
 
     for (const candidate of candidates) {
       candidate.matchPercent = calculateMatchPercent(vacancy, candidate)
