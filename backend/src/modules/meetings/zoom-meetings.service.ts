@@ -58,7 +58,7 @@ export class ZoomMeetingsService {
 
       if (!res.ok) {
         this.logger.warn(
-          `Zoom meeting creation failed: ${res.status} ${JSON.stringify(body)}`,
+          `Zoom meeting creation failed for hostUserId="${hostUserId}": ${res.status} ${JSON.stringify(body)}`,
         )
         return null
       }

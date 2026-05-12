@@ -48,33 +48,10 @@ export class RecruiterApplicationsService {
   async findAll(dto: IRecruiterApplicationsSearchParams, user_: ICurrentUser) {
     const user = await this.usersService.findFilledRecruiterRefById(user_.id)
 
-    const qb = this.applicationsService
-      ._createQB({ ...dto, searchMode: "recruiter" })
-      .andWhere("recruiter.id = :recruiterId", {
-        recruiterId: user.recruiter.id,
-      })
-
-    if (dto.candidateId) {
-      qb.andWhere("candidate.id = :candidateId", {
-        candidateId: dto.candidateId,
-      })
-        .leftJoinAndSelect("application.funnelStep", "funnelStep")
-        .leftJoinAndSelect("application.messages", "message")
-        .leftJoinAndSelect("message.meeting", "messageMeeting")
-        .addOrderBy("message.createdAt", "ASC")
-        .addOrderBy(
-          `CASE
-            WHEN message.type = '${ApplicationMessageType.CandidateAccepted}' THEN 0
-            WHEN message.type = '${ApplicationMessageType.MeetingScheduled}' THEN 1
-            WHEN message.type = '${ApplicationMessageType.UserMessage}' THEN 3
-            ELSE 2
-          END`,
-          "ASC",
-        )
-        .addOrderBy("message.id", "ASC")
-    }
-
-    return qb.getMany()
+    return this.applicationsService._findAllForRecruiterList({
+      ...dto,
+      recruiterId: user.recruiter.id,
+    })
   }
 
   async create(dto: CreateRecruiterApplicationDto, user_: ICurrentUser) {
@@ -164,12 +141,12 @@ export class RecruiterApplicationsService {
 
   async rejectById(id: string, dto: RejectApplicationDto, user_: ICurrentUser) {
     await this.dataSource.transaction(async (manager) => {
-      const application = await this.applicationsService._findOne(
-        { id },
+      const application = await this.applicationsService._findRejectContextById(
+        id,
         manager,
       )
 
-      const user = await this.usersService.findFilledRecruiterById(
+      const user = await this.usersService.findFilledRecruiterRefById(
         user_.id,
         manager,
       )
@@ -187,7 +164,7 @@ export class RecruiterApplicationsService {
       )
     })
 
-    return this.applicationsService._findOne({ id })
+    return this.findOneById(id, user_)
   }
 
   async offerById(
@@ -198,25 +175,31 @@ export class RecruiterApplicationsService {
     await this.dataSource.transaction(async (manager) => {
       const applicationsRepo = manager.getRepository(Application)
 
-      const user = await this.usersService.findFilledRecruiterById(
+      const user = await this.usersService.findFilledRecruiterRefById(
         user_.id,
         manager,
       )
 
-      const application = await this.applicationsService._findOne(
-        { id },
+      const application =
+        await this.applicationsService._findRecruiterOfferContextById(
+          id,
+          manager,
+        )
+
+      if (application.vacancy?.recruiter?.id !== user.recruiter.id) {
+        throw new ForbiddenException(
+          "Вы не можете перевести этот процесс найма на следующий этап",
+        )
+      }
+
+      const candidate = await this.candidatesService.findOneById(
+        application.candidate!.id,
         manager,
       )
 
       if (application.status !== ApplicationStatus.Pending) {
         throw new ConflictException(
           "На следующий этап можно перевести только активный процесс найма",
-        )
-      }
-
-      if (application.vacancy?.recruiter?.id !== user.recruiter.id) {
-        throw new ForbiddenException(
-          "Вы не можете перевести этот процесс найма на следующий этап",
         )
       }
 
@@ -244,7 +227,7 @@ export class RecruiterApplicationsService {
 
         await this.notificationsService.createForApplicationEvent(
           {
-            recipientUserId: application.candidate!.user!.id,
+            recipientUserId: candidate.user!.id,
             type: offeredStepMessage.type,
             applicationId: application.id,
             applicationMessageId: offeredStepMessage.id,
@@ -266,7 +249,7 @@ export class RecruiterApplicationsService {
 
         await this.notificationsService.createForApplicationEvent(
           {
-            recipientUserId: application.candidate!.user!.id,
+            recipientUserId: candidate.user!.id,
             type: offeredJobMessage.type,
             applicationId: application.id,
             applicationMessageId: offeredJobMessage.id,

@@ -21,6 +21,7 @@ import {
   IApplicationCreateData,
   IApplicationsSearchParams,
 } from "./interfaces/application-service.interface"
+import { IRecruiterApplicationsSearchParams } from "./interfaces/recruiter-applications-service.interface"
 
 @Injectable()
 export class ApplicationsService {
@@ -205,6 +206,255 @@ export class ApplicationsService {
     return application
   }
 
+  async _findRecruiterAccessContextById(
+    applicationId: string,
+    manager?: EntityManager,
+  ) {
+    const repo = manager?.getRepository(Application) ?? this.applicationsRepo
+
+    const application = await repo
+      .createQueryBuilder("application")
+      .innerJoinAndSelect("application.vacancy", "vacancy")
+      .innerJoinAndSelect("vacancy.recruiter", "recruiter")
+      .where("application.id = :applicationId", { applicationId })
+      .getOne()
+
+    if (!application) {
+      throw new NotFoundException("Процесс найма не найден")
+    }
+
+    return application
+  }
+
+  async _findStageResultEditContextById(
+    applicationId: string,
+    manager?: EntityManager,
+  ) {
+    const repo = manager?.getRepository(Application) ?? this.applicationsRepo
+
+    const application = await repo
+      .createQueryBuilder("application")
+      .innerJoinAndSelect("application.vacancy", "vacancy")
+      .innerJoinAndSelect("vacancy.recruiter", "recruiter")
+      .leftJoinAndSelect("application.funnelStep", "funnelStep")
+      .leftJoinAndSelect("application.messages", "message")
+      .where("application.id = :applicationId", { applicationId })
+      .orderBy("message.createdAt", "ASC")
+      .addOrderBy(
+        `CASE
+          WHEN message.type = '${ApplicationMessageType.CandidateAccepted}' THEN 0
+          WHEN message.type = '${ApplicationMessageType.MeetingScheduled}' THEN 1
+          WHEN message.type = '${ApplicationMessageType.UserMessage}' THEN 3
+          ELSE 2
+        END`,
+        "ASC",
+      )
+      .addOrderBy("message.id", "ASC")
+      .getOne()
+
+    if (!application) {
+      throw new NotFoundException("Процесс найма не найден")
+    }
+
+    return application
+  }
+
+  async _findRejectContextById(applicationId: string, manager?: EntityManager) {
+    const repo = manager?.getRepository(Application) ?? this.applicationsRepo
+
+    const application = await repo
+      .createQueryBuilder("application")
+      .leftJoinAndSelect("application.candidate", "candidate")
+      .leftJoinAndSelect("candidate.user", "candidateUser")
+      .leftJoinAndSelect("application.vacancy", "vacancy")
+      .leftJoinAndSelect("vacancy.recruiter", "recruiter")
+      .leftJoinAndSelect("recruiter.user", "recruiterUser")
+      .where("application.id = :applicationId", { applicationId })
+      .getOne()
+
+    if (!application) {
+      throw new NotFoundException("Процесс найма не найден")
+    }
+
+    return application
+  }
+
+  async _findRecruiterOfferContextById(
+    applicationId: string,
+    manager?: EntityManager,
+  ) {
+    const repo = manager?.getRepository(Application) ?? this.applicationsRepo
+
+    const application = await repo
+      .createQueryBuilder("application")
+      .leftJoinAndSelect("application.candidate", "candidate")
+      .leftJoinAndSelect("candidate.user", "candidateUser")
+      .leftJoinAndSelect("application.vacancy", "vacancy")
+      .leftJoinAndSelect("vacancy.recruiter", "recruiter")
+      .leftJoinAndSelect("vacancy.funnelSteps", "vacancyFunnelStep")
+      .leftJoinAndSelect("application.funnelStep", "funnelStep")
+      .leftJoinAndSelect("application.messages", "message")
+      .where("application.id = :applicationId", { applicationId })
+      .orderBy("vacancyFunnelStep.index", "ASC")
+      .addOrderBy("message.createdAt", "ASC")
+      .addOrderBy(
+        `CASE
+          WHEN message.type = '${ApplicationMessageType.CandidateAccepted}' THEN 0
+          WHEN message.type = '${ApplicationMessageType.MeetingScheduled}' THEN 1
+          WHEN message.type = '${ApplicationMessageType.UserMessage}' THEN 3
+          ELSE 2
+        END`,
+        "ASC",
+      )
+      .addOrderBy("message.id", "ASC")
+      .getOne()
+
+    if (!application) {
+      throw new NotFoundException("Процесс найма не найден")
+    }
+
+    return application
+  }
+
+  async _findAllForCandidateList(
+    params: IApplicationsSearchParams & { candidateId: string },
+    manager?: EntityManager,
+  ) {
+    const repo = manager?.getRepository(Application) ?? this.applicationsRepo
+    const qb = repo
+      .createQueryBuilder("application")
+      .leftJoinAndSelect("application.vacancy", "vacancy")
+      .leftJoinAndSelect("vacancy.recruiter", "recruiter")
+      .leftJoinAndSelect("recruiter.company", "company")
+      .leftJoinAndSelect("company.industry", "industry")
+      .leftJoinAndSelect("company.logo", "companyLogo")
+      .leftJoinAndSelect("vacancy.specialization", "specialization")
+      .leftJoinAndSelect("vacancy.city", "city")
+      .where('application."candidateId" = :candidateId', {
+        candidateId: params.candidateId,
+      })
+      .andWhere("vacancy.status = :vacancyStatus", {
+        vacancyStatus: VacancyStatus.Active,
+      })
+      .orderBy("application.createdAt", "DESC")
+
+    applyTokenizedCaseInsensitiveSearch(
+      qb,
+      params.query,
+      ["vacancy.title", "company.name"],
+      "applicationSearch",
+    )
+
+    if (params.type) {
+      qb.andWhere("application.type = :type", { type: params.type })
+    }
+
+    if (params.status) {
+      qb.andWhere("application.status = :status", { status: params.status })
+    }
+
+    return qb.getMany()
+  }
+
+  async _findAllForRecruiterList(
+    params: IRecruiterApplicationsSearchParams & { recruiterId: string },
+    manager?: EntityManager,
+  ) {
+    const repo = manager?.getRepository(Application) ?? this.applicationsRepo
+
+    if (params.candidateId) {
+      const qb = repo
+        .createQueryBuilder("application")
+        .leftJoinAndSelect("application.vacancy", "vacancy")
+        .leftJoinAndSelect("vacancy.recruiter", "recruiter")
+        .leftJoinAndSelect("recruiter.company", "company")
+        .leftJoinAndSelect("application.messages", "message")
+        .where('vacancy."recruiterId" = :recruiterId', {
+          recruiterId: params.recruiterId,
+        })
+        .andWhere('application."candidateId" = :candidateId', {
+          candidateId: params.candidateId,
+        })
+        .orderBy("application.createdAt", "DESC")
+        .addOrderBy("message.createdAt", "ASC")
+        .addOrderBy(
+          `CASE
+            WHEN message.type = '${ApplicationMessageType.CandidateAccepted}' THEN 0
+            WHEN message.type = '${ApplicationMessageType.MeetingScheduled}' THEN 1
+            WHEN message.type = '${ApplicationMessageType.UserMessage}' THEN 3
+            ELSE 2
+          END`,
+          "ASC",
+        )
+        .addOrderBy("message.id", "ASC")
+
+      if (params.type) {
+        qb.andWhere("application.type = :type", { type: params.type })
+      }
+
+      if (params.status) {
+        qb.andWhere("application.status = :status", { status: params.status })
+      }
+
+      return qb.getMany()
+    }
+
+    const qb = repo
+      .createQueryBuilder("application")
+      .leftJoinAndSelect("application.vacancy", "vacancy")
+      .leftJoinAndSelect("application.candidate", "candidate")
+      .leftJoinAndSelect("candidate.city", "candidateCity")
+      .leftJoinAndSelect("candidate.specialization", "candidateSpecialization")
+      .leftJoinAndSelect("candidate.skills", "candidateSkill")
+      .leftJoinAndSelect("candidate.workExperience", "candidateWorkExperience")
+      .leftJoinAndSelect("candidate.projects", "candidateProjectItem")
+      .leftJoinAndSelect("candidate.avatar", "candidateAvatar")
+      .where('vacancy."recruiterId" = :recruiterId', {
+        recruiterId: params.recruiterId,
+      })
+      .orderBy("application.createdAt", "DESC")
+
+    applyTokenizedCaseInsensitiveSearch(
+      qb,
+      params.query,
+      [
+        "candidate.firstName",
+        "candidate.lastName",
+        "candidate.patronymic",
+        "concat_ws(' ', candidate.lastName, candidate.firstName, candidate.patronymic)",
+        "concat_ws(' ', candidate.firstName, candidate.lastName, candidate.patronymic)",
+      ],
+      "applicationSearch",
+    )
+
+    if (params.vacancyId) {
+      qb.andWhere('application."vacancyId" = :vacancyId', {
+        vacancyId: params.vacancyId,
+      })
+    }
+
+    if (params.type) {
+      qb.andWhere("application.type = :type", { type: params.type })
+    }
+
+    if (params.status) {
+      qb.andWhere("application.status = :status", { status: params.status })
+    }
+
+    const applications = await qb.getMany()
+
+    for (const application of applications) {
+      if (application.candidate) {
+        application.candidate.totalWorkExperienceMonths =
+          calculateTotalWorkExperienceMonths(
+            application.candidate.workExperience,
+          )
+      }
+    }
+
+    return applications
+  }
+
   async _findRecruiterViewContext(
     applicationId: string,
     recruiterId: string,
@@ -298,22 +548,17 @@ export class ApplicationsService {
     candidate: Candidate,
     manager?: EntityManager,
   ) {
-    try {
-      await this._findOne(
-        {
-          vacancy: { id: vacancy.id },
-          candidate: { id: candidate.id },
-        },
-        manager,
-      )
-    } catch (e) {
-      if (e instanceof NotFoundException) {
-        return
-      }
-      throw e
-    }
+    const repo = manager?.getRepository(Application) ?? this.applicationsRepo
+    const existingCount = await repo.count({
+      where: {
+        vacancy: { id: vacancy.id },
+        candidate: { id: candidate.id },
+      },
+    })
 
-    throw new ConflictException("Процесс найма уже существует")
+    if (existingCount > 0) {
+      throw new ConflictException("Процесс найма уже существует")
+    }
   }
 
   async reject(

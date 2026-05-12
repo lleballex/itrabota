@@ -28,7 +28,9 @@ export class ApplicationStageResultsService {
 
   async findAllByApplicationId(id: string, user_: ICurrentUser) {
     const user = await this.usersService.findFilledRecruiterRefById(user_.id)
-    await this.findAccessibleApplication(id, user.recruiter.id)
+    await this.findAccessibleApplication(id, user.recruiter.id, {
+      includeMessages: false,
+    })
 
     return this.stageResultsRepo.find({
       where: {
@@ -60,7 +62,10 @@ export class ApplicationStageResultsService {
       const application = await this.findAccessibleApplication(
         id,
         user.recruiter.id,
-        manager,
+        {
+          manager,
+          includeMessages: true,
+        },
       )
 
       if (application.status !== ApplicationStatus.Pending) {
@@ -129,9 +134,20 @@ export class ApplicationStageResultsService {
   private async findAccessibleApplication(
     id: string,
     recruiterId: string,
-    manager?: EntityManager,
+    options?: {
+      manager?: EntityManager
+      includeMessages?: boolean
+    },
   ) {
-    const application = await this.applicationsService._findOne({ id }, manager)
+    const application = options?.includeMessages
+      ? await this.applicationsService._findStageResultEditContextById(
+          id,
+          options.manager,
+        )
+      : await this.applicationsService._findRecruiterAccessContextById(
+          id,
+          options?.manager,
+        )
 
     if (application.vacancy?.recruiter?.id !== recruiterId) {
       throw new ForbiddenException(

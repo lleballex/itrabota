@@ -42,18 +42,12 @@ export class CandidateApplicationsService {
   ) {}
 
   async findAll(dto: GetCandidateApplicationsDto, user_: ICurrentUser) {
-    const user = await this.usersService.findFilledCandidateById(user_.id)
+    const user = await this.usersService.findFilledCandidateRefById(user_.id)
 
-    const qb = this.applicationsService
-      ._createQB({ ...dto, searchMode: "candidate" })
-      .andWhere("candidate.id = :candidateId", {
-        candidateId: user.candidate.id,
-      })
-      .andWhere("vacancy.status = :vacancyStatus", {
-        vacancyStatus: VacancyStatus.Active,
-      })
-
-    return qb.getMany()
+    return this.applicationsService._findAllForCandidateList({
+      ...dto,
+      candidateId: user.candidate.id,
+    })
   }
 
   async create(dto: CreateCandidateApplicationDto, user_: ICurrentUser) {
@@ -100,12 +94,12 @@ export class CandidateApplicationsService {
 
   async rejectById(id: string, dto: RejectApplicationDto, user_: ICurrentUser) {
     await this.dataSource.transaction(async (manager) => {
-      const application = await this.applicationsService._findOne(
-        { id },
+      const application = await this.applicationsService._findRejectContextById(
+        id,
         manager,
       )
 
-      const user = await this.usersService.findFilledCandidateById(
+      const user = await this.usersService.findFilledCandidateRefById(
         user_.id,
         manager,
       )
