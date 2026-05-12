@@ -1,6 +1,7 @@
 import {
   Column,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   OneToOne,
@@ -16,6 +17,9 @@ import { FunnelStep } from "@/modules/vacancies/entities/funnel-step.entity"
 
 @Entity("meeting")
 @Unique(["applicationMessage"])
+@Index("IDX_meeting_recruiter_starts_at", ["recruiter", "startsAt"])
+@Index("IDX_meeting_recruiter_ends_at", ["recruiter", "endsAt"])
+@Index("IDX_meeting_application_starts_at", ["application", "startsAt"])
 export class Meeting extends BaseEntity {
   @ManyToOne(() => Application, (application) => application.meetings, {
     nullable: false,

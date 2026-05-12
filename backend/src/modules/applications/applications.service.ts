@@ -7,6 +7,7 @@ import { InjectRepository } from "@nestjs/typeorm"
 import { EntityManager, FindOptionsWhere, Repository } from "typeorm"
 
 import { Vacancy } from "@/modules/vacancies/entities/vacancy.entity"
+import { VacancyStatus } from "@/modules/vacancies/entities/vacancy.entity"
 import { Candidate } from "@/modules/users/entities/candidate.entity"
 import { UserRole } from "@/modules/users/types/user-role"
 import { NotificationsService } from "@/modules/notifications/notifications.service"
@@ -131,6 +132,74 @@ export class ApplicationsService {
     if (application.candidate) {
       application.candidate.totalWorkExperienceMonths =
         calculateTotalWorkExperienceMonths(application.candidate.workExperience)
+    }
+
+    return application
+  }
+
+  async _findOneForCandidateVacancy(
+    vacancyId: string,
+    candidateId: string,
+    manager?: EntityManager,
+  ) {
+    const repo = manager?.getRepository(Application) ?? this.applicationsRepo
+
+    const application = await repo
+      .createQueryBuilder("application")
+      .innerJoin("application.vacancy", "vacancy")
+      .innerJoin("application.candidate", "candidate")
+      .leftJoinAndSelect("application.funnelStep", "funnelStep")
+      .leftJoinAndSelect("application.messages", "message")
+      .leftJoinAndSelect("message.meeting", "messageMeeting")
+      .leftJoinAndSelect("application.meetings", "applicationMeeting")
+      .leftJoinAndSelect(
+        "applicationMeeting.funnelStep",
+        "applicationMeetingFunnelStep",
+      )
+      .where("vacancy.id = :vacancyId", { vacancyId })
+      .andWhere("vacancy.status = :vacancyStatus", {
+        vacancyStatus: VacancyStatus.Active,
+      })
+      .andWhere("candidate.id = :candidateId", { candidateId })
+      .orderBy("application.createdAt", "DESC")
+      .addOrderBy("applicationMeeting.startsAt", "ASC")
+      .addOrderBy("message.createdAt", "ASC")
+      .addOrderBy(
+        `CASE
+          WHEN message.type = '${ApplicationMessageType.CandidateAccepted}' THEN 0
+          WHEN message.type = '${ApplicationMessageType.MeetingScheduled}' THEN 1
+          WHEN message.type = '${ApplicationMessageType.UserMessage}' THEN 3
+          ELSE 2
+        END`,
+        "ASC",
+      )
+      .addOrderBy("message.id", "ASC")
+      .getOne()
+
+    if (!application) {
+      throw new NotFoundException("Процесс найма не найден")
+    }
+
+    return application
+  }
+
+  async _findMeetingSlotsContextById(
+    applicationId: string,
+    manager?: EntityManager,
+  ) {
+    const repo = manager?.getRepository(Application) ?? this.applicationsRepo
+
+    const application = await repo
+      .createQueryBuilder("application")
+      .innerJoinAndSelect("application.candidate", "candidate")
+      .leftJoinAndSelect("application.funnelStep", "funnelStep")
+      .innerJoinAndSelect("application.vacancy", "vacancy")
+      .innerJoinAndSelect("vacancy.recruiter", "recruiter")
+      .where("application.id = :applicationId", { applicationId })
+      .getOne()
+
+    if (!application) {
+      throw new NotFoundException("Процесс найма не найден")
     }
 
     return application

@@ -12,6 +12,7 @@ import Button from "@/components/ui/Button"
 import Calendar from "@/components/ui/Calendar"
 import { formatMeetingTimeRange, MEETING_TIMEZONE } from "@/lib/meeting"
 import Select from "@/components/ui/Select"
+import RemoteData from "@/components/ui/RemoteData"
 
 interface Props {
   application: Application
@@ -114,34 +115,37 @@ export default function ApplicationMeetingModal({
       <div className="flex-1 flex flex-col gap-2">
         {!selectedDate && <p>Выберите день в календаре</p>}
 
-        {selectedDate && slots.status === "success" && !slots.data.length && (
-          <p>На этот день свободных слотов нет</p>
+        {selectedDate && (
+          <RemoteData
+            data={slots}
+            onSuccess={(slotItems) =>
+              !slotItems.length ? (
+                <p>На этот день свободных слотов нет</p>
+              ) : (
+                <div className="flex flex-wrap gap-1">
+                  {slotItems.map((slot) => (
+                    <button
+                      key={slot.startsAt}
+                      className={classNames(
+                        "grow-1 w-fit cursor-pointer rounded border px-1.5 py-1 text-xs transition-all",
+                        selectedSlot === slot.startsAt
+                          ? "border-primary bg-primary/15 text-fg-heading"
+                          : "border-border bg-secondary hover:border-primary hover:text-fg-heading",
+                      )}
+                      type="button"
+                      onClick={() => {
+                        setFormError(null)
+                        setSelectedSlot(slot.startsAt)
+                      }}
+                    >
+                      {formatMeetingTimeRange(slot.startsAt, slot.endsAt)}
+                    </button>
+                  ))}
+                </div>
+              )
+            }
+          />
         )}
-
-        {selectedDate &&
-          slots.status === "success" &&
-          Boolean(slots.data.length) && (
-            <div className="flex flex-wrap gap-1">
-              {slots.data.map((slot) => (
-                <button
-                  key={slot.startsAt}
-                  className={classNames(
-                    "grow-1 w-fit cursor-pointer rounded border px-1.5 py-1 text-xs transition-all",
-                    selectedSlot === slot.startsAt
-                      ? "border-primary bg-primary/15 text-fg-heading"
-                      : "border-border bg-secondary hover:border-primary hover:text-fg-heading",
-                  )}
-                  type="button"
-                  onClick={() => {
-                    setFormError(null)
-                    setSelectedSlot(slot.startsAt)
-                  }}
-                >
-                  {formatMeetingTimeRange(slot.startsAt, slot.endsAt)}
-                </button>
-              ))}
-            </div>
-          )}
 
         {formError && <p className="text-danger">{formError}</p>}
       </div>

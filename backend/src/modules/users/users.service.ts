@@ -128,6 +128,30 @@ export class UsersService {
     return user as WithRequired<typeof user, "candidate">
   }
 
+  async findFilledCandidateRefById(id: string, manager?: EntityManager) {
+    const repo = manager?.getRepository(User) ?? this.usersRepo
+
+    const user = await repo
+      .createQueryBuilder("user")
+      .leftJoinAndSelect("user.candidate", "candidate")
+      .where("user.id = :id", { id })
+      .getOne()
+
+    if (!user) {
+      throw new NotFoundException("Пользователь не найден")
+    }
+
+    if (user.role !== UserRole.Candidate) {
+      throw new ForbiddenException("Пользователь не является кандидатом")
+    }
+
+    if (!user.candidate) {
+      throw new UnprocessableEntityException("Профиль кандидата не заполнен")
+    }
+
+    return user as WithRequired<typeof user, "candidate">
+  }
+
   async create(data: DeepPartial<User>, manager?: EntityManager) {
     const repo = manager?.getRepository(User) ?? this.usersRepo
 

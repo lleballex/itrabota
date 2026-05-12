@@ -40,10 +40,9 @@ export class MeetingsService {
     date: string,
     user_: ICurrentUser,
   ) {
-    const user = await this.usersService.findFilledCandidateById(user_.id)
-    const application = await this.applicationsService._findOne({
-      id: applicationId,
-    })
+    const user = await this.usersService.findFilledCandidateRefById(user_.id)
+    const application =
+      await this.applicationsService._findMeetingSlotsContextById(applicationId)
 
     if (application.candidate?.id !== user.candidate.id) {
       throw new ForbiddenException(
@@ -102,8 +101,7 @@ export class MeetingsService {
     const repo = manager?.getRepository(Meeting) ?? this.meetingsRepo
     const overlapMeeting = await repo
       .createQueryBuilder("meeting")
-      .leftJoin("meeting.recruiter", "recruiter")
-      .where("recruiter.id = :recruiterId", { recruiterId })
+      .where('meeting."recruiterId" = :recruiterId', { recruiterId })
       .andWhere("meeting.startsAt < :slotEnd", { slotEnd })
       .andWhere("meeting.endsAt > :slotStart", { slotStart: slot })
       .getOne()
@@ -171,8 +169,7 @@ export class MeetingsService {
     const { workdayStartUtc, workdayEndUtc } = this.getWorkdayUtcBounds(date)
     const busyMeetings = await this.meetingsRepo
       .createQueryBuilder("meeting")
-      .leftJoin("meeting.recruiter", "recruiter")
-      .where("recruiter.id = :recruiterId", { recruiterId })
+      .where('meeting."recruiterId" = :recruiterId', { recruiterId })
       .andWhere("meeting.startsAt < :workdayEndUtc", { workdayEndUtc })
       .andWhere("meeting.endsAt > :workdayStartUtc", { workdayStartUtc })
       .orderBy("meeting.startsAt", "ASC")

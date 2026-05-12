@@ -1,4 +1,11 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm"
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+} from "typeorm"
 
 import { BaseEntity } from "@/database/entities/base.entity"
 import { Candidate } from "@/modules/users/entities/candidate.entity"
@@ -27,6 +34,8 @@ export type ApplicationType =
   (typeof ApplicationType)[keyof typeof ApplicationType]
 
 @Entity("application")
+@Index("IDX_application_candidate_vacancy", ["candidate", "vacancy"])
+@Index("IDX_application_vacancy_created_at", ["vacancy", "createdAt"])
 export class Application extends BaseEntity {
   @Column("enum", { enum: ApplicationType })
   type!: ApplicationType

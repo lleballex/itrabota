@@ -2,7 +2,6 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
-  NotFoundException,
 } from "@nestjs/common"
 import { DataSource } from "typeorm"
 
@@ -91,19 +90,12 @@ export class CandidateApplicationsService {
   }
 
   async findOneByVacancyId(vacancyId: string, user_: ICurrentUser) {
-    const vacancy = await this.vacanciesService.findOneById(vacancyId)
+    const user = await this.usersService.findFilledCandidateRefById(user_.id)
 
-    if (vacancy.status === VacancyStatus.Archived) {
-      throw new NotFoundException("Вакансия не найдена")
-    }
-
-    const user = await this.usersService.findFilledCandidateById(user_.id)
-    const application = await this.applicationsService._findOne({
-      vacancy: { id: vacancy.id },
-      candidate: { id: user.candidate.id },
-    })
-
-    return application
+    return this.applicationsService._findOneForCandidateVacancy(
+      vacancyId,
+      user.candidate.id,
+    )
   }
 
   async rejectById(id: string, dto: RejectApplicationDto, user_: ICurrentUser) {

@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from "typeorm"
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne } from "typeorm"
 
 import { BaseEntity } from "@/database/entities/base.entity"
 import { UserRole } from "@/modules/users/types/user-role"
@@ -23,6 +23,10 @@ export type ApplicationMessageType =
   (typeof ApplicationMessageType)[keyof typeof ApplicationMessageType]
 
 @Entity("application_message")
+@Index("IDX_application_message_application_created_at", [
+  "application",
+  "createdAt",
+])
 export class ApplicationMessage extends BaseEntity {
   @Column("enum", { enum: UserRole })
   senderRole!: UserRole
