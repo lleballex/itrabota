@@ -8,7 +8,8 @@ build:
 	$(BUILD_ENV) $(COMPOSE) build --progress=plain
 
 up:
-	$(BUILD_ENV) $(COMPOSE) up -d --build --progress=plain
+	$(BUILD_ENV) $(COMPOSE) build --progress=plain
+	$(COMPOSE) up -d
 
 down:
 	$(COMPOSE) down
@@ -22,7 +23,7 @@ ps:
 	$(COMPOSE) ps
 
 seed:
-	$(COMPOSE) exec backend node dist/scripts/demo-seed.js
+	$(COMPOSE) exec backend sh -lc 'corepack enable && yarn db:seed:demo'
 
 backend-build:
 	$(COMPOSE) build backend --progress=plain
