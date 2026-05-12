@@ -1,6 +1,7 @@
 import {
   Column,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   OneToOne,
@@ -30,6 +31,8 @@ export type NotificationType =
 
 @Entity("notification")
 @Unique(["applicationMessage", "recipientUser"])
+@Index("IDX_notification_recipient_created_at", ["recipientUser", "createdAt"])
+@Index("IDX_notification_recipient_read_at", ["recipientUser", "readAt"])
 export class Notification extends BaseEntity {
   @ManyToOne(() => User, {
     nullable: false,

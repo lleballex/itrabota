@@ -46,7 +46,7 @@ export class RecruiterApplicationsService {
   ) {}
 
   async findAll(dto: IRecruiterApplicationsSearchParams, user_: ICurrentUser) {
-    const user = await this.usersService.findFilledRecruiterById(user_.id)
+    const user = await this.usersService.findFilledRecruiterRefById(user_.id)
 
     const qb = this.applicationsService
       ._createQB({ ...dto, searchMode: "recruiter" })
@@ -84,7 +84,7 @@ export class RecruiterApplicationsService {
         manager,
       )
 
-      const user = await this.usersService.findFilledRecruiterById(
+      const user = await this.usersService.findFilledRecruiterRefById(
         user_.id,
         manager,
       )
@@ -123,12 +123,12 @@ export class RecruiterApplicationsService {
   }
 
   async findOneById(id: string, user_: ICurrentUser) {
-    const user = await this.usersService.findFilledRecruiterById(user_.id)
+    const user = await this.usersService.findFilledRecruiterRefById(user_.id)
 
-    return this.applicationsService._findOne({
+    return this.applicationsService._findOneForRecruiterView(
       id,
-      vacancy: { recruiter: { id: user.recruiter.id } },
-    })
+      user.recruiter.id,
+    )
   }
 
   async findStageResultsByApplicationId(id: string, user_: ICurrentUser) {

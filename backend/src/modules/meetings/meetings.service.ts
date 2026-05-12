@@ -69,7 +69,7 @@ export class MeetingsService {
   }
 
   async getCandidateMeetings(user_: ICurrentUser, from: string, to: string) {
-    const user = await this.usersService.findFilledCandidateById(user_.id)
+    const user = await this.usersService.findFilledCandidateRefById(user_.id)
 
     return this.getMeetings({
       candidateId: user.candidate.id,
@@ -79,7 +79,7 @@ export class MeetingsService {
   }
 
   async getRecruiterMeetings(user_: ICurrentUser, from: string, to: string) {
-    const user = await this.usersService.findFilledRecruiterById(user_.id)
+    const user = await this.usersService.findFilledRecruiterRefById(user_.id)
 
     return this.getMeetings({
       recruiterId: user.recruiter.id,
@@ -148,13 +148,13 @@ export class MeetingsService {
       .orderBy("meeting.startsAt", "ASC")
 
     if (params.candidateId) {
-      qb.andWhere("candidate.id = :candidateId", {
+      qb.andWhere('meeting."candidateId" = :candidateId', {
         candidateId: params.candidateId,
       })
     }
 
     if (params.recruiterId) {
-      qb.andWhere("recruiter.id = :recruiterId", {
+      qb.andWhere('meeting."recruiterId" = :recruiterId', {
         recruiterId: params.recruiterId,
       })
     }

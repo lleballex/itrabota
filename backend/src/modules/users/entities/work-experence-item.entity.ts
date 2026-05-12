@@ -1,10 +1,14 @@
-import { Column, Entity, JoinColumn, ManyToOne } from "typeorm"
+import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm"
 
 import { BaseEntity } from "@/database/entities/base.entity"
 
 import { Candidate } from "./candidate.entity"
 
 @Entity("work_experience_item")
+@Index("IDX_work_experience_item_candidate_started_at", [
+  "candidate",
+  "startedAt",
+])
 export class WorkExperienceItem extends BaseEntity {
   @Column("varchar")
   position!: string

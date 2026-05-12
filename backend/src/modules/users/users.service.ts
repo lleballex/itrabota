@@ -108,6 +108,30 @@ export class UsersService {
     return user as WithRequired<typeof user, "recruiter">
   }
 
+  async findFilledRecruiterRefById(id: string, manager?: EntityManager) {
+    const repo = manager?.getRepository(User) ?? this.usersRepo
+
+    const user = await repo
+      .createQueryBuilder("user")
+      .leftJoinAndSelect("user.recruiter", "recruiter")
+      .where("user.id = :id", { id })
+      .getOne()
+
+    if (!user) {
+      throw new NotFoundException("Пользователь не найден")
+    }
+
+    if (user.role !== UserRole.Recruiter) {
+      throw new ForbiddenException("Пользователь не является рекрутером")
+    }
+
+    if (!user.recruiter) {
+      throw new UnprocessableEntityException("Профиль рекрутера не заполнен")
+    }
+
+    return user as WithRequired<typeof user, "recruiter">
+  }
+
   async findCandidateById(id: string, manager?: EntityManager) {
     const user = await this.findOneById(id, manager)
 

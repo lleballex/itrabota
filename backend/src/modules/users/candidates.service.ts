@@ -214,7 +214,7 @@ export class CandidatesService {
     user_: ICurrentUser,
     params?: ICandidatesSearchParams,
   ) {
-    await this.usersService.findFilledRecruiterById(user_.id)
+    await this.usersService.findFilledRecruiterRefById(user_.id)
 
     const qb = this.createQB(params).andWhere("candidate.isHidden = false")
     const candidates = this.enrichCandidates(await qb.getMany())
@@ -249,7 +249,7 @@ export class CandidatesService {
   }
 
   async findOneForRecruiterById(id: string, user_: ICurrentUser) {
-    await this.usersService.findFilledRecruiterById(user_.id)
+    await this.usersService.findFilledRecruiterRefById(user_.id)
 
     return this.findOne({ id, isHidden: false })
   }

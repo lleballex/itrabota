@@ -205,6 +205,67 @@ export class ApplicationsService {
     return application
   }
 
+  async _findOneForRecruiterView(
+    applicationId: string,
+    recruiterId: string,
+    manager?: EntityManager,
+  ) {
+    const repo = manager?.getRepository(Application) ?? this.applicationsRepo
+
+    const application = await repo
+      .createQueryBuilder("application")
+      .innerJoinAndSelect("application.vacancy", "vacancy")
+      .innerJoinAndSelect("vacancy.recruiter", "recruiter")
+      .leftJoinAndSelect("recruiter.company", "company")
+      .leftJoinAndSelect("company.industry", "industry")
+      .leftJoinAndSelect("company.logo", "companyLogo")
+      .leftJoinAndSelect("vacancy.specialization", "specialization")
+      .leftJoinAndSelect("vacancy.city", "city")
+      .leftJoinAndSelect("vacancy.skills", "skills")
+      .leftJoinAndSelect("vacancy.funnelSteps", "vacancyFunnelStep")
+      .innerJoinAndSelect("application.candidate", "candidate")
+      .leftJoinAndSelect("candidate.user", "candidateUser")
+      .leftJoinAndSelect("candidate.city", "candidateCity")
+      .leftJoinAndSelect("candidate.specialization", "candidateSpecialization")
+      .leftJoinAndSelect("candidate.skills", "candidateSkill")
+      .leftJoinAndSelect("candidate.workExperience", "candidateWorkExperience")
+      .leftJoinAndSelect("candidate.projects", "candidateProjectItem")
+      .leftJoinAndSelect("candidateProjectItem.skills", "candidateProjectSkill")
+      .leftJoinAndSelect("candidate.avatar", "candidateAvatar")
+      .leftJoinAndSelect("application.funnelStep", "funnelStep")
+      .leftJoinAndSelect("application.messages", "message")
+      .leftJoinAndSelect("message.meeting", "messageMeeting")
+      .leftJoinAndSelect("application.meetings", "meeting")
+      .leftJoinAndSelect("meeting.funnelStep", "meetingFunnelStep")
+      .where("application.id = :applicationId", { applicationId })
+      .andWhere("recruiter.id = :recruiterId", { recruiterId })
+      .orderBy("vacancyFunnelStep.index", "ASC")
+      .addOrderBy("meeting.startsAt", "ASC")
+      .addOrderBy("message.createdAt", "ASC")
+      .addOrderBy(
+        `CASE
+          WHEN message.type = '${ApplicationMessageType.CandidateAccepted}' THEN 0
+          WHEN message.type = '${ApplicationMessageType.MeetingScheduled}' THEN 1
+          WHEN message.type = '${ApplicationMessageType.UserMessage}' THEN 3
+          ELSE 2
+        END`,
+        "ASC",
+      )
+      .addOrderBy("message.id", "ASC")
+      .getOne()
+
+    if (!application) {
+      throw new NotFoundException("Процесс найма не найден")
+    }
+
+    if (application.candidate) {
+      application.candidate.totalWorkExperienceMonths =
+        calculateTotalWorkExperienceMonths(application.candidate.workExperience)
+    }
+
+    return application
+  }
+
   async _create(data: IApplicationCreateData, manager: EntityManager) {
     const applicationsRepo = manager.getRepository(Application)
 

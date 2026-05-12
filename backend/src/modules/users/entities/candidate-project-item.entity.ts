@@ -1,6 +1,7 @@
 import {
   Column,
   Entity,
+  Index,
   JoinColumn,
   JoinTable,
   ManyToMany,
@@ -13,6 +14,10 @@ import { Skill } from "@/modules/skills/entities/skills.entity"
 import { Candidate } from "./candidate.entity"
 
 @Entity("candidate_project_item")
+@Index("IDX_candidate_project_item_candidate_created_at", [
+  "candidate",
+  "createdAt",
+])
 export class CandidateProjectItem extends BaseEntity {
   @Column("varchar")
   title!: string

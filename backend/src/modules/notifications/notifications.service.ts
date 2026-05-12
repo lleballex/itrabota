@@ -49,9 +49,12 @@ export class NotificationsService {
   }
 
   findAllForCurrentUser(user: ICurrentUser, dto: GetNotificationsDto) {
-    const qb = this.createQb().where("recipientUser.id = :userId", {
-      userId: user.id,
-    })
+    const qb = this.createQb().where(
+      'notification."recipientUserId" = :userId',
+      {
+        userId: user.id,
+      },
+    )
 
     if (dto.limit) {
       qb.take(dto.limit)

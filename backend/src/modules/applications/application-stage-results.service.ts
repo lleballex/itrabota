@@ -27,7 +27,7 @@ export class ApplicationStageResultsService {
   ) {}
 
   async findAllByApplicationId(id: string, user_: ICurrentUser) {
-    const user = await this.usersService.findFilledRecruiterById(user_.id)
+    const user = await this.usersService.findFilledRecruiterRefById(user_.id)
     await this.findAccessibleApplication(id, user.recruiter.id)
 
     return this.stageResultsRepo.find({
@@ -53,7 +53,7 @@ export class ApplicationStageResultsService {
     user_: ICurrentUser,
   ) {
     return this.dataSource.transaction(async (manager) => {
-      const user = await this.usersService.findFilledRecruiterById(
+      const user = await this.usersService.findFilledRecruiterRefById(
         user_.id,
         manager,
       )

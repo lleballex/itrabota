@@ -1,4 +1,11 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm"
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+} from "typeorm"
 
 import { BaseEntity } from "@/database/entities/base.entity"
 import { Application } from "@/modules/applications/entities/application.entity"
@@ -7,6 +14,7 @@ import { ApplicationStageResult } from "@/modules/applications/entities/applicat
 import { Vacancy } from "./vacancy.entity"
 
 @Entity("funnel_step")
+@Index("IDX_funnel_step_vacancy_index", ["vacancy", "index"])
 export class FunnelStep extends BaseEntity {
   @Column("int", { default: 0 })
   index!: number

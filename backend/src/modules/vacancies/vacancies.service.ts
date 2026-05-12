@@ -233,7 +233,7 @@ export class VacanciesService {
     }
 
     if (user_.role === UserRole.Recruiter) {
-      const user = await this.usersService.findFilledRecruiterById(user_.id)
+      const user = await this.usersService.findFilledRecruiterRefById(user_.id)
 
       if (vacancy.recruiter?.id !== user.recruiter.id) {
         throw new ForbiddenException("Вы не являетесь автором этой вакансии")
@@ -247,7 +247,7 @@ export class VacanciesService {
 
   async findMatchedCandidates(id: string, user_: ICurrentUser) {
     const vacancy = await this.findOneById(id)
-    const user = await this.usersService.findFilledRecruiterById(user_.id)
+    const user = await this.usersService.findFilledRecruiterRefById(user_.id)
 
     if (vacancy.recruiter?.id !== user.recruiter.id) {
       throw new ForbiddenException("Вы не являетесь автором этой вакансии")
@@ -260,7 +260,7 @@ export class VacanciesService {
     dto: GetRecruiterVacanciesDto,
     user_: ICurrentUser,
   ) {
-    const user = await this.usersService.findFilledRecruiterById(user_.id)
+    const user = await this.usersService.findFilledRecruiterRefById(user_.id)
 
     const qb = this.createQB().andWhere("recruiter.id = :recruiterId", {
       recruiterId: user.recruiter.id,
@@ -324,7 +324,7 @@ export class VacanciesService {
     const vacancyId = await this.dataSource.transaction(async (manager) => {
       const vacanciesRepo = manager.getRepository(Vacancy)
 
-      const user = await this.usersService.findFilledRecruiterById(
+      const user = await this.usersService.findFilledRecruiterRefById(
         user_.id,
         manager,
       )
@@ -356,7 +356,7 @@ export class VacanciesService {
   ) {
     await this.dataSource.transaction(async (manager) => {
       const vacancy = await this.findOneById(id, manager)
-      const user = await this.usersService.findFilledRecruiterById(
+      const user = await this.usersService.findFilledRecruiterRefById(
         user_.id,
         manager,
       )
@@ -402,7 +402,7 @@ export class VacanciesService {
 
     await this.dataSource.transaction(async (manager) => {
       const vacancy = await this.findOneById(id, manager)
-      const user = await this.usersService.findFilledRecruiterById(
+      const user = await this.usersService.findFilledRecruiterRefById(
         user_.id,
         manager,
       )
